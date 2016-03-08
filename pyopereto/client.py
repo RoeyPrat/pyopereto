@@ -127,12 +127,19 @@ class OperetoClient(object):
         elif method=='delete':
             r = self.session.delete(self.input['opereto_host']+url, verify=False)
         else:
-            raise OperetoClientError('Invalid request method.')
+            raise OperetoClientError(message='Invalid request method.', code=500)
 
-        if r.json()['status']!='success':
-            raise OperetoClientError(message=error + ': ' + r.json().get('message') or '')
-        elif r.json().get('data'):
-            return r.json()['data']
+        try:
+            response_json = r.json()
+        except:
+            response_json={'status': 'failure', 'message': r.reason}
+
+        if response_json:
+            if response_json['status']!='success':
+                response_message = response_json.get('message') or ''
+                raise OperetoClientError(message=error+': '+response_message, code=r.status_code)
+            elif r.json().get('data'):
+                return response_json['data']
 
 
 
@@ -169,7 +176,8 @@ class OperetoClient(object):
             request_data['description']=description
         if agent_mapping:
             request_data['agents']=agent_mapping
-        return self._call_rest_api('post', '/services/'+service_id, data=request_data, error='Failed to modify service [%s]'%service_id)
+        print request_data
+        return self._call_rest_api('post', '/services', data=request_data, error='Failed to modify service [%s]'%service_id)
 
 
     @apicall

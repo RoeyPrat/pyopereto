@@ -15,5 +15,5 @@ test.conf
 .*.tstamp
 *.tmp
 *~
-tests
 tests/.*
+config.yaml

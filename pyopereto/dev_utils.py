@@ -73,14 +73,14 @@ class OperetoDevUtils():
             del json_spec['repository']
         repository  = {
             'repo_type': 'http',
-            'url': 'https://s3.amazonaws.com/%s/%s/%s/action.zip'%(AWS_S3_BUCKET_NAME, self.username,service_id),
+            'url': 'https://s3.amazonaws.com/%s/%s/%s/action.zip'%(self.storage.bucket_name, self.username,service_id),
             'ot_dir': ''
         }
         json_spec['repository']=repository
         yaml_service_spec = yaml.dump(json_spec, indent=4, default_flow_style=False)
         self.client.verify_service(service_id, yaml_service_spec, description, agent_mapping)
         try:
-            self.client.get_service()
+            self.client.get_service(service_id)
         except OperetoClientError:
             self.client.modify_service(service_id, yaml_service_spec, description, agent_mapping)
 
@@ -88,17 +88,17 @@ class OperetoDevUtils():
     def delete_dev_service(self, service):
         self.storage.delete_directory(prefix=self.username+'/'+service)
 
-    def upload_dev_service(self, service_folder, service_name=None, agents_mapping=None):
+    def upload_dev_service(self, service_dir, service_name=None, agents_mapping=None):
 
         if not service_name:
-            service_name = os.path.basename(service_folder)
+            service_name = os.path.basename(service_dir)
 
-        default_service_yaml = os.path.join(service_folder, 'service.yaml')
-        default_service_readme = os.path.join(service_folder, 'service.md')
-        default_sam = os.path.join(service_folder, 'service.sam.json')
-        service_yaml = os.path.join(service_folder, '%s.yaml' % service_name)
-        service_readme = os.path.join(service_folder, '%s.md' % service_name)
-        service_agent_mapping = os.path.join(service_folder, '%s.sam.json' % service_name)
+        default_service_yaml = os.path.join(service_dir, 'service.yaml')
+        default_service_readme = os.path.join(service_dir, 'service.md')
+        default_sam = os.path.join(service_dir, 'service.sam.json')
+        service_yaml = os.path.join(service_dir, '%s.yaml' % service_name)
+        service_readme = os.path.join(service_dir, '%s.md' % service_name)
+        service_agent_mapping = os.path.join(service_dir, '%s.sam.json' % service_name)
         if not os.path.exists(service_yaml):
             service_yaml=default_service_yaml
         if not os.path.exists(service_yaml):
@@ -128,7 +128,7 @@ class OperetoDevUtils():
                     fn = os.path.join(base, file)
                     zipobj.write(fn, fn[rootlen:])
 
-        zipfolder(zip_action_file, service_folder)
+        zipfolder(zip_action_file, service_dir)
 
         print 'Saving temp copy of service action files in AWS S3...'
         if not agents_mapping:
