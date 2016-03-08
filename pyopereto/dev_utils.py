@@ -137,8 +137,8 @@ class OperetoDevUtils():
             if os.path.exists(service_agent_mapping):
                 with open(service_agent_mapping, 'r') as f:
                     agents_mapping = json.loads(f.read())
-
-        self.modify_dev_service(service_name, service_spec, service_desc, agents_mapping)
+        print 'Saving temp copy of service action files in AWS S3...'
         self.storage.write_file(self.username+'/'+service_name+'/'+'action.zip', zip_action_file)
-
+        print 'Create service if not exists...'
+        self.modify_dev_service(service_name, service_spec, service_desc, agents_mapping)
 

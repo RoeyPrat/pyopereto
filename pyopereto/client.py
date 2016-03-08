@@ -176,7 +176,7 @@ class OperetoClient(object):
             request_data['description']=description
         if agent_mapping:
             request_data['agents']=agent_mapping
-        print request_data
+
         return self._call_rest_api('post', '/services', data=request_data, error='Failed to modify service [%s]'%service_id)
 
 
