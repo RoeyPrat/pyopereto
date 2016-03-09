@@ -1,5 +1,5 @@
 # pyopereto
-#### A simple python wrapper for Opereto API 
+#### Opereto Python client and development utils
 
 #### Installation
 ```
