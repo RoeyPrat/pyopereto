@@ -63,7 +63,7 @@ It is a good practice to have all service directories in the same directory in y
 ```
 In some cases, we want to keep a few services in the same directory. In such cases, all relevant files must start with the service name. For instance:
 ```
-~/my_services_dir/
+~/myproject/microservices/
     my_service_1.yaml        
     my_service_1.sam.json    
     my_service_1.md      
@@ -78,12 +78,12 @@ In some cases, we want to keep a few services in the same directory. In such cas
 ```
 python upload_service.py -d /path/to/your/service/directory [-s service_name]
 
-## service name has to be provided only if there are few services in the same directory. If not specified, the name of the directory will be used as the service name.
 ```
+A service name has to be provided only if there are few services in the same directory. If not specified, the name of the directory will be used as the service name.
 
 ##### run services in development mode (sendbox)
 ```
 python run_service.py -s service_name -t "your process title" [-a agent_name]
 
-## If agent is not specified, Opereto will select an agent that matches the service agent mapping
 ```
+If agent is not specified, Opereto will select an agent that matches the service agent mapping
