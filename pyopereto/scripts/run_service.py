@@ -8,13 +8,17 @@ def parse_options():
     parser.add_option("-s", "--service", dest="service", help="service name.")
     parser.add_option("-t", "--title", dest="title", help="process title (optional).")
     parser.add_option("-a", "--agent", dest="agent", default='any', help="agent name (optional), default is 'any'.")
+    (options, args) = parser.parse_args()
+    if not options.service:
+        parser.error('service must be provided.')
+
+    return (options, args)
 
 
 if __name__ == "__main__":
     (options, args) = parse_options()
     with open('config.yaml', 'r') as f:
         config = yaml.load(f.read())
-    print config
     client = OperetoClient(**config)
     client.create_process(service=options.service, title=options.title, agent=options.agent)
 

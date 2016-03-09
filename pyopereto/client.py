@@ -116,7 +116,7 @@ class OperetoClient(object):
             self.session.get(self.input['opereto_host']+'/logout', verify=False)
 
 
-    def _call_rest_api(self, method, url, data={}, error='Request Error', **kwargs):
+    def _call_rest_api(self, method, url, data={}, error=None, **kwargs):
         self._connect()
         if method=='get':
             r = self.session.get(self.input['opereto_host']+url, verify=False)
@@ -137,7 +137,11 @@ class OperetoClient(object):
         if response_json:
             if response_json['status']!='success':
                 response_message = response_json.get('message') or ''
-                raise OperetoClientError(message=error+': '+response_message, code=r.status_code)
+                if error:
+                    response_message = error + ': ' + response_message
+                if response_json.get('errors'):
+                    response_message += response_json['errors']
+                raise OperetoClientError(message=response_message, code=r.status_code)
             elif r.json().get('data'):
                 return response_json['data']
 

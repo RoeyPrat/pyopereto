@@ -14,11 +14,10 @@ def parse_options():
 
     return (options, args)
 
-
 if __name__ == "__main__":
     (options, args) = parse_options()
     with open('config.yaml', 'r') as f:
         config = yaml.load(f.read())
     du = OperetoDevUtils(**config)
-    exit(du.upload_dev_service(service_dir=options.dir, service_name=options.service))
+    du.upload_dev_service(service_dir=options.dir, service_name=options.service)
 
