@@ -83,7 +83,8 @@ A service name has to be provided only if there are few services in the same dir
 
 ##### run services in development mode (sendbox)
 ```
-python run_service.py -s service_name -t "your process title" [-a agent_name]
+python run_service.py -s service_name [-t "your process title"] [-a agent_name]
 
 ```
-If agent is not specified, Opereto will select an agent that matches the service agent mapping
+If agent is not specified, Opereto will select an agent that matches the service agent mapping.
+If title is not specified, a default process title will be provided by Opereto.
