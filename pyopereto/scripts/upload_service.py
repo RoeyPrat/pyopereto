@@ -7,6 +7,7 @@ def parse_options():
     parser = OptionParser(usage=usage)
     parser.add_option("-d", "--dir", dest="dir", help="path to the service directory.")
     parser.add_option("-s", "--service", dest="service", help="service name (optional), if not provided, directory name will be used.")
+    parser.add_option("--flush_dev_repo", dest="flush_dev_repo", action='store_true', default=False, help="Clear all services from the development repositoy")
 
     (options, args) = parser.parse_args()
     if not options.dir:
@@ -19,5 +20,5 @@ if __name__ == "__main__":
     with open('config.yaml', 'r') as f:
         config = yaml.load(f.read())
     du = OperetoDevUtils(**config)
-    du.upload_dev_service(service_dir=options.dir, service_name=options.service)
+    du.upload_dev_service(service_dir=options.dir, service_name=options.service, flush_dev_repo=options.flush_dev_repo)
 

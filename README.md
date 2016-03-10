@@ -28,7 +28,7 @@ exit my_client.SUCCESS
 
 #### Uploading & Running Services during developmet
 ##### prepare the dev environment
-Before you start developing service, please add the a new file called config.yaml to pyopereto scripts directory containing the following credentials:
+Before you start developing microservices, please add the a new file called config.yaml to pyopereto scripts directory containing the following credentials:
 ```
 opereto_host: https://your_opereto_service_url
 opereto_user: your_opereto_username

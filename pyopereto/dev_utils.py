@@ -102,10 +102,13 @@ class OperetoDevUtils():
         self.storage.delete_directory(prefix=self.username+'/'+service)
 
 
-    def upload_dev_service(self, service_dir, service_name=None, agents_mapping=None):
+    def upload_dev_service(self, service_dir, service_name=None, agents_mapping=None, flush_dev_repo=False):
 
         if not service_name:
             service_name = os.path.basename(service_dir)
+        if flush_dev_repo:
+            logger.info('Flushing user development repository..')
+            self.cleanup_dev_repository()
 
         default_service_yaml = os.path.join(service_dir, 'service.yaml')
         default_service_readme = os.path.join(service_dir, 'service.md')
