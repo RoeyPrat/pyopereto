@@ -20,5 +20,5 @@ if __name__ == "__main__":
     with open('config.yaml', 'r') as f:
         config = yaml.load(f.read())
     client = OperetoClient(**config)
-    client.create_process(service=options.service, title=options.title, agent=options.agent)
+    client.create_process(service=options.service, title=options.title, agent=options.agent, mode='development')
 

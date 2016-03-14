@@ -36,7 +36,7 @@ class FilesStorage():
     def write_data(self, data, remote_file):
         k = Key(self.bucket)
         k.name = remote_file
-        k.set_contents_from_filename(data)
+        k.set_contents_from_string(data)
 
     def read_data(self, remote_file):
         k = Key(self.bucket)

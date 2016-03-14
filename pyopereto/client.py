@@ -17,7 +17,7 @@ logging.basicConfig(stream=sys.stdout, format=FORMAT, level=logging.ERROR)
 logger = logging.getLogger('OperetoClient')
 logging.getLogger("OperetoClient").setLevel(logging.INFO)
 
-process_result_statuses = ['success', 'failure', 'error', 'timeout', 'terminate', 'warning']
+process_result_statuses = ['success', 'failure', 'error', 'timeout', 'terminated', 'warning']
 process_running_statuses = ['in_process', 'registered']
 process_statuses = process_result_statuses + process_running_statuses
 
@@ -228,15 +228,13 @@ class OperetoClient(object):
 
 
     @apicall
-    def create_process(self, service, agent, title=None, **kwargs):
+    def create_process(self, service, agent='any', title=None, **kwargs):
         request_data = {'service_id': service, 'agents': str(agent)}
         if title:
             request_data['name']=title
 
         if self.input.get('pid'):
             request_data['pflow_id']=self.input.get('pid')
-        if kwargs.get('pflow_id'):
-            request_data['pflow_id']=kwargs['pflow_id']
 
         request_data.update(**kwargs)
         ret_data= self._call_rest_api('post', '/processes', data=request_data, error='Failed to create a new process')
