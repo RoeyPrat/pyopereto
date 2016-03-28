@@ -185,6 +185,10 @@ class OperetoClient(object):
 
 
     @apicall
+    def search_environments(self, **kwargs):
+        return self._call_rest_api('get', '/search/environments', error='Failed to search environments')
+
+    @apicall
     def get_environment(self, environment_id, **kwargs):
         return self._call_rest_api('get', '/environments/'+environment_id, error='Failed to fetch environment [%s]'%environment_id)
 
