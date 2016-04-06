@@ -163,12 +163,13 @@ class OperetoDevUtils():
                 with open(service_agent_mapping, 'r') as f:
                     agents_mapping = json.loads(f.read())
 
-        remote_action_file = self.username+'/'+service_name+'/'+'action.zip'
+        remote_repo_dir = self.username+'/'+service_name
+        remote_action_file = remote_repo_dir+'/'+'action.zip'
         remote_signature_file = self.username+'/'+service_name+'/'+'.md5'
         self.storage.write_file(remote_action_file, zip_action_file)
         self.storage.write_file(remote_signature_file, signature_file)
 
-        logger.info('Saved a temp copy of service action files in AWS S3 (%s)...'%remote_file)
+        logger.info('Saved a temp copy of service action files in AWS S3 dev services repository at (%s)...'%remote_repo_dir)
         if self.create_dev_service(service_name, service_spec, service_desc, agents_mapping):
             logger.info('Created a new service in opereto.')
 
