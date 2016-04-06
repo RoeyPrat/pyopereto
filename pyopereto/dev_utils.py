@@ -10,7 +10,7 @@ except ImportError:
     raise OperetoClientError('To use pyopereto dev utils, please install python boto library (e.g. pip install boto)')
 import boto.s3.connection
 from boto.s3.key import Key
-
+import hashlib
 import logging
 FORMAT = '%(asctime)s: [%(levelname)s] %(message)s'
 logging.basicConfig(stream=sys.stdout, format=FORMAT, level=logging.ERROR)
@@ -22,6 +22,14 @@ if os.name=='nt':
     TEMP_DIR = 'C:\Temp'
 else:
     TEMP_DIR = '/tmp'
+
+
+def get_file_md5sum(file):
+    md5 = hashlib.md5()
+    with open(file,'rb') as f:
+        for chunk in iter(lambda: f.read(8192), ''):
+            md5.update(chunk)
+    return md5.hexdigest()
 
 
 class FilesStorage():
@@ -85,7 +93,7 @@ class OperetoDevUtils():
             'access_key': self.storage.aws_access_key,
             'secret_key': self.storage.aws_secret_key,
             'bucket': self.storage.bucket_name,
-            'ot_dir': '%s/%s/action.zip'%(self.username, service_id)
+            'ot_dir': '%s/%s'%(self.username, service_id)
         }
         json_spec['repository']=repository
         yaml_service_spec = yaml.dump(json_spec, indent=4, default_flow_style=False)
@@ -131,6 +139,10 @@ class OperetoDevUtils():
 
         ### zip directory and store on s3
         zip_action_file = os.path.join(TEMP_DIR, self.username+'.'+service_name+'.action.zip')
+        signature_file = os.path.join(TEMP_DIR, self.username+'.'+service_name+'.md5')
+        zip_action_md5 = get_file_md5sum(zip_action_file)
+        with open(signature_file, 'w') as sf:
+            sf.write(zip_action_md5)
 
         def zipfolder(zipname, target_dir):
             if target_dir.endswith('/'):
@@ -151,9 +163,11 @@ class OperetoDevUtils():
                 with open(service_agent_mapping, 'r') as f:
                     agents_mapping = json.loads(f.read())
 
-        remote_file = self.username+'/'+service_name+'/'+'action.zip'
+        remote_action_file = self.username+'/'+service_name+'/'+'action.zip'
+        remote_signature_file = self.username+'/'+service_name+'/'+'.md5'
+        self.storage.write_file(remote_action_file, zip_action_file)
+        self.storage.write_file(remote_signature_file, signature_file)
 
-        self.storage.write_file(remote_file, zip_action_file)
         logger.info('Saved a temp copy of service action files in AWS S3 (%s)...'%remote_file)
         if self.create_dev_service(service_name, service_spec, service_desc, agents_mapping):
             logger.info('Created a new service in opereto.')
