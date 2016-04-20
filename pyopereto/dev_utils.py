@@ -140,9 +140,7 @@ class OperetoDevUtils():
         ### zip directory and store on s3
         zip_action_file = os.path.join(TEMP_DIR, self.username+'.'+service_name+'.action.zip')
         signature_file = os.path.join(TEMP_DIR, self.username+'.'+service_name+'.md5')
-        zip_action_md5 = get_file_md5sum(zip_action_file)
-        with open(signature_file, 'w') as sf:
-            sf.write(zip_action_md5)
+
 
         def zipfolder(zipname, target_dir):
             if target_dir.endswith('/'):
@@ -155,6 +153,10 @@ class OperetoDevUtils():
                     zipobj.write(fn, fn[rootlen:])
 
         zipfolder(zip_action_file, service_dir)
+
+        zip_action_md5 = get_file_md5sum(zip_action_file)
+        with open(signature_file, 'w') as sf:
+            sf.write(zip_action_md5)
 
         if not agents_mapping:
             if not os.path.exists(service_agent_mapping):

@@ -149,7 +149,7 @@ class OperetoClient(object):
 
     #### MICROSERVICES ####
     @apicall
-    def search_services(self, start=0, limit=100, filter={}, **kwargs):
+    def search_services(self, start=0, limit=100, filter={}):
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/services', data=request_data, error='Failed to search services')
 
@@ -160,7 +160,7 @@ class OperetoClient(object):
 
 
     @apicall
-    def verify_service(self, service_id, specification=None, description=None, agent_mapping=None, **kwargs):
+    def verify_service(self, service_id, specification=None, description=None, agent_mapping=None):
         request_data = {'id': service_id}
         if specification:
             request_data['spec']=specification
@@ -172,7 +172,7 @@ class OperetoClient(object):
 
 
     @apicall
-    def modify_service(self, service_id, specification=None, description=None, agent_mapping=None, **kwargs):
+    def modify_service(self, service_id, specification=None, description=None, agent_mapping=None):
         request_data = {'id': service_id}
         if specification:
             request_data['spec']=specification
@@ -185,22 +185,22 @@ class OperetoClient(object):
 
 
     @apicall
-    def search_environments(self, **kwargs):
+    def search_environments(self):
         return self._call_rest_api('get', '/search/environments', error='Failed to search environments')
 
     @apicall
-    def get_environment(self, environment_id, **kwargs):
+    def get_environment(self, environment_id):
         return self._call_rest_api('get', '/environments/'+environment_id, error='Failed to fetch environment [%s]'%environment_id)
 
 
     @apicall
-    def create_environment(self, environment_type, environment_id , agents, **kwargs):
+    def create_environment(self, environment_type, environment_id , agents):
         request_data = {'environment_id': environment_id, 'environment_type': environment_type, 'agents': agents}
         return self._call_rest_api('post', '/environments', data=request_data, error='Failed to create environment [%s]'%environment_id)
 
 
     @apicall
-    def delete_environment(self, environment_id, **kwargs):
+    def delete_environment(self, environment_id):
         request_data = {'environment_id': environment_id}
         return self._call_rest_api('delete', '/environments', data=request_data, error='Failed to delete environment [%s]'%environment_id)
 
@@ -208,12 +208,12 @@ class OperetoClient(object):
 
     #### AGENTS ####
     @apicall
-    def get_all_agents(self, **kwargs):
+    def get_all_agents(self):
         return self._call_rest_api('get', '/agents/all', error='Failed to fetch all agents.')
 
 
     @apicall
-    def get_agent_properties(self, agent_id, **kwargs):
+    def get_agent_properties(self, agent_id):
         return self._call_rest_api('get', '/agents/'+agent_id+'/properties', error='Failed to fetch agent [%s] properties'%agent_id)
 
     @apicall
@@ -222,18 +222,18 @@ class OperetoClient(object):
 
 
     @apicall
-    def modify_agent_property(self, agent_id, key, value, **kwargs):
+    def modify_agent_property(self, agent_id, key, value):
         return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data={key: value}, error='Failed to modify agent [%s] properties'%agent_id)
 
 
     @apicall
-    def get_agent_status(self, agent_id, **kwargs):
+    def get_agent_status(self, agent_id):
         return self._call_rest_api('get', '/agents/'+agent_id, error='Failed to fetch agent [%s] status'%agent_id)
 
 
     @apicall
-    def create_process(self, service, agent='any', title=None, **kwargs):
-        request_data = {'service_id': service, 'agents': str(agent)}
+    def create_process(self, service, agent='any', title=None, mode='production', **kwargs):
+        request_data = {'service_id': service, 'agents': str(agent), 'mode': mode}
         if title:
             request_data['name']=title
 
