@@ -32,13 +32,26 @@ class OperetoClientError(Exception):
 
 def apicall(f):
     def f_call(*args, **kwargs):
+        tries=3
+        delay=3
         try:
-            rv = f(*args, **kwargs)
-            return rv
-        except OperetoClientError,e:
-            raise e
+            while tries > 0:
+                tries -= 1
+                try:
+                    rv = f(*args, **kwargs)
+                    return rv
+                except OperetoClientError,e:
+                    try:
+                        if e.code==502:
+                            time.sleep(delay)
+                        else:
+                            raise e
+                    except:
+                        raise e
+                except requests.exceptions.RequestException:
+                    time.sleep(delay)
         except Exception,e:
-            raise e
+            raise OperetoClientError(str(e))
     return f_call
 
 
