@@ -42,7 +42,7 @@ def apicall(f):
                     return rv
                 except OperetoClientError,e:
                     try:
-                        if e.code==502:
+                        if e.code>=502:
                             time.sleep(delay)
                         else:
                             raise e
