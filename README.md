@@ -33,9 +33,15 @@ Before you start developing microservices, please add the a new file called conf
 opereto_host: https://your_opereto_service_url
 opereto_user: your_opereto_username
 opereto_password: your_opereto_password
-aws_access_key: your_opereto_s3_dev_repo_access_key
-aws_secret_key: your_opereto_s3_dev_repo_secret_key
-aws_s3_bucket: your_opereto_s3_dev_repo_bucket_name
+aws:
+  development:
+    access_key: your_opereto_s3_dev_repo_access_key
+    secret_key: your_opereto_s3_dev_repo_secret_key
+    bucket_name: your_opereto_s3_dev_repo_bucket_name
+  versions:
+    access_key: your_opereto_s3_versions_repo_access_key
+    secret_key: your_opereto_s3_versions_repo_secret_key
+    bucket_name: your_opereto_s3_versions_repo_bucket_name
 
 ```
 
@@ -74,17 +80,42 @@ In some cases, we want to keep a few services in the same directory. In such cas
     + any executable files/directories
 ```
 
-##### upload your dev services
+##### upload your personal dev services
 ```
-python upload_service.py -d /path/to/your/service/directory [-s service_name]
+cd /path/to/pyopereto/pyopereto/scripts
+
+python upload_dev_service.py -d /path/to/your/service/directory [-s service_name]
 
 ```
 A service name has to be provided only if there are few services in the same directory. If not specified, the name of the directory will be used as the service name.
 
-##### run services in development mode (sendbox)
+
+##### upload a specific version of a given service
 ```
-python run_service.py -s service_name [-t "your process title"] [-a agent_name]
+cd /path/to/pyopereto/pyopereto/scripts
+
+python upload_service_version.py -d /path/to/your/service/directory -s VERSION_STRING [-s service_name]
 
 ```
-If agent is not specified, Opereto will select an agent that matches the service agent mapping.
-If title is not specified, a default process title will be provided by Opereto.
+A service name has to be provided only if there are few services in the same directory. If not specified, the name of the directory will be used as the service name.
+
+
+
+##### run services in development mode (sendbox)
+
+The run_service.py script is a simple script wrapping the create_process method of the pyopereto client. It assumes that process input properties are included 
+as defaults in the service.yaml of the executed service. To pass input properties, you may use the client directly.
+ 
+```
+python run_service.py -s service_name [-v version] [-t "your process title"] [-a agent_name]
+
+```
+1. If agent is not specified, Opereto will select an agent that matches the service agent mapping.
+2. If title is not specified, a default process title will be provided by Opereto.
+
+Using this script, Opereto will run services according to the following order:
+1. Firstly, it will seach in the dev repo
+2. If version is specified and the service does not exist in the dev repo, it will search in the versions repo for that service version
+3. Finally, if not found, it will use the default service stored in Opereto
+
+

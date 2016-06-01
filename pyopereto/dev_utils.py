@@ -74,17 +74,17 @@ class FilesStorage():
         k.get_contents_to_filename(local_file_path)
 
 
-class OperetoDevUtils():
+class OperetoServiceUtils():
 
-    def __init__(self, **config):
-        self.storage = FilesStorage(config['aws_access_key'],config['aws_secret_key'],config['aws_s3_bucket'])
+    def __init__(self, access_key, secret_key, bucket_name, **config):
+        self.storage = FilesStorage(access_key, secret_key, bucket_name)
         self.client = OperetoClient(opereto_host=config['opereto_host'], opereto_user=config['opereto_user'], opereto_password=config['opereto_password'])
         self.username = self.client.input.get('opereto_user')
 
-    def cleanup_dev_repository(self):
-        self.storage.delete_directory(prefix=self.username)
+    def _cleanup_repository(self, path):
+        self.storage.delete_directory(prefix=path)
 
-    def create_dev_service(self, service_id, json_spec, description=None, agent_mapping=None):
+    def create_service(self, service_id, json_spec, description=None, agent_mapping=None):
 
         if 'repository' in json_spec:
             del json_spec['repository']
@@ -98,25 +98,18 @@ class OperetoDevUtils():
         json_spec['repository']=repository
         yaml_service_spec = yaml.dump(json_spec, indent=4, default_flow_style=False)
         self.client.verify_service(service_id, yaml_service_spec, description, agent_mapping)
-        try:
-            self.client.get_service(service_id)
-            return False
-        except OperetoClientError:
-            self.client.modify_service(service_id, yaml_service_spec, description, agent_mapping)
-            return True
+        self.modify_service(service_id=service_id, json_spec=json_spec, yaml_service_spec=yaml_service_spec, description=description, agent_mapping=agent_mapping)
 
 
-    def delete_dev_service(self, service):
-        self.storage.delete_directory(prefix=self.username+'/'+service)
+    def _delete_service(self, path):
+        self.storage.delete_directory(prefix=path)
 
 
-    def upload_dev_service(self, service_dir, service_name=None, agents_mapping=None, flush_dev_repo=False):
+    def _upload_service(self, service_dir, file_prefix, remote_repo_dir, service_name, agents_mapping=None, flush_repo=False):
 
-        if not service_name:
-            service_name = os.path.basename(service_dir)
-        if flush_dev_repo:
-            logger.info('Flushing user development repository..')
-            self.cleanup_dev_repository()
+        if flush_repo:
+            logger.info('Flushing service repository..')
+            self.cleanup_repository()
 
         default_service_yaml = os.path.join(service_dir, 'service.yaml')
         default_service_readme = os.path.join(service_dir, 'service.md')
@@ -138,8 +131,8 @@ class OperetoDevUtils():
                 service_desc = f.read()
 
         ### zip directory and store on s3
-        zip_action_file = os.path.join(TEMP_DIR, self.username+'.'+service_name+'.action.zip')
-        signature_file = os.path.join(TEMP_DIR, self.username+'.'+service_name+'.md5')
+        zip_action_file = os.path.join(TEMP_DIR, file_prefix+'.action.zip')
+        signature_file = os.path.join(TEMP_DIR, file_prefix+'.md5')
 
 
         def zipfolder(zipname, target_dir):
@@ -165,14 +158,60 @@ class OperetoDevUtils():
                 with open(service_agent_mapping, 'r') as f:
                     agents_mapping = json.loads(f.read())
 
-        remote_repo_dir = self.username+'/'+service_name
+
         remote_action_file = remote_repo_dir+'/'+'action.zip'
-        remote_signature_file = self.username+'/'+service_name+'/'+'.md5'
+        remote_signature_file = remote_repo_dir+'/.md5'
         self.storage.write_file(remote_action_file, zip_action_file)
         self.storage.write_file(remote_signature_file, signature_file)
 
-        logger.info('Saved a temp copy of service action files in AWS S3 dev services repository at (%s)...'%remote_repo_dir)
-        if self.create_dev_service(service_name, service_spec, service_desc, agents_mapping):
+        logger.info('Saved a temp copy of service action files in the relevant S3 services repository at (%s)...'%remote_repo_dir)
+        self.create_service(service_name, service_spec, service_desc, agents_mapping)
+
+
+class OperetoDevUtils(OperetoServiceUtils):
+
+    def __init__(self, **config):
+        OperetoServiceUtils.__init__(self, config['aws']['development']['access_key'],config['aws']['development']['secret_key'],config['aws']['development']['bucket_name'], **config)
+
+    def cleanup_repository(self):
+        self._cleanup_repository(self.username)
+
+    def delete_service(self, service):
+        self._delete_service(self.username+'/'+service)
+
+    def modify_service(self, service_id, json_spec, yaml_service_spec, description=None, agent_mapping=None):
+        try:
+            self.client.get_service(service_id)
+        except OperetoClientError:
+            self.client.modify_service(service_id, yaml_service_spec, description, agent_mapping)
             logger.info('Created a new service in opereto.')
+
+    def upload_service(self, service_dir, service_name=None, agents_mapping=None, flush_repo=False):
+        if not service_name:
+            service_name = os.path.basename(service_dir)
+        self._upload_service(service_dir, self.username+'.'+service_name , self.username+'/'+service_name, service_name=service_name, agents_mapping=agents_mapping, flush_repo=flush_repo)
+
+
+class OperetoVersionsUtils(OperetoServiceUtils):
+
+    def __init__(self, **config):
+        OperetoServiceUtils.__init__(self, config['aws']['versions']['access_key'],config['aws']['versions']['secret_key'],config['aws']['versions']['bucket_name'], **config)
+
+    def cleanup_repository(self):
+        self._cleanup_repository(self.username)
+
+    def delete_service(self, service):
+        self._delete_service(self.username+'/'+service)
+
+    def modify_service(self, service_id, json_spec, yaml_service_spec, description=None, agent_mapping=None):
+        try:
+            self.client.get_service(service_id)
+        except OperetoClientError:
+            raise Exception, 'Service [%s] is invalid or does not exist in Opereto'%service_id
+
+    def upload_service(self, service_dir, service_version, service_name=None, agents_mapping=None, flush_repo=False):
+        if not service_name:
+            service_name = os.path.basename(service_dir)
+        self._upload_service(service_dir, service_name+'.'+service_version , service_name+'/'+service_version, service_name=service_name, agents_mapping=agents_mapping, flush_repo=flush_repo)
 
 

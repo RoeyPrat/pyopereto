@@ -245,8 +245,8 @@ class OperetoClient(object):
 
 
     @apicall
-    def create_process(self, service, agent='any', title=None, mode='production', **kwargs):
-        request_data = {'service_id': service, 'agents': str(agent), 'mode': mode}
+    def create_process(self, service, agent='any', title=None, mode='production', service_version=None, **kwargs):
+        request_data = {'service_id': service, 'agents': str(agent), 'mode': mode, 'service_version':service_version}
         if title:
             request_data['name']=title
 
