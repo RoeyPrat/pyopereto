@@ -114,8 +114,8 @@ python run_service.py -s service_name [-v version] [-t "your process title"] [-a
 2. If title is not specified, a default process title will be provided by Opereto.
 
 Using this script, Opereto will run services according to the following order:
-1. Firstly, it will seach in the dev repo
-2. If version is specified and the service does not exist in the dev repo, it will search in the versions repo for that service version
-3. Finally, if not found, it will use the default service stored in Opereto
+* Firstly, it will seach in the dev repo
+* If version is specified and the service does not exist in the dev repo, it will search in the versions repo for that service version
+* Finally, if not found, it will use the default service stored in Opereto
 
 
