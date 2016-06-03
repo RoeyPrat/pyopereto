@@ -214,9 +214,7 @@ class OperetoClient(object):
 
     @apicall
     def delete_environment(self, environment_id):
-        request_data = {'environment_id': environment_id}
-        return self._call_rest_api('delete', '/environments', data=request_data, error='Failed to delete environment [%s]'%environment_id)
-
+        return self._call_rest_api('delete', '/environments/'+environment_id, error='Failed to delete environment [%s]'%environment_id)
 
 
     #### AGENTS ####

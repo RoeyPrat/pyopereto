@@ -23,6 +23,7 @@ if os.name=='nt':
 else:
     TEMP_DIR = '/tmp'
 
+non_action_services = ['cycle', 'container', 'feedback']
 
 def get_file_md5sum(file):
     md5 = hashlib.md5()
@@ -86,16 +87,17 @@ class OperetoServiceUtils():
 
     def create_service(self, service_id, json_spec, description=None, agent_mapping=None):
 
-        if 'repository' in json_spec:
-            del json_spec['repository']
-        repository  = {
-            'repo_type': 's3',
-            'access_key': self.storage.aws_access_key,
-            'secret_key': self.storage.aws_secret_key,
-            'bucket': self.storage.bucket_name,
-            'ot_dir': '%s/%s'%(self.username, service_id)
-        }
-        json_spec['repository']=repository
+        if json_spec['type'] not in non_action_services:
+            if 'repository' in json_spec:
+                del json_spec['repository']
+            repository  = {
+                'repo_type': 's3',
+                'access_key': self.storage.aws_access_key,
+                'secret_key': self.storage.aws_secret_key,
+                'bucket': self.storage.bucket_name,
+                'ot_dir': '%s/%s'%(self.username, service_id)
+            }
+            json_spec['repository']=repository
         yaml_service_spec = yaml.dump(json_spec, indent=4, default_flow_style=False)
         self.client.verify_service(service_id, yaml_service_spec, description, agent_mapping)
         self.modify_service(service_id=service_id, json_spec=json_spec, yaml_service_spec=yaml_service_spec, description=description, agent_mapping=agent_mapping)
