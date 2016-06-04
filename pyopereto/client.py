@@ -244,7 +244,7 @@ class OperetoClient(object):
 
     @apicall
     def create_process(self, service, agent='any', title=None, mode='production', service_version=None, **kwargs):
-        request_data = {'service_id': service, 'agents': str(agent), 'mode': mode, 'service_version':service_version}
+        request_data = {'service_id': service, 'agents': str(agent), 'mode': mode, 's_version':service_version}
         if title:
             request_data['name']=title
 
@@ -263,7 +263,6 @@ class OperetoClient(object):
             message += ' [agent = %s]'%agent
         else:
             message += ' [agent = any ]'
-        self.logger.info(message)
         return str(pid)
 
 
