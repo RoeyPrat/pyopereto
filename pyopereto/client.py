@@ -350,13 +350,13 @@ class OperetoClient(object):
 
 
     def wait_to_start(self, pids=[]):
-        pids = self._get_pids(pids)
-        return self.wait_for(pids, process_result_statuses+['in_process'])
+        actual_pids = self._get_pids(pids)
+        return self.wait_for(pids=actual_pids, status_list=process_result_statuses+['in_process'])
 
 
     def wait_to_end(self, pids=[]):
-        pids = self._get_pids(pids)
-        return self.wait_for(process_result_statuses)
+        actual_pids = self._get_pids(pids)
+        return self.wait_for(pids=actual_pids, status_list=process_result_statuses)
 
 
     def is_success(self, pids):

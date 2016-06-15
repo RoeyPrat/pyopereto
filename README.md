@@ -26,7 +26,7 @@ if not my_client.is_success(pid):
 exit my_client.SUCCESS
 ```
 
-#### Uploading & Running Services during developmet
+#### deploying & Running Services during developmet
 ##### prepare the dev environment
 Before you start developing microservices, please add the a new file called config.yaml to pyopereto scripts directory containing the following credentials:
 ```
@@ -80,21 +80,21 @@ In some cases, we want to keep a few services in the same directory. In such cas
     + any executable files/directories
 ```
 
-##### upload your personal dev services
+##### deploy your personal dev services
 ```
 cd /path/to/pyopereto/pyopereto/scripts
 
-python upload_dev_service.py -d /path/to/your/service/directory [-s service_name]
+python deploy_dev_service.py -d /path/to/your/service/directory [-s service_name]
 
 ```
 A service name has to be provided only if there are few services in the same directory. If not specified, the name of the directory will be used as the service name.
 
 
-##### upload a specific version of a given service
+##### deploy a specific version of a given service
 ```
 cd /path/to/pyopereto/pyopereto/scripts
 
-python upload_service_version.py -d /path/to/your/service/directory -s VERSION_STRING [-s service_name]
+python deploy_service_version.py -d /path/to/your/service/directory -s VERSION_STRING [-s service_name]
 
 ```
 A service name has to be provided only if there are few services in the same directory. If not specified, the name of the directory will be used as the service name.

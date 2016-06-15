@@ -205,15 +205,16 @@ class OperetoVersionsUtils(OperetoServiceUtils):
     def delete_service(self, service):
         self._delete_service(self.username+'/'+service)
 
-    def modify_service(self, service_id, json_spec, yaml_service_spec, description=None, agent_mapping=None):
+    def modify_service(self, service_id, **kwargs):
         try:
             self.client.get_service(service_id)
         except OperetoClientError:
             raise Exception, 'Service [%s] is invalid or does not exist in Opereto'%service_id
 
     def upload_service(self, service_dir, service_version, service_name=None, agents_mapping=None, flush_repo=False):
-        if not service_name:
-            service_name = os.path.basename(service_dir)
-        self._upload_service(service_dir, service_name+'.'+service_version , service_name+'/'+service_version, service_name=service_name, agents_mapping=agents_mapping, flush_repo=flush_repo)
+        if service_dir and service_version:
+            if not service_name:
+                service_name = os.path.basename(service_dir)
+            self._upload_service(service_dir, service_name+'.'+service_version , service_name+'/'+service_version, service_name=service_name, agents_mapping=agents_mapping, flush_repo=flush_repo)
 
 
