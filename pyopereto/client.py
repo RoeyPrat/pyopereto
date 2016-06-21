@@ -273,6 +273,11 @@ class OperetoClient(object):
         request_data={"key" : key, "value": value}
         return self._call_rest_api('post', '/processes/'+pid+'/output', data=request_data, error='Failed to output [%s]'%key)
 
+    @apicall
+    def modify_process_summary(self, pid, text):
+        request_data={"id" : pid, "data": str(text)}
+        return self._call_rest_api('post', '/processes/'+pid+'/summary', data=request_data, error='Failed to update process summary')
+
 
     @apicall
     def stop_process(self, pids, status='success'):
@@ -312,7 +317,10 @@ class OperetoClient(object):
     def get_process_property(self, pid, name=None):
         res = self._call_rest_api('get', '/processes/'+pid+'/properties', error='Failed to fetch process properties')
         if name:
-            return res.get(name)
+            try:
+                return res[name]
+            except KeyError, e:
+                raise OperetoClientError(message='Invalid property [%s]'%name, code=404)
         else:
             return res
 
