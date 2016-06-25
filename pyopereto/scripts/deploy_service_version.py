@@ -3,7 +3,7 @@ from optparse import OptionParser
 import yaml
 
 def parse_options():
-    usage = "%prog -d service_directory [-s service_name]"
+    usage = "%prog -d path/to/service/directory [-s service] [-v version] [--flush_repo]"
     parser = OptionParser(usage=usage)
     parser.add_option("-d", "--dir", dest="dir", help="path to the service directory.")
     parser.add_option("-v", "--version", dest="version", help="service version specification (e.g. 1.1.0-12).")

@@ -77,8 +77,9 @@ class FilesStorage():
 
 class OperetoServiceUtils():
 
-    def __init__(self, access_key, secret_key, bucket_name, **config):
-        self.storage = FilesStorage(access_key, secret_key, bucket_name)
+    def __init__(self, access_key=None, secret_key=None, bucket_name=None, **config):
+        if access_key and secret_key and bucket_name:
+            self.storage = FilesStorage(access_key, secret_key, bucket_name)
         self.client = OperetoClient(opereto_host=config['opereto_host'], opereto_user=config['opereto_user'], opereto_password=config['opereto_password'])
         self.username = self.client.input.get('opereto_user')
 
@@ -100,18 +101,18 @@ class OperetoServiceUtils():
             json_spec['repository']=repository
         yaml_service_spec = yaml.dump(json_spec, indent=4, default_flow_style=False)
         self.client.verify_service(service_id, yaml_service_spec, description, agent_mapping)
-        self.modify_service(service_id=service_id, json_spec=json_spec, yaml_service_spec=yaml_service_spec, description=description, agent_mapping=agent_mapping)
+        self.modify_service(service_id=service_id, yaml_service_spec=yaml_service_spec, description=description, agent_mapping=agent_mapping)
 
 
     def _delete_service(self, path):
         self.storage.delete_directory(prefix=path)
 
 
-    def _upload_service(self, service_dir, file_prefix, remote_repo_dir, service_name, agents_mapping=None, flush_repo=False):
+    def _read_service_directory(self, service_dir, service_name=None):
 
-        if flush_repo:
-            logger.info('Flushing service repository..')
-            self.cleanup_repository()
+        service_dir = service_dir.rstrip('/')
+        if not service_name:
+            service_name = os.path.basename(service_dir)
 
         default_service_yaml = os.path.join(service_dir, 'service.yaml')
         default_service_readme = os.path.join(service_dir, 'service.md')
@@ -131,6 +132,27 @@ class OperetoServiceUtils():
         if os.path.exists(service_readme):
             with open(service_readme, 'r') as f:
                 service_desc = f.read()
+
+        agents_mapping = None
+        if not os.path.exists(service_agent_mapping):
+            service_agent_mapping=default_sam
+        if os.path.exists(service_agent_mapping):
+            with open(service_agent_mapping, 'r') as f:
+                agents_mapping = json.loads(f.read())
+
+        return (service_name, service_spec,service_desc,agents_mapping)
+
+
+
+
+    def _upload_service(self, service_dir, file_prefix, remote_repo_dir, service_name=None, agents_mapping=None, flush_repo=False):
+
+        if flush_repo:
+            logger.info('Flushing service repository..')
+            self.cleanup_repository()
+
+        (service_id, service_spec,service_desc,default_agents_mapping) = self._read_service_directory(service_dir, service_name)
+
 
         ### zip directory and store on s3
         zip_action_file = os.path.join(TEMP_DIR, file_prefix+'.action.zip')
@@ -154,20 +176,15 @@ class OperetoServiceUtils():
             sf.write(zip_action_md5)
 
         if not agents_mapping:
-            if not os.path.exists(service_agent_mapping):
-                service_agent_mapping=default_sam
-            if os.path.exists(service_agent_mapping):
-                with open(service_agent_mapping, 'r') as f:
-                    agents_mapping = json.loads(f.read())
-
+            agents_mapping=default_agents_mapping
 
         remote_action_file = remote_repo_dir+'/'+'action.zip'
         remote_signature_file = remote_repo_dir+'/.md5'
         self.storage.write_file(remote_action_file, zip_action_file)
         self.storage.write_file(remote_signature_file, signature_file)
 
-        logger.info('Saved a temp copy of service action files in the relevant S3 services repository at (%s)...'%remote_repo_dir)
-        self.create_service(service_name, service_spec, service_desc, agents_mapping)
+        logger.info('Saved a temp copy of service action files in the S3 repository at (%s)...'%os.path.join(self.storage.bucket_name, remote_repo_dir))
+        self.create_service(service_id, service_spec, service_desc, agents_mapping)
 
 
 class OperetoDevUtils(OperetoServiceUtils):
@@ -181,14 +198,46 @@ class OperetoDevUtils(OperetoServiceUtils):
     def delete_service(self, service):
         self._delete_service(self.username+'/'+service)
 
-    def modify_service(self, service_id, json_spec, yaml_service_spec, description=None, agent_mapping=None):
+    def modify_service(self, service_id, yaml_service_spec, description=None, agent_mapping=None):
         try:
             self.client.get_service(service_id)
         except OperetoClientError:
             self.client.modify_service(service_id, yaml_service_spec, description, agent_mapping)
             logger.info('Created a new service in opereto.')
 
+    def override_service(self, service_id, json_spec, description=None, agent_mapping=None):
+        if json_spec['type'] not in non_action_services:
+            if 'repository' in json_spec:
+                del json_spec['repository']
+            repository  = {
+                'repo_type': 's3',
+                'access_key': self.storage.aws_access_key,
+                'secret_key': self.storage.aws_secret_key,
+                'bucket': self.storage.bucket_name,
+                'ot_dir': '%s/%s'%(self.username, service_id)
+            }
+            json_spec['repository']=repository
+        yaml_service_spec = yaml.dump(json_spec, indent=4, default_flow_style=False)
+        self.client.verify_service(service_id, yaml_service_spec, description, agent_mapping)
+        self.client.modify_service(service_id, yaml_service_spec, description, agent_mapping)
+        logger.info('Modified production service to point to development repository.')
+
+
+    def modify_production_service(self, service_dir, service_name=None, production_lock=False):
+
+        (service_id, service_spec,service_desc,agents_mapping) = self._read_service_directory(service_dir, service_name)
+        if production_lock:
+            service_spec['production']=True
+        yaml_service_spec = yaml.dump(service_spec, indent=4, default_flow_style=False)
+        if service_spec.get('repository'):
+            self.client.verify_service(service_id, yaml_service_spec, service_desc, agents_mapping)
+            self.client.modify_service(service_id, yaml_service_spec, service_desc, agents_mapping)
+        else:
+            self.override_service(service_id, service_spec, service_desc, agents_mapping)
+
+
     def upload_service(self, service_dir, service_name=None, agents_mapping=None, flush_repo=False):
+        service_dir = service_dir.rstrip('/')
         if not service_name:
             service_name = os.path.basename(service_dir)
         self._upload_service(service_dir, self.username+'.'+service_name , self.username+'/'+service_name, service_name=service_name, agents_mapping=agents_mapping, flush_repo=flush_repo)
@@ -213,6 +262,7 @@ class OperetoVersionsUtils(OperetoServiceUtils):
 
     def upload_service(self, service_dir, service_version, service_name=None, agents_mapping=None, flush_repo=False):
         if service_dir and service_version:
+            service_dir = service_dir.rstrip('/')
             if not service_name:
                 service_name = os.path.basename(service_dir)
             self._upload_service(service_dir, service_name+'.'+service_version , service_name+'/'+service_version, service_name=service_name, agents_mapping=agents_mapping, flush_repo=flush_repo)
