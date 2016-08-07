@@ -71,13 +71,13 @@ class OperetoClient(object):
                 with open(os.path.join(work_dir,'arguments.json'), 'r') as f:
                     self.input = json.loads(f.read())
             except Exception,e:
-                raise OperetoClientError('Failed to parse %s input file: %s'%(filename, str(e)))
+                raise OperetoClientError('Failed to parse %s input file: %s'%('arguments.json', str(e)))
         elif os.path.exists(os.path.join(work_dir,'arguments.yaml')):
             try:
                 with open(os.path.join(work_dir,'arguments.yaml'), 'r') as f:
                     self.input = yaml.load(f.read())
             except Exception,e:
-                raise OperetoClientError('Failed to parse %s input file: %s'%(filename, str(e)))
+                raise OperetoClientError('Failed to parse %s input file: %s'%('arguments.yaml', str(e)))
 
 
         ## TEMP: fix in agent
@@ -136,7 +136,10 @@ class OperetoClient(object):
         elif method=='put':
             r = self.session.put(self.input['opereto_host']+url, verify=False, data=json.dumps(data))
         elif method=='post':
-            r = self.session.post(self.input['opereto_host']+url, verify=False, data=json.dumps(data))
+            if kwargs.get('files'):
+                r = self.session.post(self.input['opereto_host']+url, verify=False, files=kwargs['files'])
+            else:
+                r = self.session.post(self.input['opereto_host']+url, verify=False, data=json.dumps(data))
         elif method=='delete':
             r = self.session.delete(self.input['opereto_host']+url, verify=False)
         else:
@@ -157,7 +160,6 @@ class OperetoClient(object):
                 raise OperetoClientError(message=response_message, code=r.status_code)
             elif r.json().get('data'):
                 return response_json['data']
-
 
 
     #### MICROSERVICES ####
@@ -185,16 +187,30 @@ class OperetoClient(object):
 
 
     @apicall
-    def modify_service(self, service_id, specification=None, description=None, agent_mapping=None):
-        request_data = {'id': service_id}
-        if specification:
-            request_data['spec']=specification
-        if description:
-            request_data['description']=description
-        if agent_mapping:
-            request_data['agents']=agent_mapping
-
+    def modify_service(self, service_id, type):
+        request_data = {'id': service_id, 'type': type}
         return self._call_rest_api('post', '/services', data=request_data, error='Failed to modify service [%s]'%service_id)
+
+
+
+    @apicall
+    def upload_service_version(self, service_zip_file, mode='production', service_version='default', service_id=None):
+        files = {'service_file': open(service_zip_file,'rb')}
+
+        url_suffix = '/versions/upload/%s'%mode
+        if mode=='production':
+            url_suffix+='/'+service_version
+            if service_id:
+                url_suffix+='/'+service_id
+        return self._call_rest_api('post', url_suffix, files=files, error='Failed to upload service version')
+
+
+    @apicall
+    def import_service_version(self, repository_json, mode='production', service_version='default', service_id=None):
+        request_data = {'repository': repository_json, 'mode': mode, 'service_version': service_version, 'id': service_id}
+        return self._call_rest_api('post', '/versions', data=request_data, error='Failed to import service')
+
+
 
 
     @apicall
