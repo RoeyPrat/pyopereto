@@ -38,5 +38,5 @@ When Opereto run services on remote servers, it creates this credentials file. F
 
 PyOpereto wraps all common Opereto API call. To learn more about it, please check out the client code and Opereto API at: http://help.opereto.com/support/solutions/9000011679
 
-In addition, you can learn more about automation development with pyopereto at: http://help.opereto.com/support/solutions/folders/9000168944
+In addition, you can learn more about automation development with pyopereto at: http://help.opereto.com/support/solutions/articles/9000001797-developing-micro-services
 
