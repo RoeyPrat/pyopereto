@@ -211,6 +211,15 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/versions', data=request_data, error='Failed to import service')
 
 
+    @apicall
+    def delete_service_version(self, service_id , service_version='default', mode='production'):
+        return self._call_rest_api('delete', '/versions/'+service_id+'/'+service_version+'/'+mode, error='Failed to delete service')
+
+
+    @apicall
+    def delete_service(self, repository_json, mode='production', service_version='default', service_id=None):
+        request_data = {'repository': repository_json, 'mode': mode, 'service_version': service_version, 'id': service_id}
+        return self._call_rest_api('post', '/versions', data=request_data, error='Failed to import service')
 
 
     @apicall

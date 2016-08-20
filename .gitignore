@@ -17,3 +17,4 @@ test.conf
 *~
 tests/.*
 config.yaml
+test*
