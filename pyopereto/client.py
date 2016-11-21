@@ -344,7 +344,7 @@ class OperetoClient(object):
 
     ## deprecated, will be removed next release
     def get_process_property(self, pid, name=None):
-        return self.get_process_property(pid, name)
+        return self.get_process_properties(pid, name)
 
     @apicall
     def get_process_properties(self, pid, name=None):
