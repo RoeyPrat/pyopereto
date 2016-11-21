@@ -121,7 +121,11 @@ class OperetoClient(object):
             self.session.auth = (self.input['opereto_user'], self.input['opereto_password'])
             response = self.session.post('%s/login'%self.input['opereto_host'], verify=False)
             if response.status_code>201:
-                raise OperetoClientError('Failed to login to opereto server [%s]: %s'%(self.input['opereto_host'], response.reason))
+                try:
+                    error_message = response.json()['message']
+                except:
+                    error_message=r.reason
+                raise OperetoClientError('Failed to login to opereto server [%s]: %s'%(self.input['opereto_host'], error_message))
 
 
     def _disconnect(self):
@@ -339,7 +343,7 @@ class OperetoClient(object):
 
 
     @apicall
-    def get_process_property(self, pid, name=None):
+    def get_process_properties(self, pid, name=None):
         res = self._call_rest_api('get', '/processes/'+pid+'/properties', error='Failed to fetch process properties')
         if name:
             try:
@@ -432,6 +436,4 @@ class OperetoClient(object):
             pid = self.input.get('pid')
         if pid:
             self._call_rest_api('post', '/processes/'+pid+'/cache', data={'key': key, 'value': value}, error='Failed to modify process runtime cache')
-
-
 
