@@ -342,6 +342,10 @@ class OperetoClient(object):
         return self._call_rest_api('get', '/processes/'+pid+'/log', error='Failed to fetch process log')
 
 
+    ## deprecated, will be removed next release
+    def get_process_property(self, pid, name=None):
+        return self.get_process_property(pid, name)
+
     @apicall
     def get_process_properties(self, pid, name=None):
         res = self._call_rest_api('get', '/processes/'+pid+'/properties', error='Failed to fetch process properties')
