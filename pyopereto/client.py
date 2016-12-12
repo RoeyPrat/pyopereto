@@ -109,13 +109,17 @@ class OperetoClient(object):
 
     def _get_pids(self, pids=[]):
         if isinstance(pids, str):
-            pids = [pids]
+            pids = [self._get_pid(pid=pids)]
         if not pids:
-            if self.input.get('pid'):
-                pids = self.input['pid']
-            else:
-                raise OperetoClientError('Process identifier must be provided.')
+            raise OperetoClientError('Process identifier(s) must be provided.')
         return pids
+
+
+    def _get_pid(self, pid=None):
+        actual_pid = pid or self.input.get('pid')
+        if not actual_pid:
+            raise OperetoClientError('Process identifier must be provided.')
+        return actual_pid
 
 
     def _connect(self):
@@ -306,13 +310,13 @@ class OperetoClient(object):
 
     @apicall
     def modify_process_property(self, key, value, pid=None):
-        pid = self._get_pids(pid)
+        pid = self._get_pid(pid)
         request_data={"key" : key, "value": value}
         return self._call_rest_api('post', '/processes/'+pid+'/output', data=request_data, error='Failed to output [%s]'%key)
 
     @apicall
     def modify_process_summary(self, pid=None, text=''):
-        pid = self._get_pids(pid)
+        pid = self._get_pid(pid)
         request_data={"id" : pid, "data": str(text)}
         return self._call_rest_api('post', '/processes/'+pid+'/summary', data=request_data, error='Failed to update process summary')
 
@@ -321,48 +325,48 @@ class OperetoClient(object):
     def stop_process(self, pids, status='success'):
         if status not in process_result_statuses:
             raise OperetoClientError('Invalid process result [%s]'%status)
-        pids = self._get_pids(pids)
+        pids = self._get_pid(pids)
         for pid in pids:
             self._call_rest_api('post', '/processes/'+pid+'/terminate/'+status, error='Failed to stop process')
 
 
     @apicall
     def get_process_status(self, pid=None):
-        pid = self._get_pids(pid)
+        pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/status', error='Failed to fetch process status')
 
 
     @apicall
     def get_process_flow(self, pid=None):
-        pid = self._get_pids(pid)
+        pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/flow', error='Failed to fetch process information')
 
 
     @apicall
     def get_process_rca(self, pid=None):
-        pid = self._get_pids(pid)
+        pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/rca', error='Failed to fetch process information')
 
 
     @apicall
     def get_process_info(self, pid=None):
-        pid = self._get_pids(pid)
+        pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid, error='Failed to fetch process information')
 
     @apicall
     def get_process_log(self, pid=None):
-        pid = self._get_pids(pid)
+        pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/log', error='Failed to fetch process log')
 
 
     ## deprecated, will be removed next release
     def get_process_property(self, pid=None, name=None):
-        pid = self._get_pids(pid)
+        pid = self._get_pid(pid)
         return self.get_process_properties(pid, name)
 
     @apicall
     def get_process_properties(self, pid=None, name=None):
-        pid = self._get_pids(pid)
+        pid = self._get_pid(pid)
         res = self._call_rest_api('get', '/processes/'+pid+'/properties', error='Failed to fetch process properties')
         if name:
             try:
@@ -442,13 +446,13 @@ class OperetoClient(object):
     @apicall
     def get_process_runtime_cache(self, key, pid=None):
         value = None
-        pid = self._get_pids(pid)
+        pid = self._get_pid(pid)
         value = self._call_rest_api('get', '/processes/'+pid+'/cache?key=%s'%key, error='Failed to fetch process runtime cache')
         return value
 
 
     @apicall
     def set_process_runtime_cache(self, key, value, pid=None):
-        pid = self._get_pids(pid)
+        pid = self._get_pid(pid)
         self._call_rest_api('post', '/processes/'+pid+'/cache', data={'key': key, 'value': value}, error='Failed to modify process runtime cache')
 
