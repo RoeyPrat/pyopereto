@@ -325,7 +325,7 @@ class OperetoClient(object):
     def stop_process(self, pids, status='success'):
         if status not in process_result_statuses:
             raise OperetoClientError('Invalid process result [%s]'%status)
-        pids = self._get_pid(pids)
+        pids = self._get_pids(pids)
         for pid in pids:
             self._call_rest_api('post', '/processes/'+pid+'/terminate/'+status, error='Failed to stop process')
 

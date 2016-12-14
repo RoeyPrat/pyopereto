@@ -2,12 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='pyopereto',
-    version='1.0.30',
+    version='1.0.31',
     author='Dror Russo',
     author_email='dror.russo@opereto.com',
     description='Opereto Python Client',
     url = 'https://github.com/opereto/pyopereto',
-    download_url = 'https://github.com/opereto/pyopereto/archive/1.0.30.tar.gz',
+    download_url = 'https://github.com/opereto/pyopereto/archive/1.0.31.tar.gz',
     keywords = [],
     classifiers = [],
     packages = ['pyopereto'],
