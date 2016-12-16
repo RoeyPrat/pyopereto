@@ -66,7 +66,13 @@ class OperetoClient(object):
         self.input=kwargs
         work_dir = os.getcwd()
 
-        if os.path.exists(os.path.join(work_dir,'arguments.json')):
+        if os.path.exists(os.path.join(work_dir,'opereto.yaml')):
+            try:
+                with open(os.path.join(work_dir,'opereto.yaml'), 'r') as f:
+                    self.input = yaml.load(f.read())
+            except Exception,e:
+                raise OperetoClientError('Failed to parse %s input file: %s'%('opereto.yaml', str(e)))
+        elif os.path.exists(os.path.join(work_dir,'arguments.json')):
             try:
                 with open(os.path.join(work_dir,'arguments.json'), 'r') as f:
                     self.input = json.loads(f.read())
@@ -175,8 +181,14 @@ class OperetoClient(object):
                 if response_json.get('errors'):
                     response_message += response_json['errors']
                 raise OperetoClientError(message=response_message, code=r.status_code)
-            elif r.json().get('data'):
+            elif response_json.get('data'):
                 return response_json['data']
+
+
+    #### GENERAL ####
+    @apicall
+    def hello(self):
+        return self._call_rest_api('get', '/hello', error='Failed to get response from server')
 
 
     #### MICROSERVICES ####
@@ -209,7 +221,6 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/services', data=request_data, error='Failed to modify service [%s]'%service_id)
 
 
-
     @apicall
     def upload_service_version(self, service_zip_file, mode='production', service_version='default', service_id=None):
         files = {'service_file': open(service_zip_file,'rb')}
@@ -235,8 +246,7 @@ class OperetoClient(object):
 
     @apicall
     def delete_service(self, repository_json, mode='production', service_version='default', service_id=None):
-        request_data = {'repository': repository_json, 'mode': mode, 'service_version': service_version, 'id': service_id}
-        return self._call_rest_api('post', '/versions', data=request_data, error='Failed to import service')
+        return self._call_rest_api('delete', '/services/'+service_id+'/'+service_version+'/'+mode, error='Failed to delete service')
 
 
     @apicall
@@ -354,9 +364,9 @@ class OperetoClient(object):
         return self._call_rest_api('get', '/processes/'+pid, error='Failed to fetch process information')
 
     @apicall
-    def get_process_log(self, pid=None):
+    def get_process_log(self, pid=None, start=0, limit=1000):
         pid = self._get_pid(pid)
-        return self._call_rest_api('get', '/processes/'+pid+'/log', error='Failed to fetch process log')
+        return self._call_rest_api('get', '/processes/'+pid+'/log?start={}&limit={}'.format(start,limit), error='Failed to fetch process log')
 
 
     ## deprecated, will be removed next release
@@ -404,7 +414,7 @@ class OperetoClient(object):
             return False
         for pid,stat in statuses.items():
             if stat!=status:
-                self.logger.info('But it ended with status [%s]'%stat)
+                self.logger.error('But it ended with status [%s]'%stat)
                 return False
         return True
 
@@ -455,4 +465,3 @@ class OperetoClient(object):
     def set_process_runtime_cache(self, key, value, pid=None):
         pid = self._get_pid(pid)
         self._call_rest_api('post', '/processes/'+pid+'/cache', data={'key': key, 'value': value}, error='Failed to modify process runtime cache')
-
