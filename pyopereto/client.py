@@ -23,7 +23,7 @@ process_statuses = process_result_statuses + process_running_statuses
 
 
 class OperetoClientError(Exception):
-    def __init__(self, message, code=None):
+    def __init__(self, message, code=500):
         self.message = message
         self.code = code
     def __str__(self):
@@ -66,13 +66,7 @@ class OperetoClient(object):
         self.input=kwargs
         work_dir = os.getcwd()
 
-        if os.path.exists(os.path.join(work_dir,'opereto.yaml')):
-            try:
-                with open(os.path.join(work_dir,'opereto.yaml'), 'r') as f:
-                    self.input = yaml.load(f.read())
-            except Exception,e:
-                raise OperetoClientError('Failed to parse %s input file: %s'%('opereto.yaml', str(e)))
-        elif os.path.exists(os.path.join(work_dir,'arguments.json')):
+        if os.path.exists(os.path.join(work_dir,'arguments.json')):
             try:
                 with open(os.path.join(work_dir,'arguments.json'), 'r') as f:
                     self.input = json.loads(f.read())
@@ -177,7 +171,7 @@ class OperetoClient(object):
             if response_json['status']!='success':
                 response_message = response_json.get('message') or ''
                 if error:
-                    response_message = error + ': ' + response_message
+                    response_message = error + ':\n' + response_message
                 if response_json.get('errors'):
                     response_message += response_json['errors']
                 raise OperetoClientError(message=response_message, code=r.status_code)
@@ -191,7 +185,7 @@ class OperetoClient(object):
         return self._call_rest_api('get', '/hello', error='Failed to get response from server')
 
 
-    #### MICROSERVICES ####
+    #### MICROSERVICES & VERSIONS ####
     @apicall
     def search_services(self, start=0, limit=100, filter={}):
         request_data = {'start': start, 'limit': limit, 'filter': filter}
@@ -202,6 +196,9 @@ class OperetoClient(object):
     def get_service(self, service_id):
         return self._call_rest_api('get', '/services/'+service_id, error='Failed to fetch service information')
 
+    @apicall
+    def get_service_version(self, service_id, mode='production', version='default'):
+        return self._call_rest_api('get', '/services/'+service_id+'/'+mode+'/'+version, error='Failed to fetch service information')
 
     @apicall
     def verify_service(self, service_id, specification=None, description=None, agent_mapping=None):
@@ -225,7 +222,7 @@ class OperetoClient(object):
     def upload_service_version(self, service_zip_file, mode='production', service_version='default', service_id=None):
         files = {'service_file': open(service_zip_file,'rb')}
 
-        url_suffix = '/versions/upload/%s'%mode
+        url_suffix = '/services/upload/%s'%mode
         if mode=='production':
             url_suffix+='/'+service_version
             if service_id:
@@ -236,19 +233,31 @@ class OperetoClient(object):
     @apicall
     def import_service_version(self, repository_json, mode='production', service_version='default', service_id=None):
         request_data = {'repository': repository_json, 'mode': mode, 'service_version': service_version, 'id': service_id}
-        return self._call_rest_api('post', '/versions', data=request_data, error='Failed to import service')
+        return self._call_rest_api('post', '/services', data=request_data, error='Failed to import service')
+
+
+    @apicall
+    def delete_service(self, service_id):
+        return self._call_rest_api('delete', '/services/'+service_id, error='Failed to delete service')
 
 
     @apicall
     def delete_service_version(self, service_id , service_version='default', mode='production'):
-        return self._call_rest_api('delete', '/versions/'+service_id+'/'+service_version+'/'+mode, error='Failed to delete service')
+        return self._call_rest_api('delete', '/services/'+service_id+'/'+mode+'/'+service_version, error='Failed to delete service')
 
 
     @apicall
-    def delete_service(self, repository_json, mode='production', service_version='default', service_id=None):
-        return self._call_rest_api('delete', '/services/'+service_id+'/'+service_version+'/'+mode, error='Failed to delete service')
+    def list_development_sandbox(self):
+        return self._call_rest_api('get', '/services/sandbox', error='Failed to list sandbox services')
 
 
+    @apicall
+    def purge_development_sandbox(self):
+        return self._call_rest_api('delete', '/services/sandbox', error='Failed to delete sandbox services')
+
+
+
+    #### ENVIRONMENTS ####
     @apicall
     def search_environments(self):
         return self._call_rest_api('get', '/search/environments', error='Failed to search environments')
