@@ -109,7 +109,7 @@ class OperetoClient(object):
 
     def _get_pids(self, pids=[]):
         if isinstance(pids, str):
-            pids = [self._get_pid(pid=pids)]
+            pids = [self._get_pid(pids)]
         if not pids:
             raise OperetoClientError('Process identifier(s) must be provided.')
         return pids
@@ -131,7 +131,7 @@ class OperetoClient(object):
                 try:
                     error_message = response.json()['message']
                 except:
-                    error_message=r.reason
+                    error_message=response.reason
                 raise OperetoClientError('Failed to login to opereto server [%s]: %s'%(self.input['opereto_host'], error_message))
 
 
