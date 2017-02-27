@@ -302,7 +302,7 @@ class OperetoClient(object):
     def get_agent_status(self, agent_id):
         return self._call_rest_api('get', '/agents/'+agent_id, error='Failed to fetch agent [%s] status'%agent_id)
 
-
+    #### PROCESSES ####
     @apicall
     def create_process(self, service, agent='any', title=None, mode='production', service_version=None, **kwargs):
         request_data = {'service_id': service, 'agents': str(agent), 'mode': mode, 's_version':service_version}
@@ -324,6 +324,7 @@ class OperetoClient(object):
             message += ' [agent = %s]'%agent
         else:
             message += ' [agent = any ]'
+        self.logger.info(message)
         return str(pid)
 
 
@@ -474,3 +475,52 @@ class OperetoClient(object):
     def set_process_runtime_cache(self, key, value, pid=None):
         pid = self._get_pid(pid)
         self._call_rest_api('post', '/processes/'+pid+'/cache', data={'key': key, 'value': value}, error='Failed to modify process runtime cache')
+
+
+    #### CONTINUOUS TESTING ####
+    @apicall
+    def search_products(self, start=0, limit=100, filter={}):
+        request_data = {'start': start, 'limit': limit, 'filter': filter}
+        return self._call_rest_api('post', '/search/products', data=request_data, error='Failed to search products')
+
+    @apicall
+    def create_product(self, product, version, build, name=None, description=None, attributes={}):
+        request_data = {'product': product, 'version': version, 'build': build}
+        if name: request_data['name']=name
+        if description: request_data['description']=description
+        if attributes: request_data['attributes']=attributes
+        ret_data= self._call_rest_api('post', '/products', data=request_data, error='Failed to create a new product')
+        pid = ret_data
+        message = 'New product created [pid = %s] '%pid
+        self.logger.info(message)
+        return str(pid)
+
+
+    @apicall
+    def modify_product(self, product_id, name=None, description=None, attributes={}):
+        request_data = {'id': product_id}
+        if name: request_data['name']=name
+        if description: request_data['description']=description
+        if attributes: request_data['attributes']=attributes
+        return self._call_rest_api('post', '/products', data=request_data, error='Failed to modify a new product')
+
+
+    @apicall
+    def delete_product(self, product_id):
+        return self._call_rest_api('delete', '/products/'+product_id, error='Failed to delete product')
+
+
+    @apicall
+    def get_product(self, product_id):
+        return self._call_rest_api('get', '/products/'+product_id, error='Failed to get product information')
+
+
+    @apicall
+    def search_tests(self, start=0, limit=100, filter={}):
+        request_data = {'start': start, 'limit': limit, 'filter': filter}
+        return self._call_rest_api('post', '/search/tests', data=request_data, error='Failed to search tests')
+
+
+    @apicall
+    def get_test(self, test_id):
+        return self._call_rest_api('get', '/tests/'+test_id, error='Failed to get test information')
