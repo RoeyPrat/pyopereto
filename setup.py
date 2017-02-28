@@ -1,7 +1,4 @@
 from setuptools import setup
-import os
-
-HOME_DIR = os.path.expanduser("~")
 
 setup(
     name='pyopereto',
