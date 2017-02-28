@@ -1,5 +1,3 @@
 @echo off
 
-python opereto.py
-EXIT 0
-
+python %~dp0\opereto.py
