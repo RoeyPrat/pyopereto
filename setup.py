@@ -16,7 +16,7 @@ setup(
     install_requires=[
         "requests > 2.7.0",
         "pyyaml",
-        "docopt==0.6.2",
-        "colorlog==2.10.0"
+        "docopt",
+        "colorlog"
     ]
 )
