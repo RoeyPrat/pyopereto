@@ -218,8 +218,7 @@ def list_development_sandbox():
         logger.error('Your development sandbox is empty.')
 
 
-
-if __name__ == '__main__':
+def main():
     try:
         arguments = docopt(__doc__, version='Opereto Developer Tool v1.0.0')
         if arguments['sandbox'] and arguments['list']:
@@ -236,5 +235,4 @@ if __name__ == '__main__':
             prepare(arguments)
     except OperetoClientError, e:
         logger.error(e)
-
 
