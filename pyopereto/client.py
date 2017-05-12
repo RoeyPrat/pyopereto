@@ -182,13 +182,14 @@ class OperetoClient(object):
     #### GENERAL ####
     @apicall
     def hello(self):
-        return self._call_rest_api('get', '/hello', error='Failed to get response from server')
+        return self._call_rest_api('get', '/hello', error='Failed to get response from the opereto server')
 
 
     #### MICROSERVICES & VERSIONS ####
     @apicall
-    def search_services(self, start=0, limit=100, filter={}):
+    def search_services(self, start=0, limit=100, filter={}, **kwargs):
         request_data = {'start': start, 'limit': limit, 'filter': filter}
+        request_data.update(kwargs)
         return self._call_rest_api('post', '/search/services', data=request_data, error='Failed to search services')
 
 
@@ -235,7 +236,6 @@ class OperetoClient(object):
         request_data = {'repository': repository_json, 'mode': mode, 'service_version': service_version, 'id': service_id}
         return self._call_rest_api('post', '/services', data=request_data, error='Failed to import service')
 
-
     @apicall
     def delete_service(self, service_id):
         return self._call_rest_api('delete', '/services/'+service_id, error='Failed to delete service')
@@ -280,8 +280,14 @@ class OperetoClient(object):
 
     #### AGENTS ####
     @apicall
-    def get_all_agents(self):
-        return self._call_rest_api('get', '/agents/all', error='Failed to fetch all agents.')
+    def search_agents(self, start=0, limit=100, filter={}, **kwargs):
+        request_data = {'start': start, 'limit': limit, 'filter': filter}
+        request_data.update(kwargs)
+        return self._call_rest_api('post', '/search/agents', data=request_data, error='Failed to search agents')
+
+    @apicall
+    def get_agents(self, agent_id):
+        return self._call_rest_api('get', '/agents/'+agent_id, error='Failed to fetch agent details.')
 
 
     @apicall
@@ -379,10 +385,11 @@ class OperetoClient(object):
         return self._call_rest_api('get', '/processes/'+pid+'/log?start={}&limit={}'.format(start,limit), error='Failed to fetch process log')
 
 
-    ## deprecated, will be removed next release
+    ## deprecated
     def get_process_property(self, pid=None, name=None):
         pid = self._get_pid(pid)
         return self.get_process_properties(pid, name)
+
 
     @apicall
     def get_process_properties(self, pid=None, name=None):
@@ -477,10 +484,18 @@ class OperetoClient(object):
         self._call_rest_api('post', '/processes/'+pid+'/cache', data={'key': key, 'value': value}, error='Failed to modify process runtime cache')
 
 
+    #### GLOBAL PARAMETERS ####
+    @apicall
+    def search_globals(self, start=0, limit=100, filter={}, **kwargs):
+        request_data = {'start': start, 'limit': limit, 'filter': filter}
+        request_data.update(kwargs)
+        return self._call_rest_api('post', '/search/globals', data=request_data, error='Failed to search globals')
+
     #### CONTINUOUS TESTING ####
     @apicall
-    def search_products(self, start=0, limit=100, filter={}):
+    def search_products(self, start=0, limit=100, filter={}, **kwargs):
         request_data = {'start': start, 'limit': limit, 'filter': filter}
+        request_data.update(kwargs)
         return self._call_rest_api('post', '/search/products', data=request_data, error='Failed to search products')
 
     @apicall

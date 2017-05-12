@@ -9,6 +9,7 @@ OR
 ```
 python setup.py install
 ```
+
 #### Using the client
 
 ```
