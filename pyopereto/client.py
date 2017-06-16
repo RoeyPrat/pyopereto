@@ -65,19 +65,23 @@ class OperetoClient(object):
     def __init__(self, **kwargs):
         self.input=kwargs
         work_dir = os.getcwd()
+        home_dir = os.path.expanduser("~")
 
-        if os.path.exists(os.path.join(work_dir,'arguments.json')):
+        def get_credentials(file):
+            if not os.path.exists(file):
+                return False
             try:
-                with open(os.path.join(work_dir,'arguments.json'), 'r') as f:
-                    self.input = json.loads(f.read())
+                with open(file, 'r') as f:
+                    if file.endswith('.json'):
+                        self.input = json.loads(f.read())
+                    else:
+                        self.input = yaml.load(f.read())
             except Exception,e:
-                raise OperetoClientError('Failed to parse %s input file: %s'%('arguments.json', str(e)))
-        elif os.path.exists(os.path.join(work_dir,'arguments.yaml')):
-            try:
-                with open(os.path.join(work_dir,'arguments.yaml'), 'r') as f:
-                    self.input = yaml.load(f.read())
-            except Exception,e:
-                raise OperetoClientError('Failed to parse %s input file: %s'%('arguments.yaml', str(e)))
+                raise OperetoClientError('Failed to parse %s: %s'%(file, str(e)))
+
+        if not get_credentials(os.path.join(work_dir,'arguments.json')):
+            if not get_credentials(os.path.join(work_dir,'arguments.yaml')):
+                get_credentials(os.path.join(home_dir,'opereto.yaml'))
 
         ## TEMP: fix in agent
         for item in self.input.keys():
@@ -301,7 +305,12 @@ class OperetoClient(object):
 
     @apicall
     def modify_agent_property(self, agent_id, key, value):
-        return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data={key: value}, error='Failed to modify agent [%s] properties'%agent_id)
+        return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data={key: value}, error='Failed to modify agent [%s] property [%s]'%(agent_id,key))
+
+
+    @apicall
+    def modify_agent_properties(self, agent_id, key_value_map={}):
+        return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data=key_value_map, error='Failed to modify agent [%s] properties'%agent_id)
 
 
     @apicall
@@ -335,10 +344,16 @@ class OperetoClient(object):
 
 
     @apicall
+    def modify_process_properties(self, key_value_map={}, pid=None):
+        pid = self._get_pid(pid)
+        request_data={"properties": key_value_map}
+        return self._call_rest_api('post', '/processes/'+pid+'/output', data=request_data, error='Failed to output properties')
+
+    @apicall
     def modify_process_property(self, key, value, pid=None):
         pid = self._get_pid(pid)
         request_data={"key" : key, "value": value}
-        return self._call_rest_api('post', '/processes/'+pid+'/output', data=request_data, error='Failed to output [%s]'%key)
+        return self._call_rest_api('post', '/processes/'+pid+'/output', data=request_data, error='Failed to modify output property [%s]'%key)
 
     @apicall
     def modify_process_summary(self, pid=None, text=''):
