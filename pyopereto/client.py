@@ -68,8 +68,6 @@ class OperetoClient(object):
         home_dir = os.path.expanduser("~")
 
         def get_credentials(file):
-            if not os.path.exists(file):
-                return False
             try:
                 with open(file, 'r') as f:
                     if file.endswith('.json'):
@@ -79,9 +77,12 @@ class OperetoClient(object):
             except Exception,e:
                 raise OperetoClientError('Failed to parse %s: %s'%(file, str(e)))
 
-        if not get_credentials(os.path.join(work_dir,'arguments.json')):
-            if not get_credentials(os.path.join(work_dir,'arguments.yaml')):
-                get_credentials(os.path.join(home_dir,'opereto.yaml'))
+        if os.path.exists(os.path.join(work_dir,'arguments.json')):
+            get_credentials(os.path.join(work_dir,'arguments.json'))
+        elif os.path.exists(os.path.join(work_dir,'arguments.yaml')):
+            get_credentials(os.path.join(work_dir,'arguments.yaml'))
+        elif os.path.exists(os.path.join(home_dir,'opereto.yaml')):
+            get_credentials(os.path.join(home_dir,'opereto.yaml'))
 
         ## TEMP: fix in agent
         for item in self.input.keys():

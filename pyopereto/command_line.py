@@ -1,7 +1,6 @@
 #!python
 
-"""Opereto Command Line Tool v1.0.0
-
+"""
 Usage:
   opereto sandbox list
   opereto sandbox purge
@@ -10,35 +9,54 @@ Usage:
   opereto sandbox delete <service-name>
   opereto configure <service-directory>
   opereto services list [<search_pattern>]
-  opereto services deploy <service-directory> [--version=VERSION] [--service-name=NAME | --recursive]
-  opereto services run <service-name> [--agent=AGENT] [--title=TITLE]  [--params=JSON_PARAMS] [--version=VERSION] [--async]
-  opereto services delete <service-name> [--version=VERSION]
-  opereto services info <service-name> [--version=VERSION]
+  opereto services deploy <service-directory> [--service-version=VERSION] [--service-name=NAME | --recursive]
+  opereto services run <service-name> [--agent=AGENT] [--title=TITLE]  [--params=JSON_PARAMS] [--service-version=VERSION] [--async]
+  opereto services delete <service-name> [--service-version=VERSION]
+  opereto services info <service-name> [--service-version=VERSION]
   opereto versions <service-name>
   opereto process <pid> [--info] [--properties] [--log] [--rca] [--flow] [--all]
   opereto agents list [<search_pattern>]
   opereto environments list
+  opereto environment <environment-name>
   opereto globals list [<search_pattern>]
   opereto (-h | --help)
+  opereto --version
 
 Options:
-    search_pattern       : textual search expression used to filter the search results. If more than one word, must enclose with double quotes.
-    service-name         : the service identifier (e.g. my_service)
-    service-directory    : full path to your service directory
-    version              : version string (e.g. 1.2.0, my_version..)
-    title                : the process headline enclosed with double quotes
-    agent                : the service identifier (e.g. my_test_agent)
-    pid                  : the process identifier (e.g. 8XSVFdViKum)
-    --recursive          : recursively deploy all micro services found in a given directory
-    --async              : run the service asynchronously (returns only the service process id)
-    --params=JSON_PARAMS : initiated process input parameters. Must be a JSON string (e.g. --params='{"param1": "value", "param2": true, "param3": 100}')
-    --info               : print process information
-    --properties         : print process input and output properties
-    --log                : print process execution log
-    --flow               : print process flow near processes (ancestor and direct children)
-    --rca                : print process root cause failure tree (all child processes that caused the failure)
-    --all                : print all process data entities
-    -h,--help            : show this help message
+    search_pattern       : Textual search expression used to filter the search results.
+                           If more than one word, must enclose with double quotes.
+
+    service-name         : The service identifier (e.g. my_service)
+
+    service-directory    : Full path to your service directory
+
+    service-version      : Version string (e.g. 1.2.0, my_version..)
+
+    title                : The process headline enclosed with double quotes
+
+    agent                : The service identifier (e.g. my_test_agent)
+
+    environment-name     : The environment identifier
+
+    pid                  : The process identifier (e.g. 8XSVFdViKum)
+
+    --recursive          : Recursively deploy all micro services found in a given directory
+
+    --async              : Run the service asynchronously (returns only the service process id)
+
+    --params=JSON_PARAMS : Initiated process input parameters. Must be a JSON string
+                           (e.g. --params='{"param1": "value", "param2": true, "param3": 100}')
+
+    --info               : Prints process information
+    --properties         : Prints process input and output properties
+    --log                : Prints process execution log
+    --flow               : Prints process flow near processes (ancestor and direct children)
+    --rca                : Prints process root cause failure tree
+                          (e.g all child processes that caused the failure)
+    --all                : Print all process data entities
+
+    -h,--help            : Show this help message
+    --version            : Show this tool version
 """
 
 
@@ -54,6 +72,9 @@ import logging
 import logging.config
 import time
 import signal
+import pkg_resources
+
+VERSION = pkg_resources.get_distribution("pyopereto").version
 
 
 logging.config.dictConfig({
@@ -147,7 +168,7 @@ def deploy(params):
     operations_mode = 'development'
     if params['services']:
         operations_mode = 'production'
-    version=params['--version'] or 'default'
+    version=params['--service-version'] or 'default'
 
     def deploy_service(service_directory, service_name=None):
         service_name = service_name or os.path.basename(os.path.normpath(service_directory))
@@ -195,7 +216,7 @@ def run(params):
     operations_mode = 'development'
     if params['services']:
         operations_mode = 'production'
-    version=params['--version'] or 'default'
+    version=params['--service-version'] or 'default'
     agent = params['--agent'] or 'any'
     title = params['--title'] or None
     process_input_params={}
@@ -248,7 +269,7 @@ def delete(params):
     operations_mode = 'development'
     if params['services']:
         operations_mode = 'production'
-    version=params['--version'] or 'default'
+    version=params['--service-version'] or 'default'
     service_name = params['<service-name>']
 
     try:
@@ -327,6 +348,12 @@ def list_environments(arguments):
     else:
         logger.error('No environments found.')
 
+def get_environment(arguments):
+    client = get_opereto_client()
+    env = client.get_environment(arguments['<environment-name>'])
+    print    json.dumps(env, indent=4, sort_keys=True)
+
+
 def get_service_versions(arguments):
     logger.info('Versions of service {}:'.format(arguments['<service-name>']))
     client = get_opereto_client()
@@ -337,7 +364,7 @@ def get_service_versions(arguments):
 def get_service_info(arguments):
     logger.info('Details of service {}:'.format(arguments['<service-name>']))
     client = get_opereto_client()
-    version=arguments['--version'] or 'default'
+    version=arguments['--service-version'] or 'default'
     service = client.get_service_version(arguments['<service-name>'],version=version)
 
     logger.info('Service Description')
@@ -424,7 +451,9 @@ def get_process(arguments):
 
 
 def main():
-    arguments = docopt(__doc__)
+    import pkg_resources
+
+    arguments = docopt(__doc__, version='Opereto CLI Tool v%s'%VERSION)
     def ctrlc_signal_handler(s, f):
         if arguments['run'] and RUNNING_PROCESS:
             print >> sys.stderr, '\nYou pressed Ctrl-C. Stopping running processes and aborting..'
@@ -452,6 +481,8 @@ def main():
             list_globals(arguments)
         elif arguments['environments'] and arguments['list']:
             list_environments(arguments)
+        elif arguments['environment']:
+            get_environment(arguments)
         elif arguments['sandbox'] and arguments['purge']:
             purge_development_sandbox()
         elif arguments['deploy']:
@@ -462,6 +493,7 @@ def main():
             delete(arguments)
         elif arguments['configure']:
             prepare(arguments)
+
     except Exception, e:
         logger.error(str(e))
         sys.exit(1)
