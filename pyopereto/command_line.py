@@ -203,7 +203,9 @@ def deploy(params):
             if is_service_dir(service_dir):
                 deploy_root_service_dir(service_dir)
 
-    service_directory = os.path.join(params['<service-directory>'], '')
+    service_directory = params['<service-directory>']
+    if service_directory=='.':
+        service_directory = os.getcwd()
     if params['--recursive']:
         deploy_root_service_dir(service_directory)
     else:
