@@ -231,8 +231,8 @@ class OperetoClient(object):
         url_suffix = '/services/upload/%s'%mode
         if mode=='production':
             url_suffix+='/'+service_version
-            if service_id:
-                url_suffix+='/'+service_id
+        if service_id:
+            url_suffix+='/'+service_id
         return self._call_rest_api('post', url_suffix, files=files, error='Failed to upload service version')
 
 
@@ -315,8 +315,12 @@ class OperetoClient(object):
 
 
     @apicall
-    def get_agent_status(self, agent_id):
+    def get_agent(self, agent_id):
         return self._call_rest_api('get', '/agents/'+agent_id, error='Failed to fetch agent [%s] status'%agent_id)
+
+    @apicall
+    def get_agent_status(self, agent_id):
+        return self.get_agent(agent_id)
 
     #### PROCESSES ####
     @apicall

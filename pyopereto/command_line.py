@@ -4,7 +4,7 @@
 Usage:
   opereto sandbox list
   opereto sandbox purge
-  opereto sandbox deploy <service-directory> [--recursive]
+  opereto sandbox deploy <service-directory> [--service-name=NAME | --recursive]
   opereto sandbox run <service-name> [--agent=AGENT] [--title=TITLE] [--params=JSON_PARAMS] [--async]
   opereto sandbox delete <service-name>
   opereto configure <service-directory>
@@ -181,9 +181,9 @@ def deploy(params):
             else:
                 logger.info('Service [%s] development version deployed successfully.'%service_name)
         except OperetoClientError, e:
-             raise e
-        except:
-             raise OperetoClientError(('Service [%s] failed to deploy.'%service_name))
+            raise OperetoClientError('Service [%s]: %s'%(service_name, str(e)))
+        except Exception,e:
+            raise OperetoClientError('Service [%s] failed to deploy: %s'%(service_name, str(e)))
 
 
     def is_service_dir(dirpath):
@@ -196,11 +196,14 @@ def deploy(params):
 
     def deploy_root_service_dir(rootdir):
         if is_service_dir(rootdir):
-            deploy_service(rootdir)
-        service_directories = os.listdir(rootdir)
-        for directory in service_directories:
-            service_dir = os.path.join(rootdir, directory)
-            if is_service_dir(service_dir):
+            try:
+                deploy_service(rootdir)
+            except:
+                pass
+        elif os.path.isdir(rootdir):
+            service_directories = os.listdir(rootdir)
+            for directory in service_directories:
+                service_dir = os.path.join(rootdir, directory)
                 deploy_root_service_dir(service_dir)
 
     service_directory = params['<service-directory>']
