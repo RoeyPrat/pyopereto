@@ -15,6 +15,7 @@ Usage:
   opereto services info <service-name> [--service-version=VERSION]
   opereto versions <service-name>
   opereto process <pid> [--info] [--properties] [--log] [--rca] [--flow] [--all]
+  opereto process rerun <pid> [--title=TITLE] [--agent=AGENT] [--async]
   opereto agents list [<search_pattern>]
   opereto environments list
   opereto environment <environment-name>
@@ -213,6 +214,28 @@ def deploy(params):
         deploy_root_service_dir(service_directory)
     else:
         deploy_service(service_directory, params['--service-name'])
+
+
+def rerun(params):
+
+    global RUNNING_PROCESS
+    client = get_opereto_client()
+    old_pid = params['<pid>']
+    agent = params['--agent']
+    title = params['--title']
+    pid = client.rerun_process(old_pid, title=title, agent=agent)
+    print('Re-running process [%s]..'%pid)
+
+    if not params['--async']:
+        RUNNING_PROCESS = pid
+        status = wait_and_print_log(pid)
+        RUNNING_PROCESS=None
+        if status=='success':
+            logger.info('Process ended with status: success')
+        else:
+            raise OperetoClientError('Process ended with status: %s'%status)
+            get_process_rca(pid)
+    print('View process flow at: {}/ui#dashboard/flow/{}'.format(opereto_host, pid))
 
 
 def run(params):
@@ -477,6 +500,8 @@ def main():
             list_services(arguments)
         elif arguments['services'] and arguments['info']:
             get_service_info(arguments)
+        elif arguments['process'] and arguments['rerun']:
+            rerun(arguments)
         elif arguments['process']:
             get_process(arguments)
         elif arguments['versions']:

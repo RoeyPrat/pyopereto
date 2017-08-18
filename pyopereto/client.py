@@ -324,8 +324,13 @@ class OperetoClient(object):
 
     #### PROCESSES ####
     @apicall
-    def create_process(self, service, agent='any', title=None, mode='production', service_version=None, **kwargs):
-        request_data = {'service_id': service, 'agents': str(agent), 'mode': mode, 's_version':service_version}
+    def create_process(self, service, agent=None, title=None, mode='production', service_version=None, **kwargs):
+        if not agent:
+            agent = self.input.get('opereto_agent')
+        if not agent:
+            raise OperetoClientError('Agent identifier must be provided.')
+
+        request_data = {'service_id': service, 'agents': agent, 'mode': mode, 's_version':service_version}
         if title:
             request_data['name']=title
 
@@ -344,6 +349,24 @@ class OperetoClient(object):
             message += ' [agent = %s]'%agent
         else:
             message += ' [agent = any ]'
+        self.logger.info(message)
+        return str(pid)
+
+
+    @apicall
+    def rerun_process(self, pid, title=None, agent=None):
+        request_data = {}
+        if title:
+            request_data['name']=title
+        if agent:
+            request_data['agents']=agent
+        ret_data= self._call_rest_api('post', '/processes/'+pid+'/rerun', data=request_data, error='Failed to create a new process')
+
+        if not isinstance(ret_data, types.ListType):
+            raise OperetoClientError(str(ret_data))
+
+        new_pid = ret_data[0]
+        message = 'Re-executing process [%s] [new process pid = %s] '%(pid, new_pid)
         self.logger.info(message)
         return str(pid)
 
