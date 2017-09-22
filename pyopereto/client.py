@@ -4,7 +4,7 @@ import json
 import yaml
 import time
 import types
-
+import urllib
 
 try:
     requests.packages.urllib3.disable_warnings()
@@ -225,21 +225,25 @@ class OperetoClient(object):
 
 
     @apicall
-    def upload_service_version(self, service_zip_file, mode='production', service_version='default', service_id=None):
+    def upload_service_version(self, service_zip_file, mode='production', service_version='default', service_id=None, **kwargs):
         files = {'service_file': open(service_zip_file,'rb')}
-
         url_suffix = '/services/upload/%s'%mode
         if mode=='production':
             url_suffix+='/'+service_version
         if service_id:
             url_suffix+='/'+service_id
+        if kwargs:
+            url_suffix=url_suffix+'?'+urllib.urlencode(kwargs)
         return self._call_rest_api('post', url_suffix, files=files, error='Failed to upload service version')
 
 
     @apicall
-    def import_service_version(self, repository_json, mode='production', service_version='default', service_id=None):
+    def import_service_version(self, repository_json, mode='production', service_version='default', service_id=None, **kwargs):
         request_data = {'repository': repository_json, 'mode': mode, 'service_version': service_version, 'id': service_id}
-        return self._call_rest_api('post', '/services', data=request_data, error='Failed to import service')
+        url_suffix = '/services'
+        if kwargs:
+            url_suffix=url_suffix+'?'+urllib.urlencode(kwargs)
+        return self._call_rest_api('post', url_suffix, data=request_data, error='Failed to import service')
 
     @apicall
     def delete_service(self, service_id):
@@ -327,8 +331,6 @@ class OperetoClient(object):
     def create_process(self, service, agent=None, title=None, mode='production', service_version=None, **kwargs):
         if not agent:
             agent = self.input.get('opereto_agent')
-        if not agent:
-            raise OperetoClientError('Agent identifier must be provided.')
 
         request_data = {'service_id': service, 'agents': agent, 'mode': mode, 's_version':service_version}
         if title:
@@ -425,7 +427,8 @@ class OperetoClient(object):
     @apicall
     def get_process_log(self, pid=None, start=0, limit=1000):
         pid = self._get_pid(pid)
-        return self._call_rest_api('get', '/processes/'+pid+'/log?start={}&limit={}'.format(start,limit), error='Failed to fetch process log')
+        data = self._call_rest_api('get', '/processes/'+pid+'/log?start={}&limit={}'.format(start,limit), error='Failed to fetch process log')
+        return data['list']
 
 
     ## deprecated

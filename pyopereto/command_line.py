@@ -4,12 +4,12 @@
 Usage:
   opereto sandbox list
   opereto sandbox purge
-  opereto sandbox deploy <service-directory> [--service-name=NAME | --recursive]
+  opereto sandbox deploy <service-directory> [--service-name=NAME | --recursive] [--comment=COMMENT]
   opereto sandbox run <service-name> [--agent=AGENT] [--title=TITLE] [--params=JSON_PARAMS] [--async]
   opereto sandbox delete <service-name>
   opereto configure <service-directory>
   opereto services list [<search_pattern>]
-  opereto services deploy <service-directory> [--service-version=VERSION] [--service-name=NAME | --recursive]
+  opereto services deploy <service-directory> [--service-version=VERSION] [--service-name=NAME | --recursive] [--comment=COMMENT]
   opereto services run <service-name> [--agent=AGENT] [--title=TITLE]  [--params=JSON_PARAMS] [--service-version=VERSION] [--async]
   opereto services delete <service-name> [--service-version=VERSION]
   opereto services info <service-name> [--service-version=VERSION]
@@ -32,6 +32,8 @@ Options:
     service-directory    : Full path to your service directory
 
     service-version      : Version string (e.g. 1.2.0, my_version..)
+
+    comment              : Service deployment comment that will appear in the service audit log
 
     title                : The process headline enclosed with double quotes
 
@@ -170,13 +172,14 @@ def deploy(params):
     if params['services']:
         operations_mode = 'production'
     version=params['--service-version'] or 'default'
+    comment=params['--comment'] or ''
 
     def deploy_service(service_directory, service_name=None):
         service_name = service_name or os.path.basename(os.path.normpath(service_directory))
         try:
             zip_action_file = os.path.join(TEMP_DIR, str(uuid.uuid4())+'.action')
             zipfolder(zip_action_file, service_directory)
-            client.upload_service_version(service_zip_file=zip_action_file+'.zip', mode=operations_mode, service_version=version, service_id=service_name)
+            client.upload_service_version(service_zip_file=zip_action_file+'.zip', mode=operations_mode, service_version=version, service_id=service_name, comment=comment)
             if operations_mode=='production':
                 logger.info('Service [%s] production version [%s] deployed successfuly.'%(service_name, version))
             else:
@@ -380,7 +383,7 @@ def list_environments(arguments):
 def get_environment(arguments):
     client = get_opereto_client()
     env = client.get_environment(arguments['<environment-name>'])
-    print    json.dumps(env, indent=4, sort_keys=True)
+    print json.dumps(env, indent=4, sort_keys=True)
 
 
 def get_service_versions(arguments):
