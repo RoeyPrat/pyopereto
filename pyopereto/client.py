@@ -12,10 +12,10 @@ except AttributeError:
     pass
 
 import logging
-FORMAT = '%(asctime)s: [%(levelname)s] %(message)s'
+FORMAT = '%(asctime)s: [%(name)s] [%(levelname)s] %(message)s'
 logging.basicConfig(stream=sys.stdout, format=FORMAT, level=logging.ERROR)
-logger = logging.getLogger('OperetoClient')
-logging.getLogger("OperetoClient").setLevel(logging.INFO)
+logger = logging.getLogger('pyopereto')
+logging.getLogger("pyopereto").setLevel(logging.INFO)
 
 process_result_statuses = ['success', 'failure', 'error', 'timeout', 'terminated', 'warning']
 process_running_statuses = ['in_process', 'registered']
@@ -77,12 +77,13 @@ class OperetoClient(object):
             except Exception,e:
                 raise OperetoClientError('Failed to parse %s: %s'%(file, str(e)))
 
-        if os.path.exists(os.path.join(work_dir,'arguments.json')):
-            get_credentials(os.path.join(work_dir,'arguments.json'))
-        elif os.path.exists(os.path.join(work_dir,'arguments.yaml')):
-            get_credentials(os.path.join(work_dir,'arguments.yaml'))
-        elif os.path.exists(os.path.join(home_dir,'opereto.yaml')):
-            get_credentials(os.path.join(home_dir,'opereto.yaml'))
+        if not set(['opereto_user', 'opereto_password', 'opereto_host']) <= set(self.input):
+            if os.path.exists(os.path.join(work_dir,'arguments.json')):
+                get_credentials(os.path.join(work_dir,'arguments.json'))
+            elif os.path.exists(os.path.join(work_dir,'arguments.yaml')):
+                get_credentials(os.path.join(work_dir,'arguments.yaml'))
+            elif os.path.exists(os.path.join(home_dir,'opereto.yaml')):
+                get_credentials(os.path.join(home_dir,'opereto.yaml'))
 
         ## TEMP: fix in agent
         for item in self.input.keys():
@@ -275,12 +276,21 @@ class OperetoClient(object):
     def get_environment(self, environment_id):
         return self._call_rest_api('get', '/environments/'+environment_id, error='Failed to fetch environment [%s]'%environment_id)
 
+    @apicall
+    def verify_environment_scheme(self, environment_type, environment_topology):
+        request_data = {'type': environment_type, 'topology': environment_topology}
+        return self._call_rest_api('post', '/environments/verify', data=request_data, error='Failed to verify environment.')
 
     @apicall
-    def create_environment(self, environment_type, environment_id , agents):
-        request_data = {'environment_id': environment_id, 'environment_type': environment_type, 'agents': agents}
-        return self._call_rest_api('post', '/environments', data=request_data, error='Failed to create environment [%s]'%environment_id)
+    def verify_environment(self, environment_id):
+        request_data = {'id': environment_id}
+        return self._call_rest_api('post', '/environments/verify', data=request_data, error='Failed to verify environment.')
 
+    @apicall
+    def create_environment(self, topology_name, topology={}, **kwargs):
+        request_data = {'topology_name': topology_name, 'topology': topology}
+        request_data.update(**kwargs)
+        return self._call_rest_api('post', '/environments', data=request_data, error='Failed to create environment')
 
     @apicall
     def delete_environment(self, environment_id):

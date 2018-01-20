@@ -178,7 +178,7 @@ Apache License
    Opereto Python Client & Tools
    This library includes the opereto python client developed by the Opereto team.
 
-   Copyright 2015 Opereto Ltd. (www.opereto.com)
+   Copyright 2014-2017 Opereto Ltd. (www.opereto.com)
 
 
    Licensed under the Apache License, Version 2.0 (the "License");

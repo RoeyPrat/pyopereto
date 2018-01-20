@@ -104,15 +104,7 @@ logging.config.dictConfig({
     },
 })
 
-logger = logging.getLogger()
-
-
-class OperetoDevToolError(Exception):
-    def __init__(self, message, code=None):
-        self.message = message
-        self.code = code
-    def __str__(self):
-        return self.message
+logger = logging.getLogger('OperetoCliTool')
 
 
 if sys.platform.startswith('win'):
@@ -202,8 +194,8 @@ def deploy(params):
         if is_service_dir(rootdir):
             try:
                 deploy_service(rootdir)
-            except:
-                pass
+            except Exception,e:
+                logger.error(e)
         elif os.path.isdir(rootdir):
             service_directories = os.listdir(rootdir)
             for directory in service_directories:
@@ -483,7 +475,6 @@ def get_process(arguments):
 
 
 def main():
-    import pkg_resources
 
     arguments = docopt(__doc__, version='Opereto CLI Tool v%s'%VERSION)
     def ctrlc_signal_handler(s, f):
