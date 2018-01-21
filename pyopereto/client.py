@@ -293,6 +293,12 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/environments', data=request_data, error='Failed to create environment')
 
     @apicall
+    def modify_environment(self, topology={}, permissions={}, **kwargs):
+        request_data = {'permissions': permissions, 'topology': topology}
+        request_data.update(**kwargs)
+        return self._call_rest_api('post', '/environments', data=request_data, error='Failed to create environment')
+
+    @apicall
     def delete_environment(self, environment_id):
         return self._call_rest_api('delete', '/environments/'+environment_id, error='Failed to delete environment [%s]'%environment_id)
 
@@ -326,6 +332,13 @@ class OperetoClient(object):
     @apicall
     def modify_agent_properties(self, agent_id, key_value_map={}):
         return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data=key_value_map, error='Failed to modify agent [%s] properties'%agent_id)
+
+
+    @apicall
+    def modify_agent(self, agent_id, permissions={}, **kwargs):
+        request_data = {'permissions': permissions}
+        request_data.update(**kwargs)
+        return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data=request_data, error='Failed to modify agent [%s]'%agent_id)
 
 
     @apicall
