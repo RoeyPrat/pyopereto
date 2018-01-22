@@ -336,9 +336,9 @@ class OperetoClient(object):
 
     @apicall
     def modify_agent(self, agent_id, permissions={}, **kwargs):
-        request_data = {'permissions': permissions}
+        request_data = {'id': agent_id, 'permissions': permissions}
         request_data.update(**kwargs)
-        return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data=request_data, error='Failed to modify agent [%s]'%agent_id)
+        return self._call_rest_api('post', '/agents'+'', data=request_data, error='Failed to modify agent [%s]'%agent_id)
 
 
     @apicall
