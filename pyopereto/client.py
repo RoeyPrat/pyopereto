@@ -293,8 +293,8 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/environments', data=request_data, error='Failed to create environment')
 
     @apicall
-    def modify_environment(self, topology={}, permissions={}, **kwargs):
-        request_data = {'permissions': permissions, 'topology': topology}
+    def modify_environment(self, environment_id, topology={}, permissions={}, **kwargs):
+        request_data = {'id': environment_id, 'permissions': permissions, 'topology': topology}
         request_data.update(**kwargs)
         return self._call_rest_api('post', '/environments', data=request_data, error='Failed to create environment')
 
