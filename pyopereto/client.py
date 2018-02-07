@@ -287,16 +287,16 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/environments/verify', data=request_data, error='Failed to verify environment.')
 
     @apicall
-    def create_environment(self, topology_name, topology={}, **kwargs):
-        request_data = {'topology_name': topology_name, 'topology': topology}
+    def create_environment(self, topology_name, topology={}, id=None, **kwargs):
+        request_data = {'topology_name': topology_name,'id': id, 'topology':topology, 'add_only':True}
         request_data.update(**kwargs)
         return self._call_rest_api('post', '/environments', data=request_data, error='Failed to create environment')
 
     @apicall
-    def modify_environment(self, environment_id, topology={}, permissions={}, **kwargs):
-        request_data = {'id': environment_id, 'permissions': permissions, 'topology': topology}
+    def modify_environment(self, environment_id, **kwargs):
+        request_data = {'id': environment_id}
         request_data.update(**kwargs)
-        return self._call_rest_api('post', '/environments', data=request_data, error='Failed to create environment')
+        return self._call_rest_api('post', '/environments', data=request_data, error='Failed to modify environment')
 
     @apicall
     def delete_environment(self, environment_id):
@@ -335,8 +335,15 @@ class OperetoClient(object):
 
 
     @apicall
-    def modify_agent(self, agent_id, permissions={}, **kwargs):
-        request_data = {'id': agent_id, 'permissions': permissions}
+    def create_agent(self, agent_id=None, **kwargs):
+        request_data = {'id': agent_id, 'add_only':True}
+        request_data.update(**kwargs)
+        return self._call_rest_api('post', '/agents'+'', data=request_data, error='Failed to create agent')
+
+
+    @apicall
+    def modify_agent(self, agent_id, **kwargs):
+        request_data = {'id': agent_id}
         request_data.update(**kwargs)
         return self._call_rest_api('post', '/agents'+'', data=request_data, error='Failed to modify agent [%s]'%agent_id)
 
