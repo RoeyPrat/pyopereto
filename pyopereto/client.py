@@ -567,7 +567,8 @@ class OperetoClient(object):
         request_data.update(kwargs)
         return self._call_rest_api('post', '/search/globals', data=request_data, error='Failed to search globals')
 
-    #### CONTINUOUS TESTING ####
+    #### PRODUCTS ####
+
     @apicall
     def search_products(self, start=0, limit=100, filter={}, **kwargs):
         request_data = {'start': start, 'limit': limit, 'filter': filter}
@@ -606,6 +607,34 @@ class OperetoClient(object):
         return self._call_rest_api('get', '/products/'+product_id, error='Failed to get product information')
 
 
+    #### KPI ####
+    @apicall
+    def search_kpi(self, start=0, limit=100, filter={}, **kwargs):
+        request_data = {'start': start, 'limit': limit, 'filter': filter}
+        request_data.update(kwargs)
+        return self._call_rest_api('post', '/search/kpi', data=request_data, error='Failed to search kpi entries')
+
+
+    @apicall
+    def modify_kpi(self, kpi_id, product_id, measures=[], **kwargs):
+        if not isinstance(measures, list):
+            measures = [measures]
+        request_data = {'id': kpi_id, 'product_id': product_id, 'measures': measures}
+        request_data.update(kwargs)
+        return self._call_rest_api('post', '/kpi', data=request_data, error='Failed to modify a kpi entry')
+
+
+    @apicall
+    def delete_kpi(self, kpi_id):
+        return self._call_rest_api('delete', '/kpi/'+kpi_id, error='Failed to delete kpi')
+
+
+    @apicall
+    def get_kpi(self, kpi_id):
+        return self._call_rest_api('get', '/kpi/'+kpi_id, error='Failed to get kpi information')
+
+
+    #### TESTS ####
     @apicall
     def search_tests(self, start=0, limit=100, filter={}):
         request_data = {'start': start, 'limit': limit, 'filter': filter}
