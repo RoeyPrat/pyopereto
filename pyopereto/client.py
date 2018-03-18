@@ -392,6 +392,10 @@ class OperetoClient(object):
             request_data['name']=title
         if agent:
             request_data['agents']=agent
+
+        if self.input.get('pid'):
+            request_data['pflow_id']=self.input.get('pid')
+
         ret_data= self._call_rest_api('post', '/processes/'+pid+'/rerun', data=request_data, error='Failed to create a new process')
 
         if not isinstance(ret_data, types.ListType):
@@ -400,7 +404,7 @@ class OperetoClient(object):
         new_pid = ret_data[0]
         message = 'Re-executing process [%s] [new process pid = %s] '%(pid, new_pid)
         self.logger.info(message)
-        return str(pid)
+        return str(new_pid)
 
 
     @apicall
