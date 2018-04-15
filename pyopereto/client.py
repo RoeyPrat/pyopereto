@@ -10,6 +10,11 @@ try:
     requests.packages.urllib3.disable_warnings()
 except AttributeError:
     pass
+try:
+    import urllib3
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+except:
+    pass
 
 import logging
 FORMAT = '%(asctime)s: [%(name)s] [%(levelname)s] %(message)s'
@@ -648,3 +653,11 @@ class OperetoClient(object):
     @apicall
     def get_test(self, test_id):
         return self._call_rest_api('get', '/tests/'+test_id, error='Failed to get test information')
+
+
+    #### USERS ####
+    @apicall
+    def search_users(self, start=0, limit=100, filter={}):
+        request_data = {'start': start, 'limit': limit, 'filter': filter}
+        return self._call_rest_api('post', '/search/users', data=request_data, error='Failed to search users')
+
