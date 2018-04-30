@@ -363,9 +363,14 @@ class OperetoClient(object):
 
     #### PROCESSES ####
     @apicall
-    def create_process(self, service, agent=None, title=None, mode='production', service_version=None, **kwargs):
+    def create_process(self, service, agent=None, title=None, mode=None, service_version=None, **kwargs):
         if not agent:
             agent = self.input.get('opereto_agent')
+
+        if not mode:
+            mode=self.input.get('opereto_execution_mode') or 'production'
+        if not service_version:
+            service_version=self.input.get('opereto_service_version')
 
         request_data = {'service_id': service, 'agents': agent, 'mode': mode, 's_version':service_version}
         if title:
@@ -373,6 +378,7 @@ class OperetoClient(object):
 
         if self.input.get('pid'):
             request_data['pflow_id']=self.input.get('pid')
+
 
         request_data.update(**kwargs)
         ret_data= self._call_rest_api('post', '/processes', data=request_data, error='Failed to create a new process')
@@ -625,22 +631,22 @@ class OperetoClient(object):
 
 
     @apicall
-    def modify_kpi(self, kpi_id, product_id, measures=[], **kwargs):
+    def modify_kpi(self, kpi_id, product_id, measures=[], append=False, **kwargs):
         if not isinstance(measures, list):
             measures = [measures]
-        request_data = {'id': kpi_id, 'product_id': product_id, 'measures': measures}
+        request_data = {'kpi_id': kpi_id, 'product_id': product_id, 'measures': measures, 'append': append}
         request_data.update(kwargs)
         return self._call_rest_api('post', '/kpi', data=request_data, error='Failed to modify a kpi entry')
 
 
     @apicall
-    def delete_kpi(self, kpi_id):
-        return self._call_rest_api('delete', '/kpi/'+kpi_id, error='Failed to delete kpi')
+    def delete_kpi(self, kpi_id, product_id):
+        return self._call_rest_api('delete', '/kpi/'+kpi_id+'/'+product_id, error='Failed to delete kpi')
 
 
     @apicall
-    def get_kpi(self, kpi_id):
-        return self._call_rest_api('get', '/kpi/'+kpi_id, error='Failed to get kpi information')
+    def get_kpi(self, kpi_id, product_id):
+        return self._call_rest_api('get', '/kpi/'+kpi_id+'/'+product_id, error='Failed to get kpi information')
 
 
     #### TESTS ####
@@ -653,6 +659,38 @@ class OperetoClient(object):
     @apicall
     def get_test(self, test_id):
         return self._call_rest_api('get', '/tests/'+test_id, error='Failed to get test information')
+
+
+    #### QUALITY CRITERIA ####
+    @apicall
+    def search_qc(self, start=0, limit=100, filter={}):
+        request_data = {'start': start, 'limit': limit, 'filter': filter}
+        return self._call_rest_api('post', '/search/qc', data=request_data, error='Failed to search quality criteria')
+
+    @apicall
+    def get_qc(self, qc_id):
+        return self._call_rest_api('get', '/qc/'+qc_id, error='Failed to get test information')
+
+    @apicall
+    def create_qc(self, product_id=None, expected_result='', actual_result='', weight=100, status='success', **kwargs):
+        request_data = {'product_id': product_id, 'expected_result': expected_result, 'actual_result': actual_result
+            ,'weight': weight, 'status': status}
+        request_data.update(**kwargs)
+        return self._call_rest_api('post', '/qc', data=request_data, error='Failed to create criteria')
+
+    @apicall
+    def modify_qc(self, qc_id=None, **kwargs):
+        if qc_id:
+            request_data = {'id': qc_id}
+            request_data.update(**kwargs)
+        else:
+            self.create_qc(**kwargs)
+        return self._call_rest_api('post', '/qc', data=request_data, error='Failed to modify criteria')
+
+    @apicall
+    def delete_qc(self, qc_id):
+        return self._call_rest_api('delete', '/qc/'+qc_id, error='Failed to delete criteria')
+
 
 
     #### USERS ####
