@@ -673,8 +673,7 @@ class OperetoClient(object):
 
     @apicall
     def create_qc(self, product_id=None, expected_result='', actual_result='', weight=100, status='success', **kwargs):
-        request_data = {'product_id': product_id, 'expected_result': expected_result, 'actual_result': actual_result
-            ,'weight': weight, 'status': status}
+        request_data = {'product_id': product_id, 'expected_result': expected_result, 'actual_result': actual_result,'weight': weight, 'status': status}
         request_data.update(**kwargs)
         return self._call_rest_api('post', '/qc', data=request_data, error='Failed to create criteria')
 
@@ -683,9 +682,10 @@ class OperetoClient(object):
         if qc_id:
             request_data = {'id': qc_id}
             request_data.update(**kwargs)
+            return self._call_rest_api('post', '/qc', data=request_data, error='Failed to modify criteria')
         else:
-            self.create_qc(**kwargs)
-        return self._call_rest_api('post', '/qc', data=request_data, error='Failed to modify criteria')
+            return self.create_qc(**kwargs)
+
 
     @apicall
     def delete_qc(self, qc_id):
