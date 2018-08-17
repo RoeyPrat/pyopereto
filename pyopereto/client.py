@@ -673,7 +673,7 @@ class OperetoClient(object):
 
     @apicall
     def create_qc(self, product_id=None, expected_result='', actual_result='', weight=100, status='success', **kwargs):
-        request_data = {'product_id': product_id, 'expected_result': expected_result, 'actual_result': actual_result,'weight': weight, 'status': status}
+        request_data = {'product_id': product_id, 'expected': expected_result, 'actual': actual_result,'weight': weight, 'exec_status': status}
         request_data.update(**kwargs)
         return self._call_rest_api('post', '/qc', data=request_data, error='Failed to create criteria')
 

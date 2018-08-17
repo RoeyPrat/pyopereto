@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = '1.0.55'
+VERSION = '1.0.56'
 
 setup(
     name='pyopereto',
@@ -12,7 +12,7 @@ setup(
     download_url = 'https://github.com/opereto/pyopereto/archive/%s.tar.gz'%VERSION,
     keywords = [],
     classifiers = [],
-    packages = ['pyopereto'],
+    packages = ['pyopereto', 'pyopereto.helpers'],
     package_data = {},
     entry_points = {
         'console_scripts': ['opereto=pyopereto.command_line:main']

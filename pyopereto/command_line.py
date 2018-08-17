@@ -76,6 +76,7 @@ import logging.config
 import time
 import signal
 import pkg_resources
+import tempfile
 
 VERSION = pkg_resources.get_distribution("pyopereto").version
 
@@ -106,12 +107,7 @@ logging.config.dictConfig({
 
 logger = logging.getLogger('OperetoCliTool')
 
-
-if sys.platform.startswith('win'):
-    TEMP_DIR = 'C:\Temp'
-else:
-    TEMP_DIR = '/tmp'
-
+TEMP_DIR = tempfile.gettempdir()
 HOME_DIR = expanduser("~")
 
 work_dir = os.getcwd()
