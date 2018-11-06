@@ -39,5 +39,5 @@ my_client = OperetoClient(opereto_host='https://OPERETO_SERVER_URL', opereto_use
 #### Learn more
 
 * [Opereto REST API](https://operetoapi.docs.apiary.io/#)
-* [Opereto Documentation](http://help.opereto.com/support/solutions)
+* [Opereto Documentation](http://docs.opereto.com/docs)
 
