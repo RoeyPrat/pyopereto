@@ -71,7 +71,6 @@ import shutil
 import yaml
 import json
 from os.path import expanduser
-import logging
 import logging.config
 import time
 import signal
@@ -119,7 +118,7 @@ opereto_config_file = os.path.join(HOME_DIR,'opereto.yaml')
 if not os.path.exists(opereto_config_file):
     opereto_config_file = 'arguments.yaml'
 if not os.path.exists(opereto_config_file):
-    raise Exception, 'Could not find opereto credentials file'
+    raise Exception('Could not find opereto credentials file')
 
 with open(opereto_config_file, 'r') as f:
     input = yaml.load(f.read())
@@ -172,9 +171,9 @@ def deploy(params):
                 logger.info('Service [%s] production version [%s] deployed successfuly.'%(service_name, version))
             else:
                 logger.info('Service [%s] development version deployed successfully.'%service_name)
-        except OperetoClientError, e:
+        except OperetoClientError as e:
             raise OperetoClientError('Service [%s]: %s'%(service_name, str(e)))
-        except Exception,e:
+        except Exception as e:
             raise OperetoClientError('Service [%s] failed to deploy: %s'%(service_name, str(e)))
 
 
@@ -190,7 +189,7 @@ def deploy(params):
         if is_service_dir(rootdir):
             try:
                 deploy_service(rootdir)
-            except Exception,e:
+            except Exception as e:
                 logger.error(e)
         elif os.path.isdir(rootdir):
             service_directories = os.listdir(rootdir)
@@ -268,7 +267,7 @@ def prepare(params):
     with open(os.path.join(params['<service-directory>'], 'service.yaml'), 'r') as f:
         spec = yaml.load(f.read())
     if spec['type'] in ['cycle', 'container']:
-        raise Exception, 'Execution of service type [%s] in local mode is not supported.'%spec['type']
+        raise Exception('Execution of service type [%s] in local mode is not supported.'%spec['type'])
     service_cmd = spec['cmd']
     with open(opereto_config_file, 'r') as arguments_file:
         arguments_json = yaml.load(arguments_file.read())
@@ -280,7 +279,7 @@ def prepare(params):
     with open(os.path.join(params['<service-directory>'], 'arguments.yaml'), 'w') as yaml_arguments_outfile:
         yaml.dump(yaml.load(json.dumps(arguments_json)), yaml_arguments_outfile, indent=4, default_flow_style=False)
     logger.info('Local argument files updated successfully.')
-    print 'To run the service locally, please go to service directory and run: %s\n'%service_cmd
+    print('To run the service locally, please go to service directory and run: %s\n'%service_cmd)
     return service_cmd
 
 
@@ -302,7 +301,7 @@ def delete(params):
         else:
             client.delete_service_version(service_id=service_name, service_version=version, mode=operations_mode)
             logger.info('Service [%s] development version deleted successfully.'%service_name)
-    except OperetoClientError, e:
+    except OperetoClientError as e:
         raise e
     except:
         raise OperetoClientError('Service [%s] failed to delete.'%service_name)
@@ -313,7 +312,7 @@ def purge_development_sandbox():
     try:
         client.purge_development_sandbox()
         logger.info('Purged development sandbox repository')
-    except OperetoClientError, e:
+    except OperetoClientError as e:
         if e.message.find('does not exist'):
             logger.error('Development sandbox directory is empty.')
 
@@ -333,7 +332,7 @@ def list_services(arguments):
         filter={'generic': arguments['<search_pattern>']}
     services = client.search_services(filter=filter, start=0, limit=1000, fset='clitool')
     if services:
-        print json.dumps(services, indent=4, sort_keys=True)
+        print(json.dumps(services, indent=4, sort_keys=True))
     else:
         logger.error('No services found.')
 
@@ -345,7 +344,7 @@ def list_agents(arguments):
         filter={'generic': arguments['<search_pattern>']}
     agents = client.search_agents(filter=filter, start=0, limit=1000, fset='clitool')
     if agents:
-        print json.dumps(agents, indent=4, sort_keys=True)
+        print(json.dumps(agents, indent=4, sort_keys=True))
     else:
         logger.error('No agents found.')
 
@@ -356,7 +355,7 @@ def list_globals(arguments):
         filter={'generic': arguments['<search_pattern>']}
     globals = client.search_globals(filter=filter, start=0, limit=1000)
     if globals:
-        print json.dumps(globals, indent=4, sort_keys=True)
+        print(json.dumps(globals, indent=4, sort_keys=True))
     else:
         raise OperetoClientError('No globals found.')
 
@@ -364,21 +363,21 @@ def list_environments(arguments):
     client = get_opereto_client()
     envs = client.search_environments()
     if envs:
-        print json.dumps(envs, indent=4, sort_keys=True)
+        print(json.dumps(envs, indent=4, sort_keys=True))
     else:
         logger.error('No environments found.')
 
 def get_environment(arguments):
     client = get_opereto_client()
     env = client.get_environment(arguments['<environment-name>'])
-    print json.dumps(env, indent=4, sort_keys=True)
+    print(json.dumps(env, indent=4, sort_keys=True))
 
 
 def get_service_versions(arguments):
     logger.info('Versions of service {}:'.format(arguments['<service-name>']))
     client = get_opereto_client()
     service = client.get_service(arguments['<service-name>'])
-    print json.dumps(service['versions'], indent=4, sort_keys=True)
+    print(json.dumps(service['versions'], indent=4, sort_keys=True))
 
 
 def get_service_info(arguments):
@@ -389,19 +388,19 @@ def get_service_info(arguments):
 
     logger.info('Service Description')
     logger.info('-------------------')
-    print service.get('description') or 'No description provided'
+    print(service.get('description') or 'No description provided')
 
     logger.info('\n\nService Specification')
     logger.info('---------------------')
 
     try:
-        print yaml.dump(yaml.load(json.dumps(service['spec'])), indent=4, default_flow_style=False)
+        print(yaml.dump(yaml.load(json.dumps(service['spec'])), indent=4, default_flow_style=False))
     except:
-        print json.dumps(service['spec'], indent=4, sort_keys=True)
+        print(json.dumps(service['spec'], indent=4, sort_keys=True))
 
     logger.info('\n\nService Agents Mapping')
     logger.info('----------------------')
-    print json.dumps(service['sam'], indent=4, sort_keys=True)
+    print(json.dumps(service['sam'], indent=4, sort_keys=True))
 
 
 def _print_log_entries(pid, s):
@@ -438,13 +437,13 @@ def get_process(arguments):
     if arguments['--info'] or arguments['--all']:
         option_selected=True
         info = client.get_process_info(pid)
-        print json.dumps(info, indent=4, sort_keys=True)
+        print(json.dumps(info, indent=4, sort_keys=True))
 
     if arguments['--properties'] or arguments['--all']:
         option_selected=True
         properties = client.get_process_properties(pid)
         if properties:
-            print json.dumps(properties, indent=4, sort_keys=True)
+            print(json.dumps(properties, indent=4, sort_keys=True))
 
     if arguments['--log'] or arguments['--all']:
         option_selected=True
@@ -458,13 +457,13 @@ def get_process(arguments):
         option_selected=True
         flow = client.get_process_flow(pid)
         if flow:
-            print json.dumps(flow, indent=4, sort_keys=True)
+            print(json.dumps(flow, indent=4, sort_keys=True))
 
     if arguments['--rca'] or arguments['--all']:
         option_selected=True
         rca = client.get_process_rca(pid)
         if rca:
-            print json.dumps(rca, indent=4, sort_keys=True)
+            print(json.dumps(rca, indent=4, sort_keys=True))
 
     if not option_selected:
         raise OperetoClientError('Please specify one if more process data items to retrieve (e.g. --info, --log).')
@@ -475,11 +474,11 @@ def main():
     arguments = docopt(__doc__, version='Opereto CLI Tool v%s'%VERSION)
     def ctrlc_signal_handler(s, f):
         if arguments['run'] and RUNNING_PROCESS:
-            print >> sys.stderr, '\nYou pressed Ctrl-C. Stopping running processes and aborting..'
+            sys.stderr.write('\nYou pressed Ctrl-C. Stopping running processes and aborting..')
             client = get_opereto_client()
             client.stop_process(RUNNING_PROCESS, status='terminated')
         else:
-            print >> sys.stderr, '\nYou pressed Ctrl-C. Aborting..'
+            sys.stderr.write('\nYou pressed Ctrl-C. Aborting..')
         os.kill(os.getpid(), signal.SIGTERM)
 
     try:
@@ -515,7 +514,7 @@ def main():
         elif arguments['configure']:
             prepare(arguments)
 
-    except Exception, e:
+    except Exception as e:
         logger.error(str(e))
         sys.exit(1)
 
