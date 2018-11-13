@@ -3,8 +3,13 @@ import requests
 import json
 import yaml
 import time
-import types
-import urllib
+
+try:
+    from urllib.request import urlopen
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+    from urllib import urlopen
 
 try:
     requests.packages.urllib3.disable_warnings()
@@ -45,7 +50,7 @@ def apicall(f):
                 try:
                     rv = f(*args, **kwargs)
                     return rv
-                except OperetoClientError,e:
+                except OperetoClientError as e:
                     try:
                         if e.code>=502:
                             time.sleep(delay)
@@ -55,7 +60,7 @@ def apicall(f):
                         raise e
                 except requests.exceptions.RequestException:
                     time.sleep(delay)
-        except Exception,e:
+        except Exception as e:
             raise OperetoClientError(str(e))
     return f_call
 
@@ -79,7 +84,7 @@ class OperetoClient(object):
                         self.input = json.loads(f.read())
                     else:
                         self.input = yaml.load(f.read())
-            except Exception,e:
+            except Exception as e:
                 raise OperetoClientError('Failed to parse %s: %s'%(file, str(e)))
 
         if not set(['opereto_user', 'opereto_password', 'opereto_host']) <= set(self.input):
@@ -91,7 +96,7 @@ class OperetoClient(object):
                 get_credentials(os.path.join(home_dir,'opereto.yaml'))
 
         ## TEMP: fix in agent
-        for item in self.input.keys():
+        for item in list(self.input.keys()):
             try:
                 if self.input[item]=='null':
                     self.input[item]=None
@@ -239,7 +244,7 @@ class OperetoClient(object):
         if service_id:
             url_suffix+='/'+service_id
         if kwargs:
-            url_suffix=url_suffix+'?'+urllib.urlencode(kwargs)
+            url_suffix=url_suffix+'?'+urlparse.urlencode(kwargs)
         return self._call_rest_api('post', url_suffix, files=files, error='Failed to upload service version')
 
 
@@ -248,7 +253,7 @@ class OperetoClient(object):
         request_data = {'repository': repository_json, 'mode': mode, 'service_version': service_version, 'id': service_id}
         url_suffix = '/services'
         if kwargs:
-            url_suffix=url_suffix+'?'+urllib.urlencode(kwargs)
+            url_suffix=url_suffix+'?'+urlparse.urlencode(kwargs)
         return self._call_rest_api('post', url_suffix, data=request_data, error='Failed to import service')
 
     @apicall
@@ -383,7 +388,7 @@ class OperetoClient(object):
         request_data.update(**kwargs)
         ret_data= self._call_rest_api('post', '/processes', data=request_data, error='Failed to create a new process')
 
-        if not isinstance(ret_data, types.ListType):
+        if not isinstance(ret_data, list):
             raise OperetoClientError(str(ret_data))
 
         pid = ret_data[0]
@@ -409,7 +414,7 @@ class OperetoClient(object):
 
         ret_data= self._call_rest_api('post', '/processes/'+pid+'/rerun', data=request_data, error='Failed to create a new process')
 
-        if not isinstance(ret_data, types.ListType):
+        if not isinstance(ret_data, list):
             raise OperetoClientError(str(ret_data))
 
         new_pid = ret_data[0]
@@ -489,7 +494,7 @@ class OperetoClient(object):
         if name:
             try:
                 return res[name]
-            except KeyError, e:
+            except KeyError as e:
                 raise OperetoClientError(message='Invalid property [%s]'%name, code=404)
         else:
             return res
@@ -520,7 +525,7 @@ class OperetoClient(object):
         statuses = self.wait_for(pids)
         if not statuses:
             return False
-        for pid,stat in statuses.items():
+        for pid,stat in list(statuses.items()):
             if stat!=status:
                 self.logger.error('But it ended with status [%s]'%stat)
                 return False
