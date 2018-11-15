@@ -3,6 +3,8 @@ import requests
 import json
 import yaml
 import time
+from functools import wraps as _wraps
+
 
 try:
     from urllib.request import urlopen
@@ -41,6 +43,8 @@ class OperetoClientError(Exception):
 
 
 def apicall(f):
+
+    @_wraps (f)
     def f_call(*args, **kwargs):
         tries=3
         delay=3
@@ -198,6 +202,12 @@ class OperetoClient(object):
     #### GENERAL ####
     @apicall
     def hello(self):
+        '''
+        hello(self)
+
+        | Check if Opereto is up and running.
+        | Wrapped REST call: https://operetoapi.docs.apiary.io/#reference/general/ping/ping-to-server
+        '''
         return self._call_rest_api('get', '/hello', error='Failed to get response from the opereto server')
 
 
