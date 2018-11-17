@@ -206,7 +206,7 @@ class OperetoClient(object):
         hello(self)
 
         | Check if Opereto is up and running.
-        | Wrapped REST call: https://operetoapi.docs.apiary.io/#reference/general/ping/ping-to-server
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/general/ping/ping-to-server
         '''
         return self._call_rest_api('get', '/hello', error='Failed to get response from the opereto server')
 
@@ -214,6 +214,31 @@ class OperetoClient(object):
     #### MICROSERVICES & VERSIONS ####
     @apicall
     def search_services(self, start=0, limit=100, filter={}, **kwargs):
+        '''
+        search_services(self, start=0, limit=100, filter={}, **kwargs)
+
+        | Search for Opereto services, in service data and properties
+
+        :param int start:
+        :param int limit: Limit the number of responses
+        :param json filter: filters the search query with Free text search pattern
+             example:
+             {
+                "filter":
+                {
+                    "generic":"Hello"
+                }
+             }
+
+        |
+        :return: Object with list of found services
+        :rtype: json
+        |       Example:
+        |       {"status": "success", "data": [{"modified_date": "2018-11-10T11:12:27.867047", "orig_date": "2018-11-10T11:09:19.259022", "type": "action", "id": "hello_world", "name": "hello world"}]}
+        |
+        |
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/service-search/search-services-[post]
+        '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
         return self._call_rest_api('post', '/search/services', data=request_data, error='Failed to search services')
@@ -221,10 +246,32 @@ class OperetoClient(object):
 
     @apicall
     def get_service(self, service_id):
+        '''
+        get_service(self, service_id)
+
+        | Get a service meta data (id, audit log, type, etc.) information.
+        :param string service_id: Identifier of an existing service
+        :return: Service meta data
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/getdelete-service/get-service-information
+
+        '''
         return self._call_rest_api('get', '/services/'+service_id, error='Failed to fetch service information')
 
     @apicall
     def get_service_version(self, service_id, mode='production', version='default'):
+        '''
+        get_service_version(self, service_id, mode='production', version='default')
+
+        | Get a specific version details of a given service.
+
+        :param string service_id: Identifier of an existing version
+        :param mode: development
+        :param version: default or the version of the service
+        :return: service version details
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/getdelete-service/get-service-information
+        '''
         return self._call_rest_api('get', '/services/'+service_id+'/'+mode+'/'+version, error='Failed to fetch service information')
 
     @apicall
