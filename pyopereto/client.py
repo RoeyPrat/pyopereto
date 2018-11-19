@@ -266,9 +266,9 @@ class OperetoClient(object):
         | Get a specific version details of a given service.
 
         :param string service_id: Identifier of an existing version
-        :param mode: development
-        :param version: default or the version of the service
-        :return: service version details
+        :param string mode: development
+        :param string version: default or the version of the service
+        :return: json service version details
 
         .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/getdelete-service/get-service-information
         '''
@@ -276,6 +276,21 @@ class OperetoClient(object):
 
     @apicall
     def verify_service(self, service_id, specification=None, description=None, agent_mapping=None):
+        '''
+        verify_service(self, service_id, specification=None, description=None, agent_mapping=None)
+
+        | Verifies validity of service yaml
+
+        :param string service_id:
+        :param string specification: service specification yaml
+        :param string description: service description written in text or markdown style
+        :param string agent_mapping: agents mapping specification
+        :return: Object with "success" status or "failure" with specified errors
+        :rtype: json
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/service-validation/validate-service-data
+
+        '''
         request_data = {'id': service_id}
         if specification:
             request_data['spec']=specification
@@ -288,12 +303,31 @@ class OperetoClient(object):
 
     @apicall
     def modify_service(self, service_id, type):
+        '''
+        modify_service(self, service_id, type)
+
+        '''
         request_data = {'id': service_id, 'type': type}
         return self._call_rest_api('post', '/services', data=request_data, error='Failed to modify service [%s]'%service_id)
 
 
     @apicall
     def upload_service_version(self, service_zip_file, mode='production', service_version='default', service_id=None, **kwargs):
+        '''
+        upload_service_version(self, service_zip_file, mode='production', service_version='default', service_id=None, **kwargs)
+
+        Upload service version
+
+        :param string service_zip_file: zip file location containing service and service specification
+        :param enum mode: production/development
+        :param string service_version: e.g: 1.0.0
+        :param string service_id: service identifier
+        :param kwargs:
+        :return: success/failure
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/upload-to-production/upload-production-service
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/upload-to-sandbox/upload-a-service-to-sandbox
+        '''
         files = {'service_file': open(service_zip_file,'rb')}
         url_suffix = '/services/upload/%s'%mode
         if mode=='production':
@@ -307,6 +341,20 @@ class OperetoClient(object):
 
     @apicall
     def import_service_version(self, repository_json, mode='production', service_version='default', service_id=None, **kwargs):
+        '''
+        import_service_version(self, repository_json, mode='production', service_version='default', service_id=None, **kwargs)
+
+        Imports a service into Opereto from remote repository
+
+        :param repository_json: Specified the remote repository (+credentials) to import the service zip file from
+        :param enum mode: production/development
+        :param string service_version:
+        :param string service_id:
+        :param kwargs:
+        :return: success/failure
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/import-service/import-a-service
+        '''
         request_data = {'repository': repository_json, 'mode': mode, 'service_version': service_version, 'id': service_id}
         url_suffix = '/services'
         if kwargs:
@@ -315,21 +363,56 @@ class OperetoClient(object):
 
     @apicall
     def delete_service(self, service_id):
+        '''
+        delete_service(self, service_id)
+
+        Deletes a Service from Opereto
+
+        :param service_id: Service identifier
+        :return: sucess/failure
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/getdelete-service/delete-service
+        '''
         return self._call_rest_api('delete', '/services/'+service_id, error='Failed to delete service')
 
 
     @apicall
     def delete_service_version(self, service_id , service_version='default', mode='production'):
+        '''
+        delete_service(self, service_id)
+
+        Deletes a Service from Opereto
+
+        :param service_id: Service identifier
+        :return:
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/service-versions/delete-service-version
+        '''
         return self._call_rest_api('delete', '/services/'+service_id+'/'+mode+'/'+service_version, error='Failed to delete service')
 
 
     @apicall
     def list_development_sandbox(self):
+        '''
+        list_development_sandbox(self)
+
+        List all services in the current user's development sandbox
+        :return: List of sandbox services
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/service-sandbox/list-sandbox-service
+        '''
         return self._call_rest_api('get', '/services/sandbox', error='Failed to list sandbox services')
 
 
     @apicall
     def purge_development_sandbox(self):
+        '''
+        purge_development_sandbox(self)
+
+        Purge development sandbox - deletes all services from the current user's development sandbox.
+
+        :return:
+        '''
         return self._call_rest_api('delete', '/services/sandbox', error='Failed to delete sandbox services')
 
 
