@@ -369,7 +369,7 @@ class OperetoClient(object):
         Deletes a Service from Opereto
 
         :param service_id: Service identifier
-        :return: sucess/failure
+        :return: success/failure
 
         .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/getdelete-service/delete-service
         '''
@@ -384,7 +384,7 @@ class OperetoClient(object):
         Deletes a Service from Opereto
 
         :param service_id: Service identifier
-        :return:
+        :return: success/failure
 
         .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/service-versions/delete-service-version
         '''
@@ -411,7 +411,9 @@ class OperetoClient(object):
 
         Purge development sandbox - deletes all services from the current user's development sandbox.
 
-        :return:
+        :return: success/failure
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/service-sandbox/parge-developmet-sandbox
         '''
         return self._call_rest_api('delete', '/services/sandbox', error='Failed to delete sandbox services')
 
@@ -420,19 +422,52 @@ class OperetoClient(object):
     #### ENVIRONMENTS ####
     @apicall
     def search_environments(self):
+        '''
+        search_environments(self)
+
+        Get all environments
+
+        :return: List of environments
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/search-environments/search-environments-[get]
+        '''
         return self._call_rest_api('get', '/search/environments', error='Failed to search environments')
 
     @apicall
     def get_environment(self, environment_id):
+        '''
+        get_environment(self, environment_id)
+
+        Get environment general info.
+
+
+        :param String environment_id: Identifier of an existing environment
+        :return: environment data
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/getdelete-environment/get-environment-information
+        '''
         return self._call_rest_api('get', '/environments/'+environment_id, error='Failed to fetch environment [%s]'%environment_id)
 
     @apicall
     def verify_environment_scheme(self, environment_type, environment_topology):
+        '''
+        verify_environment_scheme(self, environment_type, environment_topology)
+
+        Verify environment scheme
+
+        :param string environment_type:
+        :param string environment_topology:
+        '''
         request_data = {'type': environment_type, 'topology': environment_topology}
         return self._call_rest_api('post', '/environments/verify', data=request_data, error='Failed to verify environment.')
 
     @apicall
     def verify_environment(self, environment_id):
+        '''
+        verify_environment(self, environment_id)
+
+        :param environment_id: environment identifier
+        '''
         request_data = {'id': environment_id}
         return self._call_rest_api('post', '/environments/verify', data=request_data, error='Failed to verify environment.')
 
