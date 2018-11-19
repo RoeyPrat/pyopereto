@@ -522,36 +522,91 @@ class OperetoClient(object):
     #### AGENTS ####
     @apicall
     def search_agents(self, start=0, limit=100, filter={}, **kwargs):
+        '''
+        search_agents(self, start=0, limit=100, filter={}, **kwargs)
+
+        :param start:
+        :param limit:
+        :param filter:
+        :param kwargs:
+        :return:
+        .. seealso::
+        '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
         return self._call_rest_api('post', '/search/agents', data=request_data, error='Failed to search agents')
 
     @apicall
     def get_agents(self, agent_id):
+        '''
+        get_agents(self, agent_id)
+
+        :param agent_id:
+        :return:
+        .. seealso::
+        '''
         return self._call_rest_api('get', '/agents/'+agent_id, error='Failed to fetch agent details.')
 
 
     @apicall
     def get_agent_properties(self, agent_id):
+        '''
+        get_agent_properties(self, agent_id)
+
+        :param agent_id:
+        :return:
+        .. seealso::
+        '''
         return self._call_rest_api('get', '/agents/'+agent_id+'/properties', error='Failed to fetch agent [%s] properties'%agent_id)
 
     @apicall
     def get_all_agents(self):
+        '''
+        get_all_agents(self)
+
+        :return:
+        .. seealso::
+        '''
         return self._call_rest_api('get', '/agents/all', error='Failed to fetch agents')
 
 
     @apicall
     def modify_agent_property(self, agent_id, key, value):
+        '''
+        modify_agent_property(self, agent_id, key, value)
+
+        :param agent_id:
+        :param key:
+        :param value:
+        :return:
+        .. seealso::
+        '''
         return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data={key: value}, error='Failed to modify agent [%s] property [%s]'%(agent_id,key))
 
 
     @apicall
     def modify_agent_properties(self, agent_id, key_value_map={}):
+        '''
+        modify_agent_properties(self, agent_id, key_value_map={})
+
+        :param agent_id:
+        :param key_value_map:
+        :return:
+        .. seealso::
+        '''
         return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data=key_value_map, error='Failed to modify agent [%s] properties'%agent_id)
 
 
     @apicall
     def create_agent(self, agent_id=None, **kwargs):
+        '''
+        create_agent(self, agent_id=None, **kwargs)
+
+        :param agent_id:
+        :param kwargs:
+        :return:
+        .. seealso::
+        '''
         request_data = {'id': agent_id, 'add_only':True}
         request_data.update(**kwargs)
         return self._call_rest_api('post', '/agents'+'', data=request_data, error='Failed to create agent')
@@ -559,6 +614,14 @@ class OperetoClient(object):
 
     @apicall
     def modify_agent(self, agent_id, **kwargs):
+        '''
+        modify_agent(self, agent_id, **kwargs)
+
+        :param agent_id:
+        :param kwargs:
+        :return:
+        .. seealso::
+        '''
         request_data = {'id': agent_id}
         request_data.update(**kwargs)
         return self._call_rest_api('post', '/agents'+'', data=request_data, error='Failed to modify agent [%s]'%agent_id)
@@ -566,15 +629,41 @@ class OperetoClient(object):
 
     @apicall
     def get_agent(self, agent_id):
+        '''
+        get_agent(self, agent_id)
+
+        :param agent_id:
+        :return:
+        .. seealso::
+        '''
         return self._call_rest_api('get', '/agents/'+agent_id, error='Failed to fetch agent [%s] status'%agent_id)
 
     @apicall
     def get_agent_status(self, agent_id):
+        '''
+        get_agent_status(self, agent_id)
+
+        :param agent_id:
+        :return:
+        .. seealso::
+        '''
         return self.get_agent(agent_id)
 
     #### PROCESSES ####
     @apicall
     def create_process(self, service, agent=None, title=None, mode=None, service_version=None, **kwargs):
+        '''
+        create_process(self, service, agent=None, title=None, mode=None, service_version=None, **kwargs)
+
+        :param service:
+        :param agent:
+        :param title:
+        :param mode:
+        :param service_version:
+        :param kwargs:
+        :return:
+        .. seealso::
+        '''
         if not agent:
             agent = self.input.get('opereto_agent')
 
@@ -609,6 +698,15 @@ class OperetoClient(object):
 
     @apicall
     def rerun_process(self, pid, title=None, agent=None):
+        '''
+        rerun_process(self, pid, title=None, agent=None)
+
+        :param pid:
+        :param title:
+        :param agent:
+        :return:
+        .. seealso::
+        '''
         request_data = {}
         if title:
             request_data['name']=title
@@ -631,18 +729,43 @@ class OperetoClient(object):
 
     @apicall
     def modify_process_properties(self, key_value_map={}, pid=None):
+        '''
+        modify_process_properties(self, key_value_map={}, pid=None)
+
+        :param key_value_map:
+        :param pid:
+        :return:
+        .. seealso::
+        '''
         pid = self._get_pid(pid)
         request_data={"properties": key_value_map}
         return self._call_rest_api('post', '/processes/'+pid+'/output', data=request_data, error='Failed to output properties')
 
     @apicall
     def modify_process_property(self, key, value, pid=None):
+        '''
+        modify_process_property(self, key, value, pid=None)
+
+        :param key:
+        :param value:
+        :param pid:
+        :return:
+        .. seealso::
+        '''
         pid = self._get_pid(pid)
         request_data={"key" : key, "value": value}
         return self._call_rest_api('post', '/processes/'+pid+'/output', data=request_data, error='Failed to modify output property [%s]'%key)
 
     @apicall
     def modify_process_summary(self, pid=None, text=''):
+        '''
+        modify_process_summary(self, pid=None, text='')
+
+        :param pid:
+        :param text:
+        :return:
+        .. seealso::
+        '''
         pid = self._get_pid(pid)
         request_data={"id" : pid, "data": str(text)}
         return self._call_rest_api('post', '/processes/'+pid+'/summary', data=request_data, error='Failed to update process summary')
@@ -650,6 +773,14 @@ class OperetoClient(object):
 
     @apicall
     def stop_process(self, pids, status='success'):
+        '''
+        stop_process(self, pids, status='success')
+
+        :param pids:
+        :param status:
+        :return:
+        .. seealso::
+        '''
         if status not in process_result_statuses:
             raise OperetoClientError('Invalid process result [%s]'%status)
         pids = self._get_pids(pids)
@@ -659,29 +790,67 @@ class OperetoClient(object):
 
     @apicall
     def get_process_status(self, pid=None):
+        '''
+        get_process_status(self, pid=None)
+
+        :param pid:
+        :return:
+        .. seealso::
+        '''
         pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/status', error='Failed to fetch process status')
 
 
     @apicall
     def get_process_flow(self, pid=None):
+        '''
+        get_process_flow(self, pid=None)
+
+        :param pid:
+        :return:
+        .. seealso::
+        '''
         pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/flow', error='Failed to fetch process information')
 
 
     @apicall
     def get_process_rca(self, pid=None):
+        '''
+        get_process_rca(self, pid=None)
+
+        :param pid:
+        :return:
+        .. seealso::
+        '''
         pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/rca', error='Failed to fetch process information')
 
 
     @apicall
     def get_process_info(self, pid=None):
+        '''
+        get_process_info(self, pid=None)
+
+        :param pid:
+        :return:
+        .. seealso::
+        '''
+
         pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid, error='Failed to fetch process information')
 
     @apicall
     def get_process_log(self, pid=None, start=0, limit=1000):
+        '''
+        get_process_log(self, pid=None, start=0, limit=1000
+
+        :param pid:
+        :param start:
+        :param limit:
+        :return:
+        .. seealso::
+        '''
         pid = self._get_pid(pid)
         data = self._call_rest_api('get', '/processes/'+pid+'/log?start={}&limit={}'.format(start,limit), error='Failed to fetch process log')
         return data['list']
@@ -695,6 +864,14 @@ class OperetoClient(object):
 
     @apicall
     def get_process_properties(self, pid=None, name=None):
+        '''
+        get_process_properties(self, pid=None, name=None)
+
+        :param pid:
+        :param name:
+        :return:
+        .. seealso::
+        '''
         pid = self._get_pid(pid)
         res = self._call_rest_api('get', '/processes/'+pid+'/properties', error='Failed to fetch process properties')
         if name:
@@ -708,6 +885,14 @@ class OperetoClient(object):
 
     @apicall
     def wait_for(self, pids=[], status_list=process_result_statuses):
+        '''
+        wait_for(self, pids=[], status_list=process_result_statuses)
+
+        :param pids:
+        :param status_list:
+        :return:
+        .. seealso::
+        '''
         results={}
         pids = self._get_pids(pids)
         for pid in pids:
@@ -739,41 +924,105 @@ class OperetoClient(object):
 
 
     def wait_to_start(self, pids=[]):
+        '''
+        wait_to_start(self, pids=[])
+
+        :param pids:
+        :return:
+        .. seealso::
+        '''
         actual_pids = self._get_pids(pids)
         return self.wait_for(pids=actual_pids, status_list=process_result_statuses+['in_process'])
 
 
     def wait_to_end(self, pids=[]):
+        '''
+        wait_to_end(self, pids=[])
+
+        :param pids:
+        :return:
+        .. seealso::
+        '''
         actual_pids = self._get_pids(pids)
         return self.wait_for(pids=actual_pids, status_list=process_result_statuses)
 
 
-    def is_success(self, pids):
+    def wait_to_end(self, pids=[]):
+        '''
+        wait_to_end(self, pids=[])
+
+        :param pids:
+        :return:
+        .. seealso::
+        '''
         return self._status_ok('success', pids)
 
 
     def is_failure(self, pids):
+        '''
+        is_failure(self, pids)
+
+        :param pids:
+        :return:
+        .. seealso::
+        '''
         return self._status_ok('failure', pids)
 
 
     def is_error(self, pids):
+        '''
+        is_error(self, pids)
+
+        :param pids:
+        :return:
+        .. seealso::
+        '''
         return self._status_ok('error', pids)
 
 
     def is_timeout(self, pids):
+        '''
+        is_timeout(self, pids)
+
+        :param pids:
+        :return:
+        .. seealso::
+        '''
         return self._status_ok('timeout', pids)
 
 
     def is_warning(self, pids):
+        '''
+        is_warning(self, pids)
+
+        :param pids:
+        :return:
+        .. seealso::
+        '''
         return self._status_ok('warning', pids)
 
 
     def is_terminated(self, pids):
+        '''
+        is_terminated(self, pids)
+
+        :param pids:
+        :return:
+        .. seealso::
+        '''
         return self._status_ok('terminate', pids)
 
 
     @apicall
     def get_process_runtime_cache(self, key, pid=None):
+        '''
+        get_process_runtime_cache(self, key, pid=None)
+
+        :param key:
+        :param pid:
+        :return:
+        .. seealso::
+        '''
         value = None
         pid = self._get_pid(pid)
         value = self._call_rest_api('get', '/processes/'+pid+'/cache?key=%s'%key, error='Failed to fetch process runtime cache')
@@ -782,6 +1031,15 @@ class OperetoClient(object):
 
     @apicall
     def set_process_runtime_cache(self, key, value, pid=None):
+        '''
+        set_process_runtime_cache(self, key, value, pid=None)
+
+        :param key:
+        :param value:
+        :param pid:
+        :return:
+        .. seealso::
+        '''
         pid = self._get_pid(pid)
         self._call_rest_api('post', '/processes/'+pid+'/cache', data={'key': key, 'value': value}, error='Failed to modify process runtime cache')
 
@@ -789,6 +1047,16 @@ class OperetoClient(object):
     #### GLOBAL PARAMETERS ####
     @apicall
     def search_globals(self, start=0, limit=100, filter={}, **kwargs):
+        '''
+        search_globals(self, start=0, limit=100, filter={}, **kwargs)
+
+        :param start:
+        :param limit:
+        :param filter:
+        :param kwargs:
+        :return:
+        .. seealso::
+        '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
         return self._call_rest_api('post', '/search/globals', data=request_data, error='Failed to search globals')
@@ -797,12 +1065,34 @@ class OperetoClient(object):
 
     @apicall
     def search_products(self, start=0, limit=100, filter={}, **kwargs):
+        '''
+        search_products(self, start=0, limit=100, filter={}, **kwargs)
+
+        :param start:
+        :param limit:
+        :param filter:
+        :param kwargs:
+        :return:
+        .. seealso::
+        '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
         return self._call_rest_api('post', '/search/products', data=request_data, error='Failed to search products')
 
     @apicall
     def create_product(self, product, version, build, name=None, description=None, attributes={}):
+        '''
+        create_product(self, product, version, build, name=None, description=None, attributes={})
+
+        :param product:
+        :param version:
+        :param build:
+        :param name:
+        :param description:
+        :param attributes:
+        :return:
+        .. seealso::
+        '''
         request_data = {'product': product, 'version': version, 'build': build}
         if name: request_data['name']=name
         if description: request_data['description']=description
@@ -816,6 +1106,16 @@ class OperetoClient(object):
 
     @apicall
     def modify_product(self, product_id, name=None, description=None, attributes={}):
+        '''
+        modify_product(self, product_id, name=None, description=None, attributes={})
+
+        :param product_id:
+        :param name:
+        :param description:
+        :param attributes:
+        :return:
+        .. seealso::
+        '''
         request_data = {'id': product_id}
         if name: request_data['name']=name
         if description: request_data['description']=description
@@ -825,17 +1125,41 @@ class OperetoClient(object):
 
     @apicall
     def delete_product(self, product_id):
+        '''
+        delete_product(self, product_id)
+
+        :param product_id:
+        :return:
+        .. seealso::
+        '''
         return self._call_rest_api('delete', '/products/'+product_id, error='Failed to delete product')
 
 
     @apicall
     def get_product(self, product_id):
+        '''
+        get_product(self, product_id)
+
+        :param product_id:
+        :return:
+        .. seealso::
+        '''
         return self._call_rest_api('get', '/products/'+product_id, error='Failed to get product information')
 
 
     #### KPI ####
     @apicall
     def search_kpi(self, start=0, limit=100, filter={}, **kwargs):
+        '''
+        search_kpi(self, start=0, limit=100, filter={}, **kwargs)
+
+        :param start:
+        :param limit:
+        :param filter:
+        :param kwargs:
+        :return:
+        .. seealso::
+        '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
         return self._call_rest_api('post', '/search/kpi', data=request_data, error='Failed to search kpi entries')
@@ -843,6 +1167,17 @@ class OperetoClient(object):
 
     @apicall
     def modify_kpi(self, kpi_id, product_id, measures=[], append=False, **kwargs):
+        '''
+        modify_kpi(self, kpi_id, product_id, measures=[], append=False, **kwargs)
+
+        :param kpi_id:
+        :param product_id:
+        :param measures:
+        :param append:
+        :param kwargs:
+        :return:
+        .. seealso::
+        '''
         if not isinstance(measures, list):
             measures = [measures]
         request_data = {'kpi_id': kpi_id, 'product_id': product_id, 'measures': measures, 'append': append}
@@ -852,44 +1187,112 @@ class OperetoClient(object):
 
     @apicall
     def delete_kpi(self, kpi_id, product_id):
+        '''
+        delete_kpi(self, kpi_id, product_id)
+
+        :param kpi_id:
+        :param product_id:
+        :return:
+        .. seealso::
+        '''
         return self._call_rest_api('delete', '/kpi/'+kpi_id+'/'+product_id, error='Failed to delete kpi')
 
 
     @apicall
     def get_kpi(self, kpi_id, product_id):
+        '''
+        get_kpi(self, kpi_id, product_id)
+
+        :param kpi_id:
+        :param product_id:
+        :return:
+        .. seealso::
+        '''
         return self._call_rest_api('get', '/kpi/'+kpi_id+'/'+product_id, error='Failed to get kpi information')
 
 
     #### TESTS ####
     @apicall
     def search_tests(self, start=0, limit=100, filter={}):
+        '''
+        search_tests(self, start=0, limit=100, filter={})
+
+        :param start:
+        :param limit:
+        :param filter:
+        :return:
+        .. seealso::
+        '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/tests', data=request_data, error='Failed to search tests')
 
 
     @apicall
     def get_test(self, test_id):
+        '''
+        get_test(self, test_id)
+
+        :param test_id:
+        :return:
+        .. seealso::
+        '''
         return self._call_rest_api('get', '/tests/'+test_id, error='Failed to get test information')
 
 
     #### QUALITY CRITERIA ####
     @apicall
     def search_qc(self, start=0, limit=100, filter={}):
+        '''
+        search_qc(self, start=0, limit=100, filter={})
+
+        :param start:
+        :param limit:
+        :param filter:
+        :return:
+        .. seealso::
+        '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/qc', data=request_data, error='Failed to search quality criteria')
 
     @apicall
     def get_qc(self, qc_id):
+        '''
+        get_qc(self, qc_id)
+
+        :param qc_id:
+        :return:
+        .. seealso::
+        '''
         return self._call_rest_api('get', '/qc/'+qc_id, error='Failed to get test information')
 
     @apicall
     def create_qc(self, product_id=None, expected_result='', actual_result='', weight=100, status='success', **kwargs):
+        '''
+        create_qc(self, product_id=None, expected_result='', actual_result='', weight=100, status='success', **kwargs)
+
+        :param product_id:
+        :param expected_result:
+        :param actual_result:
+        :param weight:
+        :param status:
+        :param kwargs:
+        :return:
+        .. seealso::
+        '''
         request_data = {'product_id': product_id, 'expected': expected_result, 'actual': actual_result,'weight': weight, 'exec_status': status}
         request_data.update(**kwargs)
         return self._call_rest_api('post', '/qc', data=request_data, error='Failed to create criteria')
 
     @apicall
     def modify_qc(self, qc_id=None, **kwargs):
+        '''
+        modify_qc(self, qc_id=None, **kwargs)
+
+        :param qc_id:
+        :param kwargs:
+        :return:
+        .. seealso::
+        '''
         if qc_id:
             request_data = {'id': qc_id}
             request_data.update(**kwargs)
@@ -900,6 +1303,13 @@ class OperetoClient(object):
 
     @apicall
     def delete_qc(self, qc_id):
+        '''
+        delete_qc(self, qc_id)
+
+        :param qc_id:
+        :return:
+        .. seealso::
+        '''
         return self._call_rest_api('delete', '/qc/'+qc_id, error='Failed to delete criteria')
 
 
@@ -907,6 +1317,15 @@ class OperetoClient(object):
     #### USERS ####
     @apicall
     def search_users(self, start=0, limit=100, filter={}):
+        '''
+        search_users(self, start=0, limit=100, filter={})
+
+        :param start:
+        :param limit:
+        :param filter:
+        :return:
+        .. seealso::
+        '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/users', data=request_data, error='Failed to search users')
 
