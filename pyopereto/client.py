@@ -219,7 +219,7 @@ class OperetoClient(object):
 
         | Search for Opereto services, in service data and properties
 
-        :param int start:
+        :param int start: start index to retrieve from
         :param int limit: Limit the number of responses
         :param json filter: filters the search query with Free text search pattern
              example:
@@ -685,14 +685,17 @@ class OperetoClient(object):
         '''
         create_process(self, service, agent=None, title=None, mode=None, service_version=None, **kwargs)
 
-        :param service:
-        :param agent:
-        :param title:
-        :param mode:
-        :param service_version:
-        :param kwargs:
-        :return:
-        .. seealso::
+        Registers a new process
+
+        :param string service: service name
+        :param string agent: a valid value may be one of the following: agent identifier, agent identifiers (list) : ["agent_1", "agent_2"..], "all", "any"
+        :param string title: title
+        :param enum mode: production/development
+        :param string service_version:
+        :param kwargs: process attributes
+        :return: success/failure and process id
+
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/new-process/create-a-new-process
         '''
         if not agent:
             agent = self.input.get('opereto_agent')
@@ -731,9 +734,11 @@ class OperetoClient(object):
         '''
         rerun_process(self, pid, title=None, agent=None)
 
-        :param pid:
-        :param title:
-        :param agent:
+        Rerun process
+
+        :param string pid: Process ID to rerun
+        :param string title: title for the new Process
+        :param string agent: a valid value may be one of the following: agent identifier, agent identifiers (list) : ["agent_1", "agent_2"..], "all", "any"
         :return:
         .. seealso::
         '''
@@ -762,10 +767,14 @@ class OperetoClient(object):
         '''
         modify_process_properties(self, key_value_map={}, pid=None)
 
-        :param key_value_map:
-        :param pid:
-        :return:
-        .. seealso::
+        Modify process output properties.
+        Please note that process property key provided must be declared as an output property in the relevant service specification.
+
+        :param json key value map key_value_map: key value map with process properties to modify
+        :param string pid: Identifier of an existing process
+        :return: success/failure
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-output/modify-output-property
         '''
         pid = self._get_pid(pid)
         request_data={"properties": key_value_map}
@@ -776,11 +785,14 @@ class OperetoClient(object):
         '''
         modify_process_property(self, key, value, pid=None)
 
-        :param key:
-        :param value:
-        :param pid:
+        Modify process output property.
+        Please note that the process property key provided must be declared as an output property in the relevant service specification.
+
+        :param string key: key of property to modify
+        :param string value: value of property to modify
+        :param string pid: Process identifier
         :return:
-        .. seealso::
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-output/modify-output-property
         '''
         pid = self._get_pid(pid)
         request_data={"key" : key, "value": value}
@@ -791,10 +803,11 @@ class OperetoClient(object):
         '''
         modify_process_summary(self, pid=None, text='')
 
-        :param pid:
-        :param text:
+        :param string pid: Identifier of an existing process
+        :param string text: new summary text to update
         :return:
-        .. seealso::
+
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-summary/modify-process-summary
         '''
         pid = self._get_pid(pid)
         request_data={"id" : pid, "data": str(text)}
@@ -806,10 +819,10 @@ class OperetoClient(object):
         '''
         stop_process(self, pids, status='success')
 
-        :param pids:
-        :param status:
-        :return:
-        .. seealso::
+        :param string pids: Identifier of an existing process
+        :param string status: Any of the following possible values:  success , failure , error , warning , terminated
+        :return: success/failure
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-termination/stop-a-running-process
         '''
         if status not in process_result_statuses:
             raise OperetoClientError('Invalid process result [%s]'%status)
@@ -823,7 +836,9 @@ class OperetoClient(object):
         '''
         get_process_status(self, pid=None)
 
-        :param pid:
+        Get status of a process
+
+        :param string pid: Process Identifier
         :return:
         .. seealso::
         '''
@@ -836,9 +851,11 @@ class OperetoClient(object):
         '''
         get_process_flow(self, pid=None)
 
-        :param pid:
+        Get process in flow context.
+
+        :param string pid: Process identifier
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-flow/get-process-flow
         '''
         pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/flow', error='Failed to fetch process information')
@@ -849,9 +866,11 @@ class OperetoClient(object):
         '''
         get_process_rca(self, pid=None)
 
-        :param pid:
+        Get the RCA tree of a given failed process. The RCA tree contains all failed child processes that caused the failure of the given process.
+
+        :param string pid: Process Identifier
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-rca/get-process-rca
         '''
         pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/rca', error='Failed to fetch process information')
@@ -862,7 +881,9 @@ class OperetoClient(object):
         '''
         get_process_info(self, pid=None)
 
-        :param pid:
+        Get information of a given process
+
+        :param string pid: Process Identifier
         :return:
         .. seealso::
         '''
@@ -875,11 +896,11 @@ class OperetoClient(object):
         '''
         get_process_log(self, pid=None, start=0, limit=1000
 
-        :param pid:
-        :param start:
-        :param limit:
-        :return:
-        .. seealso::
+        :param string pid: Process Identifier
+        :param int start: start index to retrieve from
+        :param int limit: Maximum number of entities to retrieve
+        :return: List of process log entries
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-log/get-process-log
         '''
         pid = self._get_pid(pid)
         data = self._call_rest_api('get', '/processes/'+pid+'/log?start={}&limit={}'.format(start,limit), error='Failed to fetch process log')
@@ -897,10 +918,12 @@ class OperetoClient(object):
         '''
         get_process_properties(self, pid=None, name=None)
 
-        :param pid:
-        :param name:
-        :return:
-        .. seealso::
+        Get process properties (both input and output properties)
+
+        :param string pid: Process Identifier
+        :param string name: optional - Property name
+        :return: Properties of a process
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-properties/get-process-properties
         '''
         pid = self._get_pid(pid)
         res = self._call_rest_api('get', '/processes/'+pid+'/properties', error='Failed to fetch process properties')
@@ -918,10 +941,9 @@ class OperetoClient(object):
         '''
         wait_for(self, pids=[], status_list=process_result_statuses)
 
-        :param pids:
-        :param status_list:
-        :return:
-        .. seealso::
+        :param pids: list of processes to be in the given status list or to finish
+        :param status_list: optional - statuses to wait for.
+        :return: statuses of finished process
         '''
         results={}
         pids = self._get_pids(pids)
@@ -957,9 +979,10 @@ class OperetoClient(object):
         '''
         wait_to_start(self, pids=[])
 
-        :param pids:
-        :return:
-        .. seealso::
+        Wait for a process to start
+
+        :param pids: list of processes to wait to start
+        :return: status of finished process
         '''
         actual_pids = self._get_pids(pids)
         return self.wait_for(pids=actual_pids, status_list=process_result_statuses+['in_process'])
@@ -969,9 +992,11 @@ class OperetoClient(object):
         '''
         wait_to_end(self, pids=[])
 
-        :param pids:
-        :return:
-        .. seealso::
+        Wait for a process to end
+
+        :param pids: list of processes to wait to finish
+        :return: status of finished process
+
         '''
         actual_pids = self._get_pids(pids)
         return self.wait_for(pids=actual_pids, status_list=process_result_statuses)
@@ -982,7 +1007,7 @@ class OperetoClient(object):
         wait_to_end(self, pids=[])
 
         :param pids:
-        :return:
+        :return: status of finished process
         .. seealso::
         '''
         return self._status_ok('success', pids)
@@ -1048,10 +1073,12 @@ class OperetoClient(object):
         '''
         get_process_runtime_cache(self, key, pid=None)
 
-        :param key:
-        :param pid:
-        :return:
-        .. seealso::
+        Get a pre-defined run time parameter value
+
+        :param key: Identifier of the runtime cache
+        :param pid: Identifier of an existing process
+        :return: pre-defined runtime parameter value
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-cache/get-process-runtime-cache
         '''
         value = None
         pid = self._get_pid(pid)
@@ -1064,11 +1091,13 @@ class OperetoClient(object):
         '''
         set_process_runtime_cache(self, key, value, pid=None)
 
-        :param key:
-        :param value:
-        :param pid:
+        Set a process run time parameter
+
+        :param string key: parameter key
+        :param string value: parameter value
+        :param string pid: Identifier of an existing process
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-cache/set-process-runtime-cache
         '''
         pid = self._get_pid(pid)
         self._call_rest_api('post', '/processes/'+pid+'/cache', data={'key': key, 'value': value}, error='Failed to modify process runtime cache')
