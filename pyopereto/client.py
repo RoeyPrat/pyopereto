@@ -473,18 +473,49 @@ class OperetoClient(object):
 
     @apicall
     def create_environment(self, topology_name, topology={}, id=None, **kwargs):
+        '''
+        create_environment(self, topology_name, topology={}, id=None, **kwargs)
+
+        Create a new environment.
+        :param string topology_name: The topology identifier. Must be provided to create an environment.
+        :param topology: Topology data (must match the topology json schema)
+        :param id: The environment identifier. If none provided when creating environment, Opereto will automatically assign a unique identifier.
+        :param kwargs:
+        :return: success and id of created environment
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/modify-environment/create/modify-environment
+        '''
         request_data = {'topology_name': topology_name,'id': id, 'topology':topology, 'add_only':True}
         request_data.update(**kwargs)
         return self._call_rest_api('post', '/environments', data=request_data, error='Failed to create environment')
 
     @apicall
     def modify_environment(self, environment_id, **kwargs):
+        '''
+        modify_environment(self, environment_id, **kwargs)
+
+        Modifies an existing environment
+
+        :param string environment_id:
+        :param kwargs: variables to change in the environment
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/search-agents/create/modify-environment
+        '''
         request_data = {'id': environment_id}
         request_data.update(**kwargs)
         return self._call_rest_api('post', '/environments', data=request_data, error='Failed to modify environment')
 
     @apicall
     def delete_environment(self, environment_id):
+        '''
+        delete_environment(self, environment_id)
+
+        Delete an existing environment
+
+        :param string environment_id: Identifier of an existing environment
+
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/getdelete-environment/delete-an-environment
+        '''
         return self._call_rest_api('delete', '/environments/'+environment_id, error='Failed to delete environment [%s]'%environment_id)
 
 
