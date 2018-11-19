@@ -525,12 +525,20 @@ class OperetoClient(object):
         '''
         search_agents(self, start=0, limit=100, filter={}, **kwargs)
 
-        :param start:
-        :param limit:
-        :param filter:
+        Search agents
+        :param int start: start index to retrieve from
+        :param int limit: Maximum number of entities to retrieve
+        :param json filter: filters the search query with Free text search pattern
+             example:
+             {
+                "filter":
+                {
+                    "generic":"My agent"
+                }
+             }
         :param kwargs:
-        :return:
-        .. seealso::
+        :return: List of found agents
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/search-agents/search-agents-[post]
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -541,9 +549,11 @@ class OperetoClient(object):
         '''
         get_agents(self, agent_id)
 
-        :param agent_id:
-        :return:
-        .. seealso::
+        Get agent general details
+
+        :param string agent_id: Identifier of an existing agent
+        :return: Agent general details
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/getdelete-agent/get-agent-information
         '''
         return self._call_rest_api('get', '/agents/'+agent_id, error='Failed to fetch agent details.')
 
@@ -553,9 +563,11 @@ class OperetoClient(object):
         '''
         get_agent_properties(self, agent_id)
 
-        :param agent_id:
+        Get agent properties separated to custom properties defined by the user and built-in properties provided by Opereto.
+
+        :param string agent_id: Identifier of an existing agent
         :return:
-        .. seealso::
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/agent-properties/get-agent-information
         '''
         return self._call_rest_api('get', '/agents/'+agent_id+'/properties', error='Failed to fetch agent [%s] properties'%agent_id)
 
@@ -564,8 +576,8 @@ class OperetoClient(object):
         '''
         get_all_agents(self)
 
-        :return:
-        .. seealso::
+        Get all agents
+
         '''
         return self._call_rest_api('get', '/agents/all', error='Failed to fetch agents')
 
@@ -575,11 +587,13 @@ class OperetoClient(object):
         '''
         modify_agent_property(self, agent_id, key, value)
 
-        :param agent_id:
-        :param key:
-        :param value:
+        Modifies agent single property.
+
+        :param string agent_id: Identifier of an existing agent
+        :param key: key of key-value json map
+        :param value: value key-value json map
         :return:
-        .. seealso::
+        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/agent-properties/add/modify-agent-properties
         '''
         return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data={key: value}, error='Failed to modify agent [%s] property [%s]'%(agent_id,key))
 
@@ -589,10 +603,17 @@ class OperetoClient(object):
         '''
         modify_agent_properties(self, agent_id, key_value_map={})
 
-        :param agent_id:
-        :param key_value_map:
+        Modify agent properties
+
+        :param string agent_id: Identifier of an existing agent
+        :param json key_value_map: key value map of properties to change
+               example:
+               {
+                 "mykey": "myvalue",
+                 "mykey2": "myvalue2"
+                }
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/agents-/-environments/agent-properties/add/modify-agent-properties
         '''
         return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data=key_value_map, error='Failed to modify agent [%s] properties'%agent_id)
 
@@ -602,10 +623,14 @@ class OperetoClient(object):
         '''
         create_agent(self, agent_id=None, **kwargs)
 
-        :param agent_id:
+        | Creates an agent based on the identifier provided.
+        | The agent will become online when a real agent will connect using this identifier.
+        | However, in most cases, the agent entity is created automatically when a new agent connects to opereto.
+
+        :param string agent_id: Identifier of an existing agent
         :param kwargs:
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/agents-/-environments/modify-agent/add/modify-agent
         '''
         request_data = {'id': agent_id, 'add_only':True}
         request_data.update(**kwargs)
@@ -617,10 +642,12 @@ class OperetoClient(object):
         '''
         modify_agent(self, agent_id, **kwargs)
 
-        :param agent_id:
+        | Modifies agent information.
+
+        :param string agent_id: Identifier of an existing agent
         :param kwargs:
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/agents-/-environments/modify-agent/add/modify-agent
         '''
         request_data = {'id': agent_id}
         request_data.update(**kwargs)
@@ -632,9 +659,11 @@ class OperetoClient(object):
         '''
         get_agent(self, agent_id)
 
-        :param agent_id:
+        Get agent general details
+
+        :param string agent_id: Identifier of an existing agent
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/agents-/-environments/getdelete-agent/get-agent-information
         '''
         return self._call_rest_api('get', '/agents/'+agent_id, error='Failed to fetch agent [%s] status'%agent_id)
 
@@ -643,9 +672,10 @@ class OperetoClient(object):
         '''
         get_agent_status(self, agent_id)
 
-        :param agent_id:
+        Get agent status
+
+        :param string agent_id: Identifier of an existing agent
         :return:
-        .. seealso::
         '''
         return self.get_agent(agent_id)
 
