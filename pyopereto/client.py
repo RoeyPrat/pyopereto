@@ -1109,12 +1109,21 @@ class OperetoClient(object):
         '''
         search_globals(self, start=0, limit=100, filter={}, **kwargs)
 
-        :param start:
-        :param limit:
-        :param filter:
+        Search for global parameters
+
+        :param int start: start index to retrieve from
+        :param int limit: Limit the number of responses
+        :param json filter: filters the search query with Free text search pattern
+             example:
+             {
+                "filter":
+                {
+                    "generic":"my global param"
+                }
+             }
         :param kwargs:
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/global-parameters/search-globals/search-globals-[post]
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -1127,12 +1136,18 @@ class OperetoClient(object):
         '''
         search_products(self, start=0, limit=100, filter={}, **kwargs)
 
-        :param start:
-        :param limit:
-        :param filter:
+        :param int start: start index to retrieve from
+        :param int limit: Limit the number of responses
+        :param json filter: filters the search query with Free text search pattern
+             example:
+             {
+                "filter":
+                {
+                    "generic":"my product param"
+                }
+             }
         :param kwargs:
         :return:
-        .. seealso::
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -1142,6 +1157,8 @@ class OperetoClient(object):
     def create_product(self, product, version, build, name=None, description=None, attributes={}):
         '''
         create_product(self, product, version, build, name=None, description=None, attributes={})
+
+        Create product
 
         :param product:
         :param version:
@@ -1168,6 +1185,8 @@ class OperetoClient(object):
         '''
         modify_product(self, product_id, name=None, description=None, attributes={})
 
+        Modify product
+
         :param product_id:
         :param name:
         :param description:
@@ -1187,6 +1206,8 @@ class OperetoClient(object):
         '''
         delete_product(self, product_id)
 
+        Delete a product
+
         :param product_id:
         :return:
         .. seealso::
@@ -1198,6 +1219,8 @@ class OperetoClient(object):
     def get_product(self, product_id):
         '''
         get_product(self, product_id)
+
+        Get a product
 
         :param product_id:
         :return:
@@ -1212,12 +1235,21 @@ class OperetoClient(object):
         '''
         search_kpi(self, start=0, limit=100, filter={}, **kwargs)
 
-        :param start:
-        :param limit:
-        :param filter:
+        Search KPI
+
+        :param int start: start index to retrieve from
+        :param int limit: Limit the number of responses
+        :param json filter: filters the search query with Free text search pattern
+             example:
+             {
+                "filter":
+                {
+                    "generic":"my Kpi"
+                }
+             }
         :param kwargs:
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-kpi/getdelete-kpi/search-kpi-[post]
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -1229,13 +1261,15 @@ class OperetoClient(object):
         '''
         modify_kpi(self, kpi_id, product_id, measures=[], append=False, **kwargs)
 
-        :param kpi_id:
-        :param product_id:
-        :param measures:
-        :param append:
+        Creates a new kpi or modifies existing one.
+
+        :param string kpi_id: The KPI identifier (unique per product)
+        :param string product_id: The product (release candidate) identifier
+        :param array measures: List of numeric (integers or floats) measures
+        :param boolean append: True to append new measures to existing ones for this API. False to override previous measures.
         :param kwargs:
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-kpi/modify-kpi/add/modify-kpi
         '''
         if not isinstance(measures, list):
             measures = [measures]
@@ -1249,10 +1283,12 @@ class OperetoClient(object):
         '''
         delete_kpi(self, kpi_id, product_id)
 
+        Delete a key performance indicator (KPI)
+
         :param kpi_id:
         :param product_id:
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-kpi/getdelete-kpi/delete-kpi
         '''
         return self._call_rest_api('delete', '/kpi/'+kpi_id+'/'+product_id, error='Failed to delete kpi')
 
@@ -1262,10 +1298,12 @@ class OperetoClient(object):
         '''
         get_kpi(self, kpi_id, product_id)
 
+        Get KPI information
+
         :param kpi_id:
         :param product_id:
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-kpi/getdelete-kpi/get-kpi-information
         '''
         return self._call_rest_api('get', '/kpi/'+kpi_id+'/'+product_id, error='Failed to get kpi information')
 
@@ -1276,11 +1314,20 @@ class OperetoClient(object):
         '''
         search_tests(self, start=0, limit=100, filter={})
 
-        :param start:
-        :param limit:
-        :param filter:
+        Search tests
+
+        :param int start: start index to retrieve from
+        :param int limit: Limit the number of responses
+        :param json filter: filters the search query with Free text search pattern
+             example:
+             {
+                "filter":
+                {
+                    "generic":"my Test"
+                }
+             }
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-tests/search-tests/search-product-tests-[post]
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/tests', data=request_data, error='Failed to search tests')
@@ -1291,9 +1338,11 @@ class OperetoClient(object):
         '''
         get_test(self, test_id)
 
+        Get test information.
+
         :param test_id:
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-tests/get-test/get-test-information
         '''
         return self._call_rest_api('get', '/tests/'+test_id, error='Failed to get test information')
 
@@ -1304,11 +1353,18 @@ class OperetoClient(object):
         '''
         search_qc(self, start=0, limit=100, filter={})
 
-        :param start:
-        :param limit:
-        :param filter:
+        :param int start: start index to retrieve from
+        :param int limit: Limit the number of responses
+        :param json filter: filters the search query with Free text search pattern
+             example:
+             {
+                "filter":
+                {
+                    "generic":"my QC"
+                }
+             }
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-criteria/search-criteria/search-quality-criteria-[post]
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/qc', data=request_data, error='Failed to search quality criteria')
@@ -1318,9 +1374,11 @@ class OperetoClient(object):
         '''
         get_qc(self, qc_id)
 
+        Get criteria information.
+
         :param qc_id:
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-criteria/getdelete-criteria/get-quality-criteria-information
         '''
         return self._call_rest_api('get', '/qc/'+qc_id, error='Failed to get test information')
 
@@ -1329,14 +1387,14 @@ class OperetoClient(object):
         '''
         create_qc(self, product_id=None, expected_result='', actual_result='', weight=100, status='success', **kwargs)
 
-        :param product_id:
-        :param expected_result:
-        :param actual_result:
-        :param weight:
-        :param status:
+        :param string product_id: The product (release candidate) identifier
+        :param string expected_result: Text describing the expected result of this criteria
+        :param string actual_result: Text describing the actual result of this criteria
+        :param string weight: Overall weight of this criteria (integer between 0-100)
+        :param enum status: pass/fail/norun
         :param kwargs:
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-criteria/modify-criteria/add/modify-custom-quality-criteria
         '''
         request_data = {'product_id': product_id, 'expected': expected_result, 'actual': actual_result,'weight': weight, 'exec_status': status}
         request_data.update(**kwargs)
@@ -1347,10 +1405,12 @@ class OperetoClient(object):
         '''
         modify_qc(self, qc_id=None, **kwargs)
 
+        Modify a Quality Criteria
+
         :param qc_id:
         :param kwargs:
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-criteria/modify-criteria/add/modify-custom-quality-criteria
         '''
         if qc_id:
             request_data = {'id': qc_id}
@@ -1365,9 +1425,11 @@ class OperetoClient(object):
         '''
         delete_qc(self, qc_id)
 
+        Delete quality criteria.
+
         :param qc_id:
         :return:
-        .. seealso::
+        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-criteria/getdelete-criteria/delete-quality-criteria
         '''
         return self._call_rest_api('delete', '/qc/'+qc_id, error='Failed to delete criteria')
 
@@ -1378,6 +1440,8 @@ class OperetoClient(object):
     def search_users(self, start=0, limit=100, filter={}):
         '''
         search_users(self, start=0, limit=100, filter={})
+
+        Search users
 
         :param start:
         :param limit:
