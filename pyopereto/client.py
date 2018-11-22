@@ -206,7 +206,6 @@ class OperetoClient(object):
         hello(self)
 
         | Check if Opereto is up and running.
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/general/ping/ping-to-server
         '''
         return self._call_rest_api('get', '/hello', error='Failed to get response from the opereto server')
 
@@ -237,7 +236,6 @@ class OperetoClient(object):
         |       {"status": "success", "data": [{"modified_date": "2018-11-10T11:12:27.867047", "orig_date": "2018-11-10T11:09:19.259022", "type": "action", "id": "hello_world", "name": "hello world"}]}
         |
         |
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/service-search/search-services-[post]
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -252,8 +250,6 @@ class OperetoClient(object):
         | Get a service meta data (id, audit log, type, etc.) information.
         :param string service_id: Identifier of an existing service
         :return: Service meta data
-
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/getdelete-service/get-service-information
 
         '''
         return self._call_rest_api('get', '/services/'+service_id, error='Failed to fetch service information')
@@ -270,7 +266,6 @@ class OperetoClient(object):
         :param string version: default or the version of the service
         :return: json service version details
 
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/getdelete-service/get-service-information
         '''
         return self._call_rest_api('get', '/services/'+service_id+'/'+mode+'/'+version, error='Failed to fetch service information')
 
@@ -287,8 +282,6 @@ class OperetoClient(object):
         :param string agent_mapping: agents mapping specification
         :return: Object with "success" status or "failure" with specified errors
         :rtype: json
-
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/service-validation/validate-service-data
 
         '''
         request_data = {'id': service_id}
@@ -325,8 +318,6 @@ class OperetoClient(object):
         :param kwargs:
         :return: success/failure
 
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/upload-to-production/upload-production-service
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/upload-to-sandbox/upload-a-service-to-sandbox
         '''
         files = {'service_file': open(service_zip_file,'rb')}
         url_suffix = '/services/upload/%s'%mode
@@ -353,7 +344,6 @@ class OperetoClient(object):
         :param kwargs:
         :return: success/failure
 
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/import-service/import-a-service
         '''
         request_data = {'repository': repository_json, 'mode': mode, 'service_version': service_version, 'id': service_id}
         url_suffix = '/services'
@@ -371,7 +361,6 @@ class OperetoClient(object):
         :param service_id: Service identifier
         :return: success/failure
 
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/getdelete-service/delete-service
         '''
         return self._call_rest_api('delete', '/services/'+service_id, error='Failed to delete service')
 
@@ -386,7 +375,6 @@ class OperetoClient(object):
         :param service_id: Service identifier
         :return: success/failure
 
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/service-versions/delete-service-version
         '''
         return self._call_rest_api('delete', '/services/'+service_id+'/'+mode+'/'+service_version, error='Failed to delete service')
 
@@ -399,7 +387,6 @@ class OperetoClient(object):
         List all services in the current user's development sandbox
         :return: List of sandbox services
 
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/service-sandbox/list-sandbox-service
         '''
         return self._call_rest_api('get', '/services/sandbox', error='Failed to list sandbox services')
 
@@ -413,10 +400,8 @@ class OperetoClient(object):
 
         :return: success/failure
 
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/automation-services/service-sandbox/parge-developmet-sandbox
         '''
         return self._call_rest_api('delete', '/services/sandbox', error='Failed to delete sandbox services')
-
 
 
     #### ENVIRONMENTS ####
@@ -429,7 +414,6 @@ class OperetoClient(object):
 
         :return: List of environments
 
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/search-environments/search-environments-[get]
         '''
         return self._call_rest_api('get', '/search/environments', error='Failed to search environments')
 
@@ -444,7 +428,6 @@ class OperetoClient(object):
         :param String environment_id: Identifier of an existing environment
         :return: environment data
 
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/getdelete-environment/get-environment-information
         '''
         return self._call_rest_api('get', '/environments/'+environment_id, error='Failed to fetch environment [%s]'%environment_id)
 
@@ -483,7 +466,6 @@ class OperetoClient(object):
         :param kwargs:
         :return: success and id of created environment
 
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/modify-environment/create/modify-environment
         '''
         request_data = {'topology_name': topology_name,'id': id, 'topology':topology, 'add_only':True}
         request_data.update(**kwargs)
@@ -499,7 +481,6 @@ class OperetoClient(object):
         :param string environment_id:
         :param kwargs: variables to change in the environment
 
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/search-agents/create/modify-environment
         '''
         request_data = {'id': environment_id}
         request_data.update(**kwargs)
@@ -514,7 +495,6 @@ class OperetoClient(object):
 
         :param string environment_id: Identifier of an existing environment
 
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/getdelete-environment/delete-an-environment
         '''
         return self._call_rest_api('delete', '/environments/'+environment_id, error='Failed to delete environment [%s]'%environment_id)
 
@@ -538,7 +518,6 @@ class OperetoClient(object):
              }
         :param kwargs:
         :return: List of found agents
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/search-agents/search-agents-[post]
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -553,7 +532,6 @@ class OperetoClient(object):
 
         :param string agent_id: Identifier of an existing agent
         :return: Agent general details
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/getdelete-agent/get-agent-information
         '''
         return self._call_rest_api('get', '/agents/'+agent_id, error='Failed to fetch agent details.')
 
@@ -567,7 +545,6 @@ class OperetoClient(object):
 
         :param string agent_id: Identifier of an existing agent
         :return:
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/agent-properties/get-agent-information
         '''
         return self._call_rest_api('get', '/agents/'+agent_id+'/properties', error='Failed to fetch agent [%s] properties'%agent_id)
 
@@ -593,7 +570,6 @@ class OperetoClient(object):
         :param key: key of key-value json map
         :param value: value key-value json map
         :return:
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/agents-/-environments/agent-properties/add/modify-agent-properties
         '''
         return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data={key: value}, error='Failed to modify agent [%s] property [%s]'%(agent_id,key))
 
@@ -613,7 +589,6 @@ class OperetoClient(object):
                  "mykey2": "myvalue2"
                 }
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/agents-/-environments/agent-properties/add/modify-agent-properties
         '''
         return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data=key_value_map, error='Failed to modify agent [%s] properties'%agent_id)
 
@@ -630,7 +605,6 @@ class OperetoClient(object):
         :param string agent_id: Identifier of an existing agent
         :param kwargs:
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/agents-/-environments/modify-agent/add/modify-agent
         '''
         request_data = {'id': agent_id, 'add_only':True}
         request_data.update(**kwargs)
@@ -647,7 +621,6 @@ class OperetoClient(object):
         :param string agent_id: Identifier of an existing agent
         :param kwargs:
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/agents-/-environments/modify-agent/add/modify-agent
         '''
         request_data = {'id': agent_id}
         request_data.update(**kwargs)
@@ -663,7 +636,6 @@ class OperetoClient(object):
 
         :param string agent_id: Identifier of an existing agent
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/agents-/-environments/getdelete-agent/get-agent-information
         '''
         return self._call_rest_api('get', '/agents/'+agent_id, error='Failed to fetch agent [%s] status'%agent_id)
 
@@ -695,7 +667,6 @@ class OperetoClient(object):
         :param kwargs: process attributes
         :return: success/failure and process id
 
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/new-process/create-a-new-process
         '''
         if not agent:
             agent = self.input.get('opereto_agent')
@@ -740,7 +711,6 @@ class OperetoClient(object):
         :param string title: title for the new Process
         :param string agent: a valid value may be one of the following: agent identifier, agent identifiers (list) : ["agent_1", "agent_2"..], "all", "any"
         :return:
-        .. seealso::
         '''
         request_data = {}
         if title:
@@ -774,7 +744,6 @@ class OperetoClient(object):
         :param string pid: Identifier of an existing process
         :return: success/failure
 
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-output/modify-output-property
         '''
         pid = self._get_pid(pid)
         request_data={"properties": key_value_map}
@@ -792,7 +761,6 @@ class OperetoClient(object):
         :param string value: value of property to modify
         :param string pid: Process identifier
         :return:
-        .. seealso:: https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-output/modify-output-property
         '''
         pid = self._get_pid(pid)
         request_data={"key" : key, "value": value}
@@ -807,7 +775,6 @@ class OperetoClient(object):
         :param string text: new summary text to update
         :return:
 
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-summary/modify-process-summary
         '''
         pid = self._get_pid(pid)
         request_data={"id" : pid, "data": str(text)}
@@ -822,7 +789,6 @@ class OperetoClient(object):
         :param string pids: Identifier of an existing process
         :param string status: Any of the following possible values:  success , failure , error , warning , terminated
         :return: success/failure
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-termination/stop-a-running-process
         '''
         if status not in process_result_statuses:
             raise OperetoClientError('Invalid process result [%s]'%status)
@@ -840,7 +806,6 @@ class OperetoClient(object):
 
         :param string pid: Process Identifier
         :return:
-        .. seealso::
         '''
         pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/status', error='Failed to fetch process status')
@@ -855,7 +820,6 @@ class OperetoClient(object):
 
         :param string pid: Process identifier
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-flow/get-process-flow
         '''
         pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/flow', error='Failed to fetch process information')
@@ -870,7 +834,6 @@ class OperetoClient(object):
 
         :param string pid: Process Identifier
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-rca/get-process-rca
         '''
         pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/rca', error='Failed to fetch process information')
@@ -885,7 +848,6 @@ class OperetoClient(object):
 
         :param string pid: Process Identifier
         :return:
-        .. seealso::
         '''
 
         pid = self._get_pid(pid)
@@ -900,7 +862,6 @@ class OperetoClient(object):
         :param int start: start index to retrieve from
         :param int limit: Maximum number of entities to retrieve
         :return: List of process log entries
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-log/get-process-log
         '''
         pid = self._get_pid(pid)
         data = self._call_rest_api('get', '/processes/'+pid+'/log?start={}&limit={}'.format(start,limit), error='Failed to fetch process log')
@@ -923,7 +884,6 @@ class OperetoClient(object):
         :param string pid: Process Identifier
         :param string name: optional - Property name
         :return: Properties of a process
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-properties/get-process-properties
         '''
         pid = self._get_pid(pid)
         res = self._call_rest_api('get', '/processes/'+pid+'/properties', error='Failed to fetch process properties')
@@ -1008,7 +968,6 @@ class OperetoClient(object):
 
         :param pids:
         :return: status of finished process
-        .. seealso::
         '''
         return self._status_ok('success', pids)
 
@@ -1019,7 +978,6 @@ class OperetoClient(object):
 
         :param pids:
         :return:
-        .. seealso::
         '''
         return self._status_ok('failure', pids)
 
@@ -1030,7 +988,6 @@ class OperetoClient(object):
 
         :param pids:
         :return:
-        .. seealso::
         '''
         return self._status_ok('error', pids)
 
@@ -1041,7 +998,6 @@ class OperetoClient(object):
 
         :param pids:
         :return:
-        .. seealso::
         '''
         return self._status_ok('timeout', pids)
 
@@ -1052,7 +1008,6 @@ class OperetoClient(object):
 
         :param pids:
         :return:
-        .. seealso::
         '''
         return self._status_ok('warning', pids)
 
@@ -1063,7 +1018,6 @@ class OperetoClient(object):
 
         :param pids:
         :return:
-        .. seealso::
         '''
         return self._status_ok('terminate', pids)
 
@@ -1078,7 +1032,6 @@ class OperetoClient(object):
         :param key: Identifier of the runtime cache
         :param pid: Identifier of an existing process
         :return: pre-defined runtime parameter value
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-cache/get-process-runtime-cache
         '''
         value = None
         pid = self._get_pid(pid)
@@ -1097,7 +1050,6 @@ class OperetoClient(object):
         :param string value: parameter value
         :param string pid: Identifier of an existing process
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/processes-&-flows/process-cache/set-process-runtime-cache
         '''
         pid = self._get_pid(pid)
         self._call_rest_api('post', '/processes/'+pid+'/cache', data={'key': key, 'value': value}, error='Failed to modify process runtime cache')
@@ -1123,7 +1075,6 @@ class OperetoClient(object):
              }
         :param kwargs:
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/global-parameters/search-globals/search-globals-[post]
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -1167,7 +1118,6 @@ class OperetoClient(object):
         :param description:
         :param attributes:
         :return:
-        .. seealso::
         '''
         request_data = {'product': product, 'version': version, 'build': build}
         if name: request_data['name']=name
@@ -1192,7 +1142,6 @@ class OperetoClient(object):
         :param description:
         :param attributes:
         :return:
-        .. seealso::
         '''
         request_data = {'id': product_id}
         if name: request_data['name']=name
@@ -1210,7 +1159,6 @@ class OperetoClient(object):
 
         :param product_id:
         :return:
-        .. seealso::
         '''
         return self._call_rest_api('delete', '/products/'+product_id, error='Failed to delete product')
 
@@ -1224,7 +1172,6 @@ class OperetoClient(object):
 
         :param product_id:
         :return:
-        .. seealso::
         '''
         return self._call_rest_api('get', '/products/'+product_id, error='Failed to get product information')
 
@@ -1249,7 +1196,6 @@ class OperetoClient(object):
              }
         :param kwargs:
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-kpi/getdelete-kpi/search-kpi-[post]
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -1269,7 +1215,6 @@ class OperetoClient(object):
         :param boolean append: True to append new measures to existing ones for this API. False to override previous measures.
         :param kwargs:
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-kpi/modify-kpi/add/modify-kpi
         '''
         if not isinstance(measures, list):
             measures = [measures]
@@ -1288,7 +1233,6 @@ class OperetoClient(object):
         :param kpi_id:
         :param product_id:
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-kpi/getdelete-kpi/delete-kpi
         '''
         return self._call_rest_api('delete', '/kpi/'+kpi_id+'/'+product_id, error='Failed to delete kpi')
 
@@ -1303,7 +1247,6 @@ class OperetoClient(object):
         :param kpi_id:
         :param product_id:
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-kpi/getdelete-kpi/get-kpi-information
         '''
         return self._call_rest_api('get', '/kpi/'+kpi_id+'/'+product_id, error='Failed to get kpi information')
 
@@ -1327,7 +1270,6 @@ class OperetoClient(object):
                 }
              }
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-tests/search-tests/search-product-tests-[post]
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/tests', data=request_data, error='Failed to search tests')
@@ -1342,7 +1284,6 @@ class OperetoClient(object):
 
         :param test_id:
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-tests/get-test/get-test-information
         '''
         return self._call_rest_api('get', '/tests/'+test_id, error='Failed to get test information')
 
@@ -1364,7 +1305,6 @@ class OperetoClient(object):
                 }
              }
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-criteria/search-criteria/search-quality-criteria-[post]
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/qc', data=request_data, error='Failed to search quality criteria')
@@ -1378,7 +1318,6 @@ class OperetoClient(object):
 
         :param qc_id:
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-criteria/getdelete-criteria/get-quality-criteria-information
         '''
         return self._call_rest_api('get', '/qc/'+qc_id, error='Failed to get test information')
 
@@ -1394,7 +1333,6 @@ class OperetoClient(object):
         :param enum status: pass/fail/norun
         :param kwargs:
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-criteria/modify-criteria/add/modify-custom-quality-criteria
         '''
         request_data = {'product_id': product_id, 'expected': expected_result, 'actual': actual_result,'weight': weight, 'exec_status': status}
         request_data.update(**kwargs)
@@ -1410,7 +1348,6 @@ class OperetoClient(object):
         :param qc_id:
         :param kwargs:
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-criteria/modify-criteria/add/modify-custom-quality-criteria
         '''
         if qc_id:
             request_data = {'id': qc_id}
@@ -1429,7 +1366,6 @@ class OperetoClient(object):
 
         :param qc_id:
         :return:
-        .. seealso::https://operetoapi.docs.apiary.io/#reference/product-criteria/getdelete-criteria/delete-quality-criteria
         '''
         return self._call_rest_api('delete', '/qc/'+qc_id, error='Failed to delete criteria')
 
@@ -1447,7 +1383,6 @@ class OperetoClient(object):
         :param limit:
         :param filter:
         :return:
-        .. seealso::
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/users', data=request_data, error='Failed to search users')
