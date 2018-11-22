@@ -2,7 +2,11 @@
 Source documentation for pyopereto exposed methods and pyopereto CLI
 
 #### dependencies
- - sphinx
+- sphinx  
+
+For mac:  
+- brew install sphinx-doc
+- brew link sphinx-doc --force
 
 
 #### doc generation
