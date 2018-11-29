@@ -13,7 +13,7 @@ For mac:
 ```
 make html
 ```
-After generating the html, the documents are generated under the _build directory.
-Main entry is ./_build/html/index.html
+After generating the html, the documents are generated under the pyopereto/docs directory.
+Main entry is pyopereto/docs/html/index.html
 
 
