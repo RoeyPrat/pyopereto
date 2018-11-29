@@ -276,7 +276,7 @@ class OperetoClient(object):
 
         | Verifies validity of service yaml
 
-        :param string service_id:
+        :param string service_id: Service identification
         :param string specification: service specification yaml
         :param string description: service description written in text or markdown style
         :param string agent_mapping: agents mapping specification
@@ -299,6 +299,9 @@ class OperetoClient(object):
         '''
         modify_service(self, service_id, type)
 
+        :param string service_id: Service identification
+        :param type:
+        :return:
         '''
         request_data = {'id': service_id, 'type': type}
         return self._call_rest_api('post', '/services', data=request_data, error='Failed to modify service [%s]'%service_id)
@@ -478,8 +481,9 @@ class OperetoClient(object):
 
         Modifies an existing environment
 
-        :param string environment_id:
+        :param string environment_id: The environment identifier.
         :param kwargs: variables to change in the environment
+        :return: success/failure
 
         '''
         request_data = {'id': environment_id}
@@ -494,6 +498,7 @@ class OperetoClient(object):
         Delete an existing environment
 
         :param string environment_id: Identifier of an existing environment
+        :return: success/failure
 
         '''
         return self._call_rest_api('delete', '/environments/'+environment_id, error='Failed to delete environment [%s]'%environment_id)
@@ -544,7 +549,7 @@ class OperetoClient(object):
         Get agent properties separated to custom properties defined by the user and built-in properties provided by Opereto.
 
         :param string agent_id: Identifier of an existing agent
-        :return:
+        :return: agent properties json
         '''
         return self._call_rest_api('get', '/agents/'+agent_id+'/properties', error='Failed to fetch agent [%s] properties'%agent_id)
 
@@ -554,6 +559,8 @@ class OperetoClient(object):
         get_all_agents(self)
 
         Get all agents
+
+        :return: list of existing agents
 
         '''
         return self._call_rest_api('get', '/agents/all', error='Failed to fetch agents')
@@ -569,7 +576,7 @@ class OperetoClient(object):
         :param string agent_id: Identifier of an existing agent
         :param key: key of key-value json map
         :param value: value key-value json map
-        :return:
+        :return:success/failure
         '''
         return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data={key: value}, error='Failed to modify agent [%s] property [%s]'%(agent_id,key))
 
@@ -588,7 +595,7 @@ class OperetoClient(object):
                  "mykey": "myvalue",
                  "mykey2": "myvalue2"
                 }
-        :return:
+        :return: success/failure
         '''
         return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data=key_value_map, error='Failed to modify agent [%s] properties'%agent_id)
 
@@ -604,7 +611,7 @@ class OperetoClient(object):
 
         :param string agent_id: Identifier of an existing agent
         :param kwargs:
-        :return:
+        :return: success/failure
         '''
         request_data = {'id': agent_id, 'add_only':True}
         request_data.update(**kwargs)
@@ -619,8 +626,8 @@ class OperetoClient(object):
         | Modifies agent information.
 
         :param string agent_id: Identifier of an existing agent
-        :param kwargs:
-        :return:
+        :param kwargs: agent properties to change
+        :return:success/failure
         '''
         request_data = {'id': agent_id}
         request_data.update(**kwargs)
@@ -635,7 +642,16 @@ class OperetoClient(object):
         Get agent general details
 
         :param string agent_id: Identifier of an existing agent
-        :return:
+        :return: agent, e.g: {
+          "status": "success",
+          "data": {
+            "active": true,
+            "modified_date": "2015-10-31T18:48:08.309566",
+            "id": "my_agent",
+            "online": false
+          }
+        }
+
         '''
         return self._call_rest_api('get', '/agents/'+agent_id, error='Failed to fetch agent [%s] status'%agent_id)
 
@@ -647,7 +663,7 @@ class OperetoClient(object):
         Get agent status
 
         :param string agent_id: Identifier of an existing agent
-        :return:
+        :return: See get_agent
         '''
         return self.get_agent(agent_id)
 
@@ -710,7 +726,7 @@ class OperetoClient(object):
         :param string pid: Process ID to rerun
         :param string title: title for the new Process
         :param string agent: a valid value may be one of the following: agent identifier, agent identifiers (list) : ["agent_1", "agent_2"..], "all", "any"
-        :return:
+        :return: success/failure and process id
         '''
         request_data = {}
         if title:
@@ -760,7 +776,7 @@ class OperetoClient(object):
         :param string key: key of property to modify
         :param string value: value of property to modify
         :param string pid: Process identifier
-        :return:
+        :return: success/failure
         '''
         pid = self._get_pid(pid)
         request_data={"key" : key, "value": value}
@@ -773,7 +789,7 @@ class OperetoClient(object):
 
         :param string pid: Identifier of an existing process
         :param string text: new summary text to update
-        :return:
+        :return: success/failure
 
         '''
         pid = self._get_pid(pid)
@@ -819,7 +835,7 @@ class OperetoClient(object):
         Get process in flow context.
 
         :param string pid: Process identifier
-        :return:
+        :return: process flow
         '''
         pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/flow', error='Failed to fetch process information')
@@ -833,7 +849,7 @@ class OperetoClient(object):
         Get the RCA tree of a given failed process. The RCA tree contains all failed child processes that caused the failure of the given process.
 
         :param string pid: Process Identifier
-        :return:
+        :return: failed child processes that caused the failure of the given process.
         '''
         pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/rca', error='Failed to fetch process information')
@@ -847,7 +863,7 @@ class OperetoClient(object):
         Get information of a given process
 
         :param string pid: Process Identifier
-        :return:
+        :return: Process general information
         '''
 
         pid = self._get_pid(pid)
@@ -1074,7 +1090,7 @@ class OperetoClient(object):
                 }
              }
         :param kwargs:
-        :return:
+        :return: Found Globals
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -1098,7 +1114,7 @@ class OperetoClient(object):
                 }
              }
         :param kwargs:
-        :return:
+        :return: Found Products
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -1117,7 +1133,7 @@ class OperetoClient(object):
         :param name:
         :param description:
         :param attributes:
-        :return:
+        :return: success/failure
         '''
         request_data = {'product': product, 'version': version, 'build': build}
         if name: request_data['name']=name
@@ -1141,7 +1157,7 @@ class OperetoClient(object):
         :param name:
         :param description:
         :param attributes:
-        :return:
+        :return: success/failure
         '''
         request_data = {'id': product_id}
         if name: request_data['name']=name
@@ -1158,7 +1174,7 @@ class OperetoClient(object):
         Delete a product
 
         :param product_id:
-        :return:
+        :return: success/failure
         '''
         return self._call_rest_api('delete', '/products/'+product_id, error='Failed to delete product')
 
@@ -1168,10 +1184,10 @@ class OperetoClient(object):
         '''
         get_product(self, product_id)
 
-        Get a product
+        Get an existing product information
 
-        :param product_id:
-        :return:
+        :param product_id: Identifier of an existing product
+        :return: Product information
         '''
         return self._call_rest_api('get', '/products/'+product_id, error='Failed to get product information')
 
@@ -1195,7 +1211,7 @@ class OperetoClient(object):
                 }
              }
         :param kwargs:
-        :return:
+        :return: KPI
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -1214,7 +1230,7 @@ class OperetoClient(object):
         :param array measures: List of numeric (integers or floats) measures
         :param boolean append: True to append new measures to existing ones for this API. False to override previous measures.
         :param kwargs:
-        :return:
+        :return: KPI
         '''
         if not isinstance(measures, list):
             measures = [measures]
@@ -1232,7 +1248,7 @@ class OperetoClient(object):
 
         :param kpi_id:
         :param product_id:
-        :return:
+        :return: success/failure
         '''
         return self._call_rest_api('delete', '/kpi/'+kpi_id+'/'+product_id, error='Failed to delete kpi')
 
@@ -1246,7 +1262,7 @@ class OperetoClient(object):
 
         :param kpi_id:
         :param product_id:
-        :return:
+        :return: KPI
         '''
         return self._call_rest_api('get', '/kpi/'+kpi_id+'/'+product_id, error='Failed to get kpi information')
 
@@ -1269,7 +1285,7 @@ class OperetoClient(object):
                     "generic":"my Test"
                 }
              }
-        :return:
+        :return: List of found tests
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/tests', data=request_data, error='Failed to search tests')
@@ -1283,7 +1299,7 @@ class OperetoClient(object):
         Get test information.
 
         :param test_id:
-        :return:
+        :return: Test information
         '''
         return self._call_rest_api('get', '/tests/'+test_id, error='Failed to get test information')
 
@@ -1304,7 +1320,7 @@ class OperetoClient(object):
                     "generic":"my QC"
                 }
              }
-        :return:
+        :return: Quality Criteria information
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/qc', data=request_data, error='Failed to search quality criteria')
@@ -1317,7 +1333,7 @@ class OperetoClient(object):
         Get criteria information.
 
         :param qc_id:
-        :return:
+        :return: Quality Criteria
         '''
         return self._call_rest_api('get', '/qc/'+qc_id, error='Failed to get test information')
 
@@ -1332,7 +1348,7 @@ class OperetoClient(object):
         :param string weight: Overall weight of this criteria (integer between 0-100)
         :param enum status: pass/fail/norun
         :param kwargs:
-        :return:
+        :return:success/failure
         '''
         request_data = {'product_id': product_id, 'expected': expected_result, 'actual': actual_result,'weight': weight, 'exec_status': status}
         request_data.update(**kwargs)
@@ -1347,7 +1363,7 @@ class OperetoClient(object):
 
         :param qc_id:
         :param kwargs:
-        :return:
+        :return:success/failure
         '''
         if qc_id:
             request_data = {'id': qc_id}
@@ -1365,7 +1381,7 @@ class OperetoClient(object):
         Delete quality criteria.
 
         :param qc_id:
-        :return:
+        :return:success/failure
         '''
         return self._call_rest_api('delete', '/qc/'+qc_id, error='Failed to delete criteria')
 
@@ -1382,7 +1398,7 @@ class OperetoClient(object):
         :param start:
         :param limit:
         :param filter:
-        :return:
+        :return: List of users
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/users', data=request_data, error='Failed to search users')
