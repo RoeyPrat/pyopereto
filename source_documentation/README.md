@@ -16,4 +16,3 @@ make html
 After generating the html, the documents are generated under the pyopereto/docs directory.
 Main entry is pyopereto/docs/html/index.html
 
-
