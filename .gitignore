@@ -1,7 +1,8 @@
 *.egg-info
 build/
 dist/
-doc/_build
+doc/*
+docs/*
 *.pyc
 *.log
 %s
@@ -19,3 +20,5 @@ test.conf
 tests/.*
 config.yaml
 test*
+.DS_Store
+
