@@ -609,10 +609,25 @@ class OperetoClient(object):
         | The agent will become online when a real agent will connect using this identifier.
         | However, in most cases, the agent entity is created automatically when a new agent connects to opereto.
 
-        :param string agent_id: Identifier of an existing agent
-        :param kwargs:
-        :return: success/failure
+        :Parameters:
+        * *agent_id* (`string`) -- Identifier of an existing agent
+        :Keywords args:
+        * *name* (`string`) -- Display name to show in the UI
+        * *description* (`string`) -- A textual description of the agent
+        * *permissions* (`object`) -- Permissions on the agent
+            * *owners* (`array`) -- List of Opereto usernames that may modify and delete the agent
+            * *owners* (`array`) -- List of Opereto usernames that may run services on the agent
+        :return: id of the generated agent
+
+        :Example:
+        .. code-block:: python
+
+           opereto_client = OperetoClient()
+           opereto_client.create_agent(agent_id='xAgent', name='My new agent', description='A new created agent to be called from X machines')
+
+
         '''
+
         request_data = {'id': agent_id, 'add_only':True}
         request_data.update(**kwargs)
         return self._call_rest_api('post', '/agents'+'', data=request_data, error='Failed to create agent')
@@ -666,6 +681,10 @@ class OperetoClient(object):
         :return: See get_agent
         '''
         return self.get_agent(agent_id)
+
+    @apicall
+    def delete_agent(self, agent_id):
+        return self._call_rest_api('delete', '/agents/'+agent_id, error='Failed to delete agent [%s] status'%agent_id)
 
     #### PROCESSES ####
     @apicall
