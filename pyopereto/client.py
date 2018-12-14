@@ -205,7 +205,13 @@ class OperetoClient(object):
         '''
         hello(self)
 
-        | Check if Opereto is up and running.
+        | Checks if Opereto Server is up and running.
+
+        :Example:
+        .. code-block:: python
+
+           opereto_client = OperetoClient()
+           opereto_client.hello()
         '''
         return self._call_rest_api('get', '/hello', error='Failed to get response from the opereto server')
 
@@ -216,26 +222,21 @@ class OperetoClient(object):
         '''
         search_services(self, start=0, limit=100, filter={}, **kwargs)
 
-        | Search for Opereto services, in service data and properties
+        | Search for Opereto services, in Services data and properties
 
-        :param int start: start index to retrieve from
-        :param int limit: Limit the number of responses
-        :param json filter: filters the search query with Free text search pattern
-             example:
-             {
-                "filter":
-                {
-                    "generic":"Hello"
-                }
-             }
+        :Parameters:
+        * *start* (`int`) -- start index to retrieve from. Default is 0
+        * *limit* (`int`) -- Maximum number of entities to retrieve. Default is 100
+        * *filter* (`object`) -- Free text search pattern (checks in service data and properties)
 
-        |
-        :return: Object with list of found services
-        :rtype: json
-        |       Example:
-        |       {"status": "success", "data": [{"modified_date": "2018-11-10T11:12:27.867047", "orig_date": "2018-11-10T11:09:19.259022", "type": "action", "id": "hello_world", "name": "hello world"}]}
-        |
-        |
+        :return: List of search results
+
+        :Example:
+        .. code-block:: python
+
+           filter = {'generic': 'testing_'}
+           search_result = opereto_client.search_services(filter=filter)
+
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
