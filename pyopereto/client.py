@@ -249,8 +249,15 @@ class OperetoClient(object):
         get_service(self, service_id)
 
         | Get a service meta data (id, audit log, type, etc.) information.
-        :param string service_id: Identifier of an existing service
+
+        :Parameters:
+        * *service_id* (`string`) -- Identifier of an existing service
         :return: Service meta data
+
+        :Example:
+        .. code-block:: python
+
+            service_meta_data = opereto_client.get_service(serviceId)
 
         '''
         return self._call_rest_api('get', '/services/'+service_id, error='Failed to fetch service information')
@@ -260,13 +267,19 @@ class OperetoClient(object):
         '''
         get_service_version(self, service_id, mode='production', version='default')
 
-        | Get a specific version details of a given service.
+        | Get a specific version details of a given service. Opereto will try to fetch the requested service version. If not found, it will return the default production version. The "actual_version" field of the returned JSON indicates what version of the service is returned. If the actual version is null, it means that this service does not have any version at all. To make it operational, you will have to import or upload a default version.
 
-        :param string service_id: Identifier of an existing version
-        :param string mode: development
-        :param string version: default or the version of the service
+        :Parameters:
+        * *service_id* (`string`) -- Identifier of an existing service
+        * *mode* (`string`) -- development/production. Default is production
+        * *version* (`string`) -- version of the service ("default" is the default.
+
         :return: json service version details
 
+        :Example:
+        .. code-block:: python
+
+           service_version = opereto_client.get_service_version(serviceId, mode='development', version='111')
         '''
         return self._call_rest_api('get', '/services/'+service_id+'/'+mode+'/'+version, error='Failed to fetch service information')
 
@@ -277,12 +290,28 @@ class OperetoClient(object):
 
         | Verifies validity of service yaml
 
-        :param string service_id: Service identification
-        :param string specification: service specification yaml
-        :param string description: service description written in text or markdown style
-        :param string agent_mapping: agents mapping specification
-        :return: Object with "success" status or "failure" with specified errors
-        :rtype: json
+        :Parameters:
+        * *service_id* (`string`) -- Identifier of an existing service
+        * *specification* (`string`) -- service specification yaml
+        * *description* (`string`) -- service description written in text or markdown style
+        * *agent_mapping* (`string`) -- agents mapping specification
+
+        :return: json service version details
+
+        :Example:
+        .. code-block:: python
+
+           spec = {
+               "type": "action",
+               "cmd": "python -u run.py",
+               "timeout": 600,
+               "item_properties": [
+                    {"key": "key1", "type": "text", "value": "value1", "direction": "input"},
+                    {"key": "key2", "type": "boolean", "value": True, "direction": "input"}
+                 ]
+              }
+           if opereto_client.verify_service ('hello_world', specification=spec)['errors'] == []:
+              result = True
 
         '''
         request_data = {'id': service_id}
@@ -300,9 +329,23 @@ class OperetoClient(object):
         '''
         modify_service(self, service_id, type)
 
+        | Modifies a service type (action, container, etc.)
+
+        :Parameters:
+        * *service_id* (`string`) -- Identifier of an existing service
+        * *type* (`string`) -- service type
+
         :param string service_id: Service identification
-        :param type:
-        :return:
+        :param type: new Service type. See https://docs.opereto.com/opereto-framework/automation_services/service-schemes/
+        :return: Service modification metadata (service id, type, modified date, versions
+
+        :Example:
+        .. code-block:: python
+
+           service_modification_metadata = opereto_client.modify_service ('myService', 'container')
+           if service_modification_metadata['type'] == 'container'
+              print 'service type of {} changed to container'.format('myService')
+
         '''
         request_data = {'id': service_id, 'type': type}
         return self._call_rest_api('post', '/services', data=request_data, error='Failed to modify service [%s]'%service_id)
@@ -313,14 +356,21 @@ class OperetoClient(object):
         '''
         upload_service_version(self, service_zip_file, mode='production', service_version='default', service_id=None, **kwargs)
 
-        Upload service version
+        Upload a service version to Opereto
 
-        :param string service_zip_file: zip file location containing service and service specification
-        :param enum mode: production/development
-        :param string service_version: e.g: 1.0.0
-        :param string service_id: service identifier
-        :param kwargs:
-        :return: success/failure
+        :Parameters:
+        * *service_zip_file* (`string`) -- zip file location containing service and service specification
+        * *mode* (`string`) -- production/development (default is production)
+        * *service_version* (`string`) -- Service version
+        * *service_id* (`string`) -- Service version
+
+        :Keywords args:
+        * *comment* (`string`) -- comment
+
+        :Example:
+        .. code-block:: python
+
+           opereto_client.upload_service_version(service_zip_file=zip_action_file+'.zip', mode='production', service_version='111')
 
         '''
         files = {'service_file': open(service_zip_file,'rb')}
