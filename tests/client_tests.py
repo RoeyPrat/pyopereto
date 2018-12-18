@@ -5,8 +5,10 @@ import os
 import uuid
 import tempfile
 
+GENERIC_SERVICE_ID = 'a1234321'
 
-class TestPyOperetoClient ():
+
+class TestPyOperetoClient():
 
     def setup(self):
         self.my_service = 'my_service_unittest'
@@ -31,48 +33,36 @@ class TestPyOperetoClient ():
 
     # Services
     def test_search_services(self, opereto_client):
-        zip_action_file = os.path.join (tempfile.gettempdir (), str (uuid.uuid4 ()) + '.action')
-        test_helper_methods.zipfolder (zip_action_file,
-                                       os.path.join (os.path.dirname (__file__),
-                                                     'test_data/microservices/testing_hello_world'))
-        service_id = 'a1234321'
-        opereto_client.upload_service_version (service_zip_file=zip_action_file + '.zip', mode='production',
-                                               service_version='111', service_id=service_id)
 
-        filter = {'generic': 'testing_'}
-        search_result = opereto_client.search_services (filter=filter)
+        test_helper_methods.zip_and_upload(opereto_client, os.path.abspath('test_data/microservices/testing_hello_world'),
+                                           service_id='testing_hello_world', mode='production', service_version='111')
 
-        opereto_client.delete_service (service_id)
+        search_filter = {'generic': 'testing'}
+        search_result = opereto_client.search_services(filter=search_filter)
+
+        #opereto_client.delete_service(GENERIC_SERVICE_ID)
 
         assert search_result is not None
 
     def test_get_service(self, opereto_client):
-        zip_action_file = os.path.join (tempfile.gettempdir (), str (uuid.uuid4 ()) + '.action')
-        test_helper_methods.zipfolder (zip_action_file,
-                                       os.path.join (os.path.dirname (__file__),
-                                                     'test_data/microservices/testing_hello_world'))
-        service_id = 'a1234321'
-        opereto_client.upload_service_version (service_zip_file=zip_action_file + '.zip', mode='production',
-                                               service_version='111', service_id=service_id)
+        test_helper_methods.zip_and_upload (opereto_client,
+                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                            service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
 
-        service = opereto_client.get_service (service_id)
+        service = opereto_client.get_service(GENERIC_SERVICE_ID)
 
-        opereto_client.delete_service (service_id)
+        opereto_client.delete_service(GENERIC_SERVICE_ID)
 
-        assert service['id'] == service_id
+        assert service['id'] == GENERIC_SERVICE_ID
 
     def test_get_service_version(self, opereto_client):
-        zip_action_file = os.path.join (tempfile.gettempdir (), str (uuid.uuid4 ()) + '.action')
-        test_helper_methods.zipfolder (zip_action_file,
-                                       os.path.join (os.path.dirname (__file__),
-                                                     'test_data/microservices/testing_hello_world'))
-        service_id = 'a1234321'
-        opereto_client.upload_service_version (service_zip_file=zip_action_file + '.zip', mode='production',
-                                               service_version='111', service_id=service_id)
+        test_helper_methods.zip_and_upload (opereto_client,
+                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                            service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
 
-        service = opereto_client.get_service_version (service_id, version='111')
+        service = opereto_client.get_service_version (GENERIC_SERVICE_ID, version='111')
 
-        opereto_client.delete_service (service_id)
+        opereto_client.delete_service (GENERIC_SERVICE_ID)
 
         assert service['actual_version'] == '111'
 
@@ -89,18 +79,14 @@ class TestPyOperetoClient ():
         assert opereto_client.verify_service ('hello_world', specification=spec)['errors'] == []
 
     def test_modify_service(self, opereto_client):
-        zip_action_file = os.path.join (tempfile.gettempdir (), str (uuid.uuid4 ()) + '.action')
-        test_helper_methods.zipfolder (zip_action_file,
-                                       os.path.join (os.path.dirname (__file__),
-                                                     'test_data/microservices/testing_hello_world'))
-        service_id = 'a1234321'
-        opereto_client.upload_service_version (service_zip_file=zip_action_file + '.zip', mode='production',
-                                               service_version='111', service_id=service_id)
+        test_helper_methods.zip_and_upload (opereto_client,
+                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                            service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
 
-        service = opereto_client.modify_service (service_id, 'container')
+        service = opereto_client.modify_service (GENERIC_SERVICE_ID, 'container')
         assert service['type'] == 'container'
 
-        opereto_client.delete_service(service_id)
+        opereto_client.delete_service(GENERIC_SERVICE_ID)
 
     def test_modify_service(self, opereto_client):
         assert self.my_service in opereto_client.modify_service(self.my_service, 'container')
@@ -109,7 +95,6 @@ class TestPyOperetoClient ():
         assert opereto_client.get_service(self.my_service)['type']=='action'
 
         opereto_client.delete_service(self.my_service)
-
 
     def teardown(self):
         pass
