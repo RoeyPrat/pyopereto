@@ -335,8 +335,6 @@ class OperetoClient(object):
         * *service_id* (`string`) -- Identifier of an existing service
         * *type* (`string`) -- service type
 
-        :param string service_id: Service identification
-        :param type: new Service type. See https://docs.opereto.com/opereto-framework/automation_services/service-schemes/
         :return: Service modification metadata (service id, type, modified date, versions
 
         :Example:
@@ -362,7 +360,7 @@ class OperetoClient(object):
         * *service_zip_file* (`string`) -- zip file location containing service and service specification
         * *mode* (`string`) -- production/development (default is production)
         * *service_version* (`string`) -- Service version
-        * *service_id* (`string`) -- Service version
+        * *service_id* (`string`) -- Service Identifier
 
         :Keywords args:
         * *comment* (`string`) -- comment
@@ -389,14 +387,68 @@ class OperetoClient(object):
         '''
         import_service_version(self, repository_json, mode='production', service_version='default', service_id=None, **kwargs)
 
-        Imports a service into Opereto from remote repository
+        Imports a service version into Opereto from a remote repository (GIT, SVN, AWS S3, any HTTPS repository)
 
-        :param repository_json: Specified the remote repository (+credentials) to import the service zip file from
-        :param enum mode: production/development
-        :param string service_version:
-        :param string service_id:
-        :param kwargs:
-        :return: success/failure
+        :Parameters:
+        * *repository_json* (`object`) -- repository_json
+        :Example of repository JSON:
+            .. code-block:: json
+
+                #GIT source control
+                {
+                    "repo_type": "git",
+                    "url": "git@bitbucket.org:my_account_name/my_project.git",
+                    "branch": "master",
+                    "ot_dir": "mydir"
+                }
+
+                #SVN
+                {
+                    "repo_type": "svn",
+                    "url": "svn://myhost/myrepo",
+                    "username": "OPTIONAL_USERNAME",
+                    "password": "OPTIONAL_PASSWORD",
+                    "ot_dir": "my_service_dir"
+                }
+
+                # Any HTTP based remote storage
+
+                {
+                    "repo_type": "http",
+                    "url": "https://www.dropbox.com/s/1234567890/MyFile.zip?dl=0",
+                    "username": "OPTIONAL_PASSWORD",
+                    "ot_dir": "my_service_dir"
+                }
+
+                # AWS S3 Storage
+
+                {
+                    "repo_type": "s3",
+                    "bucket": "my_bucket/my_service.zip",
+                    "access_key": "MY_ACCESS_KEY",
+                    "secret_key": "MY_SECRET_KEY",
+                    "ot_dir": "my_service_dir"
+                }
+
+        * *mode* (`string`) -- production/development (default is production)
+        * *service_version* (`string`) -- Service version
+        * *service_id* (`string`) -- Service version
+
+
+        :return: status - success/failure
+
+        :Example:
+        .. code-block:: python
+
+            # for GIT
+           repository_json = {
+                "branch": "master",
+                "ot_dir": "microservices/hello_world",
+                "repo_type": "git",
+                "url": "https://github.com/myCompany/my_services.git"
+            }
+
+            opereto_client.import_service_version(repository_json, mode='production', service_version='default', service_id=self.my_service2)
 
         '''
         request_data = {'repository': repository_json, 'mode': mode, 'service_version': service_version, 'id': service_id}
@@ -412,22 +464,39 @@ class OperetoClient(object):
 
         Deletes a Service from Opereto
 
-        :param service_id: Service identifier
-        :return: success/failure
+        :Parameters:
+        * *service_id* (`string`) -- Service Identifier
+
+        :return: status: success/failure
+
+         :Example:
+        .. code-block:: python
+
+           opereto_client.delete_service('my_service_id')
 
         '''
+
         return self._call_rest_api('delete', '/services/'+service_id, error='Failed to delete service')
 
 
     @apicall
     def delete_service_version(self, service_id , service_version='default', mode='production'):
         '''
-        delete_service(self, service_id)
+        delete_service(self, service_id, service_version='default', mode='production')
 
-        Deletes a Service from Opereto
+        Deletes a Service version from Opereto
 
-        :param service_id: Service identifier
+        :Parameters:
+        * *service_id* (`string`) -- Service identifier
+        * *service_version* (`string`) -- Service version. Default is 'default'
+        * *mode* (`string`) -- development/production. Default is production
+
         :return: success/failure
+
+         :Example:
+        .. code-block:: python
+
+           opereto_client.delete_service('my_service_id')
 
         '''
         return self._call_rest_api('delete', '/services/'+service_id+'/'+mode+'/'+service_version, error='Failed to delete service')
@@ -1472,4 +1541,3 @@ class OperetoClient(object):
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/users', data=request_data, error='Failed to search users')
-

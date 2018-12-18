@@ -96,5 +96,21 @@ class TestPyOperetoClient():
 
         opereto_client.delete_service(self.my_service)
 
+    def test_upload_service_version(self, opereto_client):
+        zip_action_file = test_helper_methods.zip_folder (os.path.join (os.path.dirname (__file__), 'test_data/microservices/testing_hello_world'))
+        opereto_client.upload_service_version (service_zip_file=zip_action_file + '.zip', mode='production',
+                                               service_version='111', service_id='testing_hello_world')
+        assert '111' in opereto_client.get_service ('testing_hello_world', mode='production', version='111')['versions']
+        opereto_client.delete_service_version (service_id='testing_hello_world', mode='production', service_version='111')
+        assert '111' not in opereto_client.get_service ('hello_world')['versions']
+
+    def test_delete_service_version(self, opereto_client):
+        test_helper_methods.zip_and_upload (opereto_client,
+                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                            service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
+        assert '111' in opereto_client.get_service ('testing_hello_world')['versions']
+        opereto_client.delete_service_version (service_id='testing_hello_world', mode='production', service_version='111')
+        assert '111' not in opereto_client.get_service ('testing_hello_world')['versions']
+
     def teardown(self):
         pass
