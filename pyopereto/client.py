@@ -493,7 +493,7 @@ class OperetoClient(object):
 
         :return: success/failure
 
-         :Example:
+        :Example:
         .. code-block:: python
 
            opereto_client.delete_service('my_service_id')
@@ -534,9 +534,9 @@ class OperetoClient(object):
         '''
         search_environments(self)
 
-        Get all environments
+        Get list of all environments metadata
 
-        :return: List of environments
+        :return: list of all environments metadata
 
         '''
         return self._call_rest_api('get', '/search/environments', error='Failed to search environments')
@@ -560,12 +560,47 @@ class OperetoClient(object):
         '''
         verify_environment_scheme(self, environment_type, environment_topology)
 
-        Verify environment scheme
+        Verifies json scheme of an environment
 
-        :param string environment_type:
-        :param string environment_topology:
+        :Parameters:
+
+        * *environment_type* (`string`) -- Topology identifier
+        * *environment_topology* (`object`) -- Environment json to validate
+
+        :return: Success or errors in case the verification failed
+
+        :Return Example:
+        .. code-block:: json
+
+            # verification failure
+            {'errors': ['Topology key cluster_name is missing in environment specification'], 'agents': {}, 'success': False, 'warnings': []}
+
+            # verification success
+            {'errors': [], 'agents': {}, 'success': True, 'warnings': []}
+
+        :Example:
+        .. code-block:: python
+
+            environment_topology =
+            {
+                  "cluster_name": "k8s-clusbbe9",
+                  "config_file": {
+                    "contexts": [
+                      {
+                        "name": "my-context"
+                      }
+                    ],
+                    "clusters": [
+                      {
+                        "name": "k8s-clusbbe9"
+                      }
+                    ]
+                  }
+            }
+            environment = opereto_client.verify_environment_scheme(environment_type = 'myTopology', environment_topology = environment_topology)
+
         '''
-        request_data = {'type': environment_type, 'topology': environment_topology}
+        request_data = {'topology_name': environment_type, 'topology': environment_topology}
         return self._call_rest_api('post', '/environments/verify', data=request_data, error='Failed to verify environment.')
 
     @apicall
@@ -573,7 +608,23 @@ class OperetoClient(object):
         '''
         verify_environment(self, environment_id)
 
-        :param environment_id: environment identifier
+        Verifies validity of an existing environment
+
+        :Parameters:
+
+        * *environment_id* (`string`) -- Environment identifier
+
+        :return: Success or errors in case the verification failed
+
+        :Return Example:
+        .. code-block:: json
+
+            # verification failure
+            {'errors': ['Topology key cluster_name is missing in environment specification'], 'agents': {}, 'success': False, 'warnings': []}
+
+            # verification success
+            {'errors': [], 'agents': {}, 'success': True, 'warnings': []}
+
         '''
         request_data = {'id': environment_id}
         return self._call_rest_api('post', '/environments/verify', data=request_data, error='Failed to verify environment.')
@@ -583,12 +634,15 @@ class OperetoClient(object):
         '''
         create_environment(self, topology_name, topology={}, id=None, **kwargs)
 
-        Create a new environment.
-        :param string topology_name: The topology identifier. Must be provided to create an environment.
-        :param topology: Topology data (must match the topology json schema)
-        :param id: The environment identifier. If none provided when creating environment, Opereto will automatically assign a unique identifier.
-        :param kwargs:
-        :return: success and id of created environment
+        Create a new environment
+
+        :Parameters:
+
+        * *topology_name* (`string`) -- The topology identifier. Must be provided to create an environment.
+        * *topology* (`object`) -- Topology data (must match the topology json schema)
+        * *id* (`object`) -- The environment identifier. If none provided when creating environment, Opereto will automatically assign a unique identifier.
+
+        :return: id of the created environment
 
         '''
         request_data = {'topology_name': topology_name,'id': id, 'topology':topology, 'add_only':True}
@@ -602,9 +656,13 @@ class OperetoClient(object):
 
         Modifies an existing environment
 
-        :param string environment_id: The environment identifier.
-        :param kwargs: variables to change in the environment
-        :return: success/failure
+        :Parameters:
+        * *environment_id* (`string`) -- The environment identifier
+
+        Keywords args:
+        The variables to change in the environment
+
+        :return: id of the created environment
 
         '''
         request_data = {'id': environment_id}
@@ -618,8 +676,8 @@ class OperetoClient(object):
 
         Delete an existing environment
 
-        :param string environment_id: Identifier of an existing environment
-        :return: success/failure
+        :Parameters:
+        * *environment_id* (`string`) -- The environment identifier to delete
 
         '''
         return self._call_rest_api('delete', '/environments/'+environment_id, error='Failed to delete environment [%s]'%environment_id)
