@@ -508,7 +508,8 @@ class OperetoClient(object):
         list_development_sandbox(self)
 
         List all services in the current user's development sandbox
-        :return: List of sandbox services
+
+        :return: List of sandbox services ids. e.g: ['testing_hello_world', 'pytest_execution']
 
         '''
         return self._call_rest_api('get', '/services/sandbox', error='Failed to list sandbox services')
@@ -519,7 +520,7 @@ class OperetoClient(object):
         '''
         purge_development_sandbox(self)
 
-        Purge development sandbox - deletes all services from the current user's development sandbox.
+        Deletes all services from the current user's development sandbox.
 
         :return: success/failure
 

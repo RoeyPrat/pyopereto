@@ -50,10 +50,8 @@ class TestPyOperetoClient():
                                             service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
 
         service = opereto_client.get_service(GENERIC_SERVICE_ID)
-
-        opereto_client.delete_service(GENERIC_SERVICE_ID)
-
         assert service['id'] == GENERIC_SERVICE_ID
+        opereto_client.delete_service(GENERIC_SERVICE_ID)
 
     def test_get_service_version(self, opereto_client):
         test_helper_methods.zip_and_upload (opereto_client,
@@ -110,7 +108,23 @@ class TestPyOperetoClient():
                                             service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
         assert '111' in opereto_client.get_service ('testing_hello_world')['versions']
         opereto_client.delete_service_version (service_id='testing_hello_world', mode='production', service_version='111')
-        assert '111' not in opereto_client.get_service ('testing_hello_world')['versions']
+        assert '111' not in opereto_client.get_service('testing_hello_world')['versions']
+
+    def test_list_sandbox_services(self, opereto_client):
+        test_helper_methods.zip_and_upload (opereto_client,
+                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                            service_id='testing_hello_world', mode='development', service_version='111')
+        assert 'testing_hello_world' in opereto_client.list_development_sandbox()
+        opereto_client.delete_service('testing_hello_world')
+        assert 'testing_hello_world' not in opereto_client.list_development_sandbox()
+
+    def test_purge_develooment_sandbox(self, opereto_client):
+        test_helper_methods.zip_and_upload (opereto_client,
+                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                            service_id='testing_hello_world', mode='development', service_version='111')
+        assert 'testing_hello_world' in opereto_client.list_development_sandbox()
+        opereto_client.purge_development_sandbox()
+        assert 'testing_hello_world' not in opereto_client.list_development_sandbox()
 
     def teardown(self):
         pass
