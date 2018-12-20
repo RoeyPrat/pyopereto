@@ -684,24 +684,27 @@ class OperetoClient(object):
 
 
     #### AGENTS ####
+
     @apicall
     def search_agents(self, start=0, limit=100, filter={}, **kwargs):
         '''
         search_agents(self, start=0, limit=100, filter={}, **kwargs)
 
         Search agents
-        :param int start: start index to retrieve from
-        :param int limit: Maximum number of entities to retrieve
-        :param json filter: filters the search query with Free text search pattern
-             example:
-             {
-                "filter":
-                {
-                    "generic":"My agent"
-                }
-             }
-        :param kwargs:
-        :return: List of found agents
+
+        :Parameters:
+        * *start* (`int`) -- start index to retrieve from. Default is 0
+        * *limit* (`int`) -- maximum number of entities to retrieve. Default is 100
+        * *filter* (`object`) -- free text search pattern (checks in agent data and properties)
+
+        :return: List of search results. Empty list
+
+        :Example:
+        .. code-block:: python
+
+           filter = {'generic': 'my Agent'}
+           search_result = opereto_client.search_agents(filter=filter)
+
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -714,8 +717,11 @@ class OperetoClient(object):
 
         Get agent general details
 
-        :param string agent_id: Identifier of an existing agent
+        :Parameters:
+        * *agent_id* (`string`) -- Agent identifier
+
         :return: Agent general details
+
         '''
         return self._call_rest_api('get', '/agents/'+agent_id, error='Failed to fetch agent details.')
 
@@ -727,8 +733,22 @@ class OperetoClient(object):
 
         Get agent properties separated to custom properties defined by the user and built-in properties provided by Opereto.
 
-        :param string agent_id: Identifier of an existing agent
-        :return: agent properties json
+        :Parameters:
+        * *agent_id* (`string`) -- Agent identifier
+
+        :return: Agent general details
+
+        :Example:
+        .. code-block:: python
+
+            >>> my_agent_properties = opereto_client.get_agent_properties('my_agent_id')
+            >>> print (my_agent_properties)
+
+            {'builtin':
+                {'system.arch': 'amd64', 'agent.user': 'Ariel', 'network': '{lo=[/127.0.0.1/8 [/127.255.255.255], /0:0:0:0:0:0:0:1/128 [null]], net6=[], net5=[], net7=[], eth11=[], eth10=[], eth13=[], net0=[], wlan1=[/da:0:0:0:29dc:fe33:4234:30bd%19/64 [null]], eth12=[], wlan0=[/10.100.222.423/24 [/10.100.222.423], /fa:0:0:0:29dc:fe33:4234:30bd%19/64 [null]], eth15=[], net2=[], eth14=[], net1=[], net4=[], net3=[], wlan6=[], wlan7=[], wlan8=[], wlan9=[], wlan2=[/fe80:0:0:0:455d:390b:c559:f259%20/64 [null]], wlan3=[], wlan4=[], wlan5=[], eth9=[], eth3=[], eth4=[], eth1=[], eth2=[], eth7=[], eth8=[], eth5=[/fe80:0:0:0:2807:b110:c4fb:835b%11/64 [null]], eth6=[], eth0=[], wlan12=[], wlan11=[], wlan10=[], ppp0=[], wlan15=[], wlan14=[], wlan13=[]}', 'agent.user.home': 'C:\\Users\\myuser', 'opereto_agent_version': '1.1.44', 'hostname': 'DESKTOP-', 'total.space': '237.9 GiB', 'agent.home': 'C:\\Users\\myuser\\opereto-agent\\target', 'available.processors': '4', 'free.space': '140.3 GiB', 'os.name': 'windows 8.1', 'system.version': '6.3'},
+                'custom': {'agent_current_env': 'env1'}}
+
+
         '''
         return self._call_rest_api('get', '/agents/'+agent_id+'/properties', error='Failed to fetch agent [%s] properties'%agent_id)
 
@@ -750,12 +770,18 @@ class OperetoClient(object):
         '''
         modify_agent_property(self, agent_id, key, value)
 
-        Modifies agent single property.
+        Modifies a single single property of an agent. If the property does not exists then it is created as a custom property.
 
-        :param string agent_id: Identifier of an existing agent
-        :param key: key of key-value json map
-        :param value: value key-value json map
-        :return:success/failure
+        :Parameters:
+        * *agent_id* (`string`) -- Identifier of an existing agent
+        * *key* (`string`) -- Key of a property to change
+        * *value* (`string`) -- New Value of the property to change
+
+        :Example:
+        .. code-block:: python
+
+           opereto_client.modify_agent_property('my_agent_id', 'agent_new_property', 'agent value')
+
         '''
         return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data={key: value}, error='Failed to modify agent [%s] property [%s]'%(agent_id,key))
 
@@ -765,16 +791,18 @@ class OperetoClient(object):
         '''
         modify_agent_properties(self, agent_id, key_value_map={})
 
-        Modify agent properties
+        Modify properties of an agent. If properties do not exists, they will be created
 
-        :param string agent_id: Identifier of an existing agent
-        :param json key_value_map: key value map of properties to change
-               example:
-               {
-                 "mykey": "myvalue",
-                 "mykey2": "myvalue2"
-                }
-        :return: success/failure
+        :Parameters:
+        * *agent_id* (`string`) -- Identifier of an existing agent
+        * *key_value_map* (`object`) -- Key value map of properties to change
+        * *value* (`string`) -- New Value of the property to change
+
+        :Example:
+        .. code-block:: python
+
+           opereto_client.modify_agent_properties('my_agent_id', {"mykey": "myvalue", "mykey2": "myvalue2"})
+
         '''
         return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data=key_value_map, error='Failed to modify agent [%s] properties'%agent_id)
 
@@ -817,11 +845,17 @@ class OperetoClient(object):
         '''
         modify_agent(self, agent_id, **kwargs)
 
-        | Modifies agent information.
+        | Modifies agent information (like name)
 
-        :param string agent_id: Identifier of an existing agent
-        :param kwargs: agent properties to change
-        :return:success/failure
+        :Parameters:
+        * *agent_id* (`string`) -- Identifier of an existing agent
+
+         :Example:
+        .. code-block:: python
+
+           opereto_client = OperetoClient()
+           opereto_client.modify_agent('agentId', name='my new name')
+
         '''
         request_data = {'id': agent_id}
         request_data.update(**kwargs)
@@ -835,16 +869,17 @@ class OperetoClient(object):
 
         Get agent general details
 
-        :param string agent_id: Identifier of an existing agent
-        :return: agent, e.g: {
-          "status": "success",
-          "data": {
-            "active": true,
-            "modified_date": "2015-10-31T18:48:08.309566",
-            "id": "my_agent",
-            "online": false
-          }
-        }
+        :Parameters:
+        * *agent_id* (`string`) -- Identifier of an existing agent
+
+         :Example:
+        .. code-block:: python
+
+            >>> agent_is_online = opereto_client.get_agent('my_agent_id')['online']
+            >>> print (my_agent_properties)
+
+            # example of return value
+            False
 
         '''
         return self._call_rest_api('get', '/agents/'+agent_id, error='Failed to fetch agent [%s] status'%agent_id)
@@ -854,15 +889,31 @@ class OperetoClient(object):
         '''
         get_agent_status(self, agent_id)
 
-        Get agent status
+        Get agent status. Returns the agent information with the 'online' property (true or false)
 
-        :param string agent_id: Identifier of an existing agent
-        :return: See get_agent
+        :Parameters:
+        * *agent_id* (`string`) -- Identifier of an existing agent
+
+        :Example:
+        .. code-block:: python
+
+            my_agent_status = opereto_client.get_agent_status('my_agent_id')['online']
+
         '''
         return self.get_agent(agent_id)
 
     @apicall
     def delete_agent(self, agent_id):
+        '''
+        delete_agent(self, agent_id)
+
+        Deletes an agent
+
+        :Parameters:
+        * *agent_id* (`string`) -- Identifier of an existing agent
+
+        '''
+
         return self._call_rest_api('delete', '/agents/'+agent_id, error='Failed to delete agent [%s] status'%agent_id)
 
     #### PROCESSES ####

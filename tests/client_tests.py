@@ -6,6 +6,7 @@ import uuid
 import tempfile
 
 GENERIC_SERVICE_ID = 'a1234321'
+GENERIC_AGENT_ID = 'xxxAgent'
 
 
 class TestPyOperetoClient():
@@ -39,8 +40,8 @@ class TestPyOperetoClient():
 
         search_filter = {'generic': 'testing'}
         search_result = opereto_client.search_services(filter=search_filter)
-
-        #opereto_client.delete_service(GENERIC_SERVICE_ID)
+        assert search_result is not None
+        opereto_client.delete_service(GENERIC_SERVICE_ID)
 
         assert search_result is not None
 
@@ -125,6 +126,81 @@ class TestPyOperetoClient():
         assert 'testing_hello_world' in opereto_client.list_development_sandbox()
         opereto_client.purge_development_sandbox()
         assert 'testing_hello_world' not in opereto_client.list_development_sandbox()
+
+    # Agents
+
+    def test_search_agents(self, opereto_client):
+        opereto_client.create_agent (agent_id=GENERIC_AGENT_ID, name='My new agent',
+                                     description='A new created agent to be called from X machines')
+        search_filter = {'generic': 'My new'}
+        search_result = opereto_client.search_agents(filter=search_filter)
+        assert search_result is not None
+
+        opereto_client.delete_agent(agent_id=GENERIC_AGENT_ID)
+
+        assert search_result is not None
+
+    def test_get_agent(self, opereto_client):
+        opereto_client.create_agent(agent_id=GENERIC_AGENT_ID, name='My new agent',
+                                     description='A new created agent to be called from X machines')
+        assert opereto_client.get_agents(agent_id=GENERIC_AGENT_ID) is not None
+
+        opereto_client.delete_agent (agent_id=GENERIC_AGENT_ID)
+
+    def test_get_agent_properties(self, opereto_client):
+        opereto_client.create_agent(agent_id=GENERIC_AGENT_ID, name='My new agent',
+                                     description='A new created agent to be called from X machines')
+        assert opereto_client.get_agent_properties(agent_id=GENERIC_AGENT_ID)['name'] == 'My new agent'
+
+        opereto_client.delete_agent (agent_id=GENERIC_AGENT_ID)
+
+    def test_modify_agent_property(self, opereto_client):
+        opereto_client.create_agent(agent_id=GENERIC_AGENT_ID, name='My new agent',
+                                     description='A new created agent to be called from X machines')
+        assert opereto_client.get_agents(agent_id=GENERIC_AGENT_ID) is not None
+
+        opereto_client.modify_agent_property(GENERIC_AGENT_ID, 'my_new_custom_property', 'my value')
+        assert opereto_client.get_agent_properties(agent_id=GENERIC_AGENT_ID)['custom']['my_new_custom_property'] == 'my value'
+
+        opereto_client.delete_agent(agent_id=GENERIC_AGENT_ID)
+
+    def test_modify_agent_properties(self, opereto_client):
+        opereto_client.create_agent(agent_id=GENERIC_AGENT_ID, name='My new agent',
+                                     description='A new created agent to be called from X machines')
+        assert opereto_client.get_agents(agent_id=GENERIC_AGENT_ID) is not None
+
+        properties_key_value = { "mykey": "my value" }
+        opereto_client.modify_agent_properties(GENERIC_AGENT_ID, properties_key_value)
+        agent_properties = opereto_client.get_agent_properties(agent_id=GENERIC_AGENT_ID)
+        assert opereto_client.get_agent_properties (agent_id=GENERIC_AGENT_ID)['custom']['mykey'] == 'my value'
+        opereto_client.delete_agent(agent_id=GENERIC_AGENT_ID)
+
+    def test_modify_agent(self, opereto_client):
+        opereto_client.create_agent(agent_id=GENERIC_AGENT_ID, name='My new agent',
+                                     description='A new created agent to be called from X machines')
+        assert opereto_client.get_agents(agent_id=GENERIC_AGENT_ID) is not None
+
+        opereto_client.modify_agent(GENERIC_AGENT_ID, name="My new name")
+        assert opereto_client.get_agent(agent_id=GENERIC_AGENT_ID)['name'] == 'My new name'
+        opereto_client.delete_agent(agent_id=GENERIC_AGENT_ID)
+
+    def test_get_agent_status(self, opereto_client):
+        opereto_client.create_agent(agent_id=GENERIC_AGENT_ID, name='My new agent',
+                                     description='A new created agent to be called from X machines')
+        assert opereto_client.get_agent_status(agent_id=GENERIC_AGENT_ID)['online'] == False
+        opereto_client.delete_agent (agent_id=GENERIC_AGENT_ID)
+
+    def test_delete_agent(self, opereto_client):
+        opereto_client.create_agent(agent_id=GENERIC_AGENT_ID, name='My new agent',
+                                     description='A new created agent to be called from X machines')
+        assert opereto_client.get_agents(agent_id=GENERIC_AGENT_ID) is not None
+
+        opereto_client.delete_agent(agent_id=GENERIC_AGENT_ID)
+
+        with pytest.raises(OperetoClientError) as operetoClientError:
+            opereto_client.get_agents (agent_id=GENERIC_AGENT_ID)
+        assert 'Entity type [agents] with id [' +  GENERIC_AGENT_ID + '] not found' in operetoClientError.value.message
+
 
     def teardown(self):
         pass
