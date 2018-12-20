@@ -22,5 +22,10 @@ item_properties:
   value:
   direction: output
   help: simple text output parameter
+- key: my_output_param_2
+  type: text
+  value:
+  direction: output
+  help: simple text output parameter
 timeout: 600
 type: action

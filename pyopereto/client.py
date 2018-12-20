@@ -697,7 +697,7 @@ class OperetoClient(object):
         * *limit* (`int`) -- maximum number of entities to retrieve. Default is 100
         * *filter* (`object`) -- free text search pattern (checks in agent data and properties)
 
-        :return: List of search results. Empty list
+        :return: List of search results or empty list
 
         :Example:
         .. code-block:: python
@@ -917,20 +917,31 @@ class OperetoClient(object):
         return self._call_rest_api('delete', '/agents/'+agent_id, error='Failed to delete agent [%s] status'%agent_id)
 
     #### PROCESSES ####
+
     @apicall
     def create_process(self, service, agent=None, title=None, mode=None, service_version=None, **kwargs):
         '''
         create_process(self, service, agent=None, title=None, mode=None, service_version=None, **kwargs)
 
-        Registers a new process
+        Registers a new process or processes
 
-        :param string service: service name
-        :param string agent: a valid value may be one of the following: agent identifier, agent identifiers (list) : ["agent_1", "agent_2"..], "all", "any"
-        :param string title: title
-        :param enum mode: production/development
-        :param string service_version:
-        :param kwargs: process attributes
-        :return: success/failure and process id
+        :Parameters:
+        * *service* (`string`) -- Service which process will be started
+        * *agent* (`string`) -- The service identifier (e.g shell_command)
+        * *title* (`string`) -- Title for the process
+        * *mode* (`string`) -- production/development
+        * *service_version* (`string`) -- Version of the service to execute
+
+        :Keywords args:
+        Json value map containing the process input properties
+
+        :return: process id
+
+        :Example:
+        .. code-block:: python
+
+           process_properties = {"my_input_param" : "1"}
+           pid = opereto_client.create_process(service='simple_shell_command', title='Test simple shell command service', agent=opereto_client.input['opereto_agent'], **process_properties)
 
         '''
         if not agent:
@@ -947,7 +958,6 @@ class OperetoClient(object):
 
         if self.input.get('pid'):
             request_data['pflow_id']=self.input.get('pid')
-
 
         request_data.update(**kwargs)
         ret_data= self._call_rest_api('post', '/processes', data=request_data, error='Failed to create a new process')
@@ -970,12 +980,15 @@ class OperetoClient(object):
         '''
         rerun_process(self, pid, title=None, agent=None)
 
-        Rerun process
+        Reruns a process
 
-        :param string pid: Process ID to rerun
-        :param string title: title for the new Process
-        :param string agent: a valid value may be one of the following: agent identifier, agent identifiers (list) : ["agent_1", "agent_2"..], "all", "any"
-        :return: success/failure and process id
+        :Parameters:
+        * *pid* (`string`) -- Process id to rerun
+        * *title* (`string`) -- Title for the process
+        * *agent* (`string`) -- a valid value may be one of the following: agent identifier, agent identifiers (list) : ["agent_1", "agent_2"..], "all", "any"
+
+        :return: process id
+
         '''
         request_data = {}
         if title:
@@ -1005,9 +1018,16 @@ class OperetoClient(object):
         Modify process output properties.
         Please note that process property key provided must be declared as an output property in the relevant service specification.
 
-        :param json key value map key_value_map: key value map with process properties to modify
-        :param string pid: Identifier of an existing process
-        :return: success/failure
+        :Parameters:
+        * *key_value_map* (`object`) -- key value map with process properties to modify
+        * *pid* (`string`) -- Identifier of an existing process
+
+        :Example:
+        .. code-block:: python
+
+           process_output_properties = {"my_output_param" : "1"}
+           pid = opereto_client.create_process(service='simple_shell_command', title='Test simple shell command service')
+           opereto_client.modify_process_properties(process_output_properties, pid)
 
         '''
         pid = self._get_pid(pid)
@@ -1022,10 +1042,17 @@ class OperetoClient(object):
         Modify process output property.
         Please note that the process property key provided must be declared as an output property in the relevant service specification.
 
-        :param string key: key of property to modify
-        :param string value: value of property to modify
-        :param string pid: Process identifier
-        :return: success/failure
+        :Parameters:
+        * *key* (`String`) -- key of property to modify
+        * *key* (`value`) -- value of property to modify
+        * *pid* (`string`) -- Identifier of an existing process
+
+        :Example:
+        .. code-block:: python
+
+           pid = opereto_client.create_process(service='simple_shell_command', title='Test simple shell command service')
+           opereto_client.modify_process_properties("my_output_param", "1" , pid)
+
         '''
         pid = self._get_pid(pid)
         request_data={"key" : key, "value": value}
@@ -1036,9 +1063,11 @@ class OperetoClient(object):
         '''
         modify_process_summary(self, pid=None, text='')
 
-        :param string pid: Identifier of an existing process
-        :param string text: new summary text to update
-        :return: success/failure
+        Modifies the summary text of the process execution
+
+        :Parameters:
+        * *key* (`pid`) -- Identifier of an existing process
+        * *key* (`text`) -- summary text
 
         '''
         pid = self._get_pid(pid)
@@ -1051,9 +1080,12 @@ class OperetoClient(object):
         '''
         stop_process(self, pids, status='success')
 
-        :param string pids: Identifier of an existing process
-        :param string status: Any of the following possible values:  success , failure , error , warning , terminated
-        :return: success/failure
+        Stops a running process
+
+        :Parameters:
+        * *pid* (`string`) -- Identifier of an existing process
+        * *result* (`string`) -- the value the process will be terminated with. Any of the following possible values:  success , failure , error , warning , terminated
+
         '''
         if status not in process_result_statuses:
             raise OperetoClientError('Invalid process result [%s]'%status)
@@ -1067,10 +1099,11 @@ class OperetoClient(object):
         '''
         get_process_status(self, pid=None)
 
-        Get status of a process
+        Get current status of a process
 
-        :param string pid: Process Identifier
-        :return:
+        :Parameters:
+        * *pid* (`string`) -- Identifier of an existing process
+
         '''
         pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/status', error='Failed to fetch process status')
@@ -1081,10 +1114,12 @@ class OperetoClient(object):
         '''
         get_process_flow(self, pid=None)
 
-        Get process in flow context.
+        Get process in flow context. The response returns a sub-tree of the whole flow containing the requested process, its direct children processes, and all ancestors.
+        You can navigate within the flow backword and forward by running this call on the children or ancestors of a given process.
 
-        :param string pid: Process identifier
-        :return: process flow
+        :Parameters:
+        * *pid* (`string`) -- Identifier of an existing process
+
         '''
         pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/flow', error='Failed to fetch process information')
@@ -1097,8 +1132,9 @@ class OperetoClient(object):
 
         Get the RCA tree of a given failed process. The RCA tree contains all failed child processes that caused the failure of the given process.
 
-        :param string pid: Process Identifier
-        :return: failed child processes that caused the failure of the given process.
+        :Parameters:
+        * *pid* (`string`) -- Identifier of an existing process
+
         '''
         pid = self._get_pid(pid)
         return self._call_rest_api('get', '/processes/'+pid+'/rca', error='Failed to fetch process information')
@@ -1109,10 +1145,11 @@ class OperetoClient(object):
         '''
         get_process_info(self, pid=None)
 
-        Get information of a given process
+        Get process general information.
 
-        :param string pid: Process Identifier
-        :return: Process general information
+        :Parameters:
+        * *pid* (`string`) -- Identifier of an existing process
+
         '''
 
         pid = self._get_pid(pid)
@@ -1123,10 +1160,15 @@ class OperetoClient(object):
         '''
         get_process_log(self, pid=None, start=0, limit=1000
 
-        :param string pid: Process Identifier
-        :param int start: start index to retrieve from
-        :param int limit: Maximum number of entities to retrieve
-        :return: List of process log entries
+        Get process logs
+
+        :Parameters:
+        * *pid* (`string`) -- Identifier of an existing process
+        * *pid* (`string`) -- start index to retrieve logs from
+        * *pid* (`string`) -- maximum number of entities to retrieve
+
+        :return: Process log entries
+
         '''
         pid = self._get_pid(pid)
         data = self._call_rest_api('get', '/processes/'+pid+'/log?start={}&limit={}'.format(start,limit), error='Failed to fetch process log')
@@ -1146,9 +1188,10 @@ class OperetoClient(object):
 
         Get process properties (both input and output properties)
 
-        :param string pid: Process Identifier
-        :param string name: optional - Property name
-        :return: Properties of a process
+        :Parameters:
+        * *pid* (`string`) -- Identifier of an existing process
+        * *name* (`string`) -- optional - Property name
+
         '''
         pid = self._get_pid(pid)
         res = self._call_rest_api('get', '/processes/'+pid+'/properties', error='Failed to fetch process properties')
@@ -1166,9 +1209,19 @@ class OperetoClient(object):
         '''
         wait_for(self, pids=[], status_list=process_result_statuses)
 
-        :param pids: list of processes to be in the given status list or to finish
-        :param status_list: optional - statuses to wait for.
-        :return: statuses of finished process
+        Waits for a process to finish
+
+        :Parameters:
+        * *pids* (`list`) -- list of processes waiting to be finished
+        * *status_list* (`list`) -- optional - List of statuses to wait for processes to finish with
+
+        :Example:
+        .. code-block:: python
+
+           pid = opereto_client.create_process(service='simple_shell_command', title='Test simple shell command service')
+           opereto_client.wait_for([pid], ['failure', 'error'])
+           opereto_client.rerun_process(pid)
+
         '''
         results={}
         pids = self._get_pids(pids)
@@ -1204,10 +1257,11 @@ class OperetoClient(object):
         '''
         wait_to_start(self, pids=[])
 
-        Wait for a process to start
+        Wait for processes to start
 
-        :param pids: list of processes to wait to start
-        :return: status of finished process
+        :Parameters:
+        * *pids* (`list`) -- list of processes to wait to start
+
         '''
         actual_pids = self._get_pids(pids)
         return self.wait_for(pids=actual_pids, status_list=process_result_statuses+['in_process'])
@@ -1217,10 +1271,10 @@ class OperetoClient(object):
         '''
         wait_to_end(self, pids=[])
 
-        Wait for a process to end
+        Wait for processes to finish
 
-        :param pids: list of processes to wait to finish
-        :return: status of finished process
+        :Parameters:
+        * *pids* (`list`) -- list of processes to wait to finish
 
         '''
         actual_pids = self._get_pids(pids)
@@ -1231,8 +1285,11 @@ class OperetoClient(object):
         '''
         wait_to_end(self, pids=[])
 
-        :param pids:
-        :return: status of finished process
+        Wait for processes to end successfully
+
+        :Parameters:
+        * *pids* (`list`) -- list of processes to wait to finish
+
         '''
         return self._status_ok('success', pids)
 
@@ -1241,8 +1298,11 @@ class OperetoClient(object):
         '''
         is_failure(self, pids)
 
-        :param pids:
-        :return:
+        Waits for a process to end and check if it status is 'failure'
+
+        :Parameters:
+        * *pids* (`list`) -- list of processes to wait to finish
+
         '''
         return self._status_ok('failure', pids)
 
@@ -1251,8 +1311,10 @@ class OperetoClient(object):
         '''
         is_error(self, pids)
 
-        :param pids:
-        :return:
+        Waits for a process to end and check if it status is 'error'
+
+        :Parameters:
+        * *pids* (`list`) -- list of processes to wait to finish
         '''
         return self._status_ok('error', pids)
 
@@ -1261,8 +1323,10 @@ class OperetoClient(object):
         '''
         is_timeout(self, pids)
 
-        :param pids:
-        :return:
+        Waits for a process to end and check if it status is 'timeout'
+
+        :Parameters:
+        * *pids* (`list`) -- list of processes to wait to finish
         '''
         return self._status_ok('timeout', pids)
 
@@ -1271,8 +1335,10 @@ class OperetoClient(object):
         '''
         is_warning(self, pids)
 
-        :param pids:
-        :return:
+        Waits for a process to end and check if it status is 'warning'
+
+        :Parameters:
+        * *pids* (`list`) -- list of processes to wait to finish
         '''
         return self._status_ok('warning', pids)
 
@@ -1281,8 +1347,10 @@ class OperetoClient(object):
         '''
         is_terminated(self, pids)
 
-        :param pids:
-        :return:
+        Waits for a process to end and check if it status is 'terminated'
+
+        :Parameters:
+        * *pids* (`list`) -- list of processes to wait to finish
         '''
         return self._status_ok('terminate', pids)
 
@@ -1294,9 +1362,10 @@ class OperetoClient(object):
 
         Get a pre-defined run time parameter value
 
-        :param key: Identifier of the runtime cache
-        :param pid: Identifier of an existing process
-        :return: pre-defined runtime parameter value
+        :Parameters:
+        * *key* (`string`) -- Identifier of the runtime cache
+        * *pid* (`string`) -- Identifier of an existing process
+
         '''
         value = None
         pid = self._get_pid(pid)
@@ -1311,10 +1380,11 @@ class OperetoClient(object):
 
         Set a process run time parameter
 
-        :param string key: parameter key
-        :param string value: parameter value
-        :param string pid: Identifier of an existing process
-        :return:
+        :Parameters:
+        * *key* (`string`) -- parameter key
+        * *key* (`value`) -- parameter value
+        * *key* (`pid`) -- optional - Identifier of an existing process
+
         '''
         pid = self._get_pid(pid)
         self._call_rest_api('post', '/processes/'+pid+'/cache', data={'key': key, 'value': value}, error='Failed to modify process runtime cache')
@@ -1328,18 +1398,20 @@ class OperetoClient(object):
 
         Search for global parameters
 
-        :param int start: start index to retrieve from
-        :param int limit: Limit the number of responses
-        :param json filter: filters the search query with Free text search pattern
-             example:
-             {
-                "filter":
-                {
-                    "generic":"my global param"
-                }
-             }
-        :param kwargs:
-        :return: Found Globals
+        :Parameters:
+        * *start* (`int`) -- start index to retrieve from. Default is 0
+        * *limit* (`int`) -- maximum number of entities to retrieve. Default is 100
+        * *filter* (`object`) -- free text search pattern (checks in global parameters data)
+
+        :return: List of search results or empty list
+
+        :Example:
+        .. code-block:: python
+
+           filter = {'generic': 'my product param'}
+           search_result = opereto_client.search_globals(filter=filter)
+
+
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -1352,18 +1424,19 @@ class OperetoClient(object):
         '''
         search_products(self, start=0, limit=100, filter={}, **kwargs)
 
-        :param int start: start index to retrieve from
-        :param int limit: Limit the number of responses
-        :param json filter: filters the search query with Free text search pattern
-             example:
-             {
-                "filter":
-                {
-                    "generic":"my product param"
-                }
-             }
-        :param kwargs:
-        :return: Found Products
+        :Parameters:
+        * *start* (`int`) -- start index to retrieve from. Default is 0
+        * *limit* (`int`) -- maximum number of entities to retrieve. Default is 100
+        * *filter* (`object`) -- free text search pattern (checks in product data)
+
+        :return: List of search results or empty list
+
+        :Example:
+        .. code-block:: python
+
+           filter = {'generic': 'my product param'}
+           search_result = opereto_client.search_products(filter=filter)
+
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -1376,13 +1449,14 @@ class OperetoClient(object):
 
         Create product
 
-        :param product:
-        :param version:
-        :param build:
-        :param name:
-        :param description:
-        :param attributes:
-        :return: success/failure
+        :Parameters:
+        * *product* (`string`) -- product
+        * *version* (`string`) -- version
+        * *build* (`string`) -- build
+        * *name* (`string`) -- name
+        * *description* (`string`) -- description
+        * *attributes* (`object`) -- product attributes
+
         '''
         request_data = {'product': product, 'version': version, 'build': build}
         if name: request_data['name']=name
@@ -1400,13 +1474,14 @@ class OperetoClient(object):
         '''
         modify_product(self, product_id, name=None, description=None, attributes={})
 
-        Modify product
+        Modify an existing product
 
-        :param product_id:
-        :param name:
-        :param description:
-        :param attributes:
-        :return: success/failure
+        :Parameters:
+        * *product_id* (`string`) -- identifier of an existing product
+        * *name* (`string`) -- name of the product
+        * *description* (`string`) -- product description
+        * *attributes* (`object`) -- product attributes to modify
+
         '''
         request_data = {'id': product_id}
         if name: request_data['name']=name
@@ -1420,10 +1495,11 @@ class OperetoClient(object):
         '''
         delete_product(self, product_id)
 
-        Delete a product
+        Delete an existing product
 
-        :param product_id:
-        :return: success/failure
+       :Parameters:
+        * *product_id* (`string`) -- identifier of an existing product
+
         '''
         return self._call_rest_api('delete', '/products/'+product_id, error='Failed to delete product')
 
@@ -1435,8 +1511,9 @@ class OperetoClient(object):
 
         Get an existing product information
 
-        :param product_id: Identifier of an existing product
-        :return: Product information
+       :Parameters:
+        * *product_id* (`string`) -- identifier of an existing product
+
         '''
         return self._call_rest_api('get', '/products/'+product_id, error='Failed to get product information')
 
@@ -1449,18 +1526,19 @@ class OperetoClient(object):
 
         Search KPI
 
-        :param int start: start index to retrieve from
-        :param int limit: Limit the number of responses
-        :param json filter: filters the search query with Free text search pattern
-             example:
-             {
-                "filter":
-                {
-                    "generic":"my Kpi"
-                }
-             }
-        :param kwargs:
-        :return: KPI
+        :Parameters:
+        * *start* (`int`) -- start index to retrieve from. Default is 0
+        * *limit* (`int`) -- maximum number of entities to retrieve. Default is 100
+        * *filter* (`object`) -- free text search pattern (checks in kpi data)
+
+        :return: List of search results or empty list
+
+        :Example:
+        .. code-block:: python
+
+           filter = {'generic': 'my kpi param'}
+           search_result = opereto_client.search_kpi(filter=filter)
+
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
@@ -1474,12 +1552,12 @@ class OperetoClient(object):
 
         Creates a new kpi or modifies existing one.
 
-        :param string kpi_id: The KPI identifier (unique per product)
-        :param string product_id: The product (release candidate) identifier
-        :param array measures: List of numeric (integers or floats) measures
-        :param boolean append: True to append new measures to existing ones for this API. False to override previous measures.
-        :param kwargs:
-        :return: KPI
+      :Parameters:
+        * *kpi_id* (`string`) -- The KPI identifier (unique per product)
+        * *product_id* (`string`) -- The product (release candidate) identifier
+        * *measures* (`list`) -- List of numeric (integers or floats) measures
+        * *append* (`boolean`) -- True to append new measures to existing ones for this API. False to override previous measures
+
         '''
         if not isinstance(measures, list):
             measures = [measures]
@@ -1495,9 +1573,9 @@ class OperetoClient(object):
 
         Delete a key performance indicator (KPI)
 
-        :param kpi_id:
-        :param product_id:
-        :return: success/failure
+      :Parameters:
+      * *kpi_id* (`string`) -- The KPI identifier (unique per product)
+
         '''
         return self._call_rest_api('delete', '/kpi/'+kpi_id+'/'+product_id, error='Failed to delete kpi')
 
@@ -1509,10 +1587,11 @@ class OperetoClient(object):
 
         Get KPI information
 
-        :param kpi_id:
-        :param product_id:
-        :return: KPI
-        '''
+      :Parameters:
+      * *kpi_id* (`string`) -- The KPI identifier (unique per product)
+      * *product_id* (`string`) -- The product identifier
+
+      '''
         return self._call_rest_api('get', '/kpi/'+kpi_id+'/'+product_id, error='Failed to get kpi information')
 
 
@@ -1524,17 +1603,19 @@ class OperetoClient(object):
 
         Search tests
 
-        :param int start: start index to retrieve from
-        :param int limit: Limit the number of responses
-        :param json filter: filters the search query with Free text search pattern
-             example:
-             {
-                "filter":
-                {
-                    "generic":"my Test"
-                }
-             }
-        :return: List of found tests
+        :Parameters:
+        * *start* (`int`) -- start index to retrieve from. Default is 0
+        * *limit* (`int`) -- maximum number of entities to retrieve. Default is 100
+        * *filter* (`object`) -- free text search pattern (checks in tests data)
+
+        :return: List of search results or empty list
+
+        :Example:
+        .. code-block:: python
+
+           filter = {'generic': 'my test param'}
+           search_result = opereto_client.search_tests(filter=filter)
+
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/tests', data=request_data, error='Failed to search tests')
@@ -1547,8 +1628,9 @@ class OperetoClient(object):
 
         Get test information.
 
-        :param test_id:
-        :return: Test information
+        :Parameters:
+        * *test_id* (`string`) -- The Test identifier
+
         '''
         return self._call_rest_api('get', '/tests/'+test_id, error='Failed to get test information')
 
@@ -1559,17 +1641,20 @@ class OperetoClient(object):
         '''
         search_qc(self, start=0, limit=100, filter={})
 
-        :param int start: start index to retrieve from
-        :param int limit: Limit the number of responses
-        :param json filter: filters the search query with Free text search pattern
-             example:
-             {
-                "filter":
-                {
-                    "generic":"my QC"
-                }
-             }
-        :return: Quality Criteria information
+        Search Quality criteria
+
+        :Parameters:
+        * *start* (`int`) -- start index to retrieve from. Default is 0
+        * *limit* (`int`) -- maximum number of entities to retrieve. Default is 100
+        * *filter* (`object`) -- free text search pattern (checks in QC data)
+
+        :return: List of search results or empty list
+
+        :Example:
+        .. code-block:: python
+
+           filter = {'generic': 'my qc'}
+           search_result = opereto_client.search_qc(filter=filter)
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/qc', data=request_data, error='Failed to search quality criteria')
@@ -1581,8 +1666,9 @@ class OperetoClient(object):
 
         Get criteria information.
 
-        :param qc_id:
-        :return: Quality Criteria
+        :Parameters:
+        * *qc_id* (`string`) -- The QC identifier
+
         '''
         return self._call_rest_api('get', '/qc/'+qc_id, error='Failed to get test information')
 
@@ -1591,13 +1677,15 @@ class OperetoClient(object):
         '''
         create_qc(self, product_id=None, expected_result='', actual_result='', weight=100, status='success', **kwargs)
 
-        :param string product_id: The product (release candidate) identifier
-        :param string expected_result: Text describing the expected result of this criteria
-        :param string actual_result: Text describing the actual result of this criteria
-        :param string weight: Overall weight of this criteria (integer between 0-100)
-        :param enum status: pass/fail/norun
-        :param kwargs:
-        :return:success/failure
+        Create Quality Criteria
+
+        :Parameters:
+        * *product_id* (`string`) -- The product (release candidate) identifier
+        * *expected_result* (`string`) -- Text describing the expected result of this criteria
+        * *actual_result* (`string`) --  Text describing the actual result of this criteria
+        * *weight* (`integer`) -- Overall weight of this criteria (integer between 0-100)
+        * *status* (`string`) -- pass/fail/norun
+
         '''
         request_data = {'product_id': product_id, 'expected': expected_result, 'actual': actual_result,'weight': weight, 'exec_status': status}
         request_data.update(**kwargs)
@@ -1610,9 +1698,9 @@ class OperetoClient(object):
 
         Modify a Quality Criteria
 
-        :param qc_id:
-        :param kwargs:
-        :return:success/failure
+        :Parameters:
+        * *qc_id* (`string`) -- The Quality criteria identifier
+
         '''
         if qc_id:
             request_data = {'id': qc_id}
@@ -1627,10 +1715,11 @@ class OperetoClient(object):
         '''
         delete_qc(self, qc_id)
 
-        Delete quality criteria.
+        Delete a quality criteria.
 
-        :param qc_id:
-        :return:success/failure
+        :Parameters:
+        * *qc_id* (`string`) -- The Quality criteria identifier
+
         '''
         return self._call_rest_api('delete', '/qc/'+qc_id, error='Failed to delete criteria')
 
@@ -1644,10 +1733,19 @@ class OperetoClient(object):
 
         Search users
 
-        :param start:
-        :param limit:
-        :param filter:
-        :return: List of users
+        :Parameters:
+        * *start* (`int`) -- start index to retrieve from. Default is 0
+        * *limit* (`int`) -- maximum number of entities to retrieve. Default is 100
+        * *filter* (`object`) -- free text search pattern (checks in Users data)
+
+        :return: List of search results or empty list
+
+        :Example:
+        .. code-block:: python
+
+           filter = {'generic': 'my user'}
+           search_result = opereto_client.search_users(filter=filter)
+
         '''
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/users', data=request_data, error='Failed to search users')
