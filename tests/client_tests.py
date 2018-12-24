@@ -1,6 +1,6 @@
 import pytest
 from pyopereto.client import OperetoClientError
-import test_helper_methods.test_helper_methods as test_helper_methods
+import helpers.test_helper_methods as test_helper_methods
 import os
 import uuid
 import tempfile
@@ -281,7 +281,7 @@ class TestPyOperetoClient ():
 
         process_properties = {"my_input_param": "Hello World"}
 
-        pid = opereto_client.create_process (service='qwe', title='Testing...',
+        pid = opereto_client.create_process(service='testing_hello_world', title='Testing...',
                                              agent=opereto_client.input['opereto_agent'], **process_properties)
         assert pid is not None
         opereto_client.stop_process(pid, "warning")
