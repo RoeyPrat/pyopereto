@@ -26,7 +26,7 @@ class TestPyOperetoClient ():
 
     # Opereto Server
     def test_hello(self, opereto_client):
-        result_data = opereto_client.hello ();
+        result_data = opereto_client.hello();
         assert 'Hello, welcome to Opereto' in result_data
 
     # Services
