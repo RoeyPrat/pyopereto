@@ -1,0 +1,31 @@
+cmd: python -u run.py
+item_properties:
+- key: my_input_param
+  type: text
+  value: Hello World
+  mandatory: true
+  direction: input
+  help: simple text input parameter
+- key: mylist
+  editor: multiselectbox
+  type: list
+  store:
+      a: a
+      b: b
+  value: null
+  mandatory: false
+  direction: input
+  help: simple text input parameter
+
+- key: my_output_param
+  type: text
+  value:
+  direction: output
+  help: simple text output parameter
+- key: my_output_param_2
+  type: text
+  value:
+  direction: output
+  help: simple text output parameter
+timeout: 600
+type: action
