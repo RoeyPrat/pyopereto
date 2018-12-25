@@ -1,13 +1,10 @@
 import pytest
 from pyopereto.client import OperetoClientError
-import helpers.test_helper_methods as test_helper_methods
+from helpers import test_helpers
 import os
-import uuid
-import tempfile
 
 GENERIC_SERVICE_ID = 'a1234321'
 GENERIC_AGENT_ID = 'xxxAgent'
-
 
 class TestPyOperetoClient ():
 
@@ -34,9 +31,9 @@ class TestPyOperetoClient ():
 
     # Services
     def test_search_services(self, opereto_client):
-        test_helper_methods.zip_and_upload (opereto_client,
-                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
-                                            service_id='testing_hello_world', mode='production', service_version='111')
+        test_helpers.zip_and_upload (opereto_client,
+                                     os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                     service_id='testing_hello_world', mode='production', service_version='111')
 
         search_filter = {'generic': 'testing'}
         search_result = opereto_client.search_services (filter=search_filter)
@@ -46,18 +43,18 @@ class TestPyOperetoClient ():
         assert search_result is not None
 
     def test_get_service(self, opereto_client):
-        test_helper_methods.zip_and_upload (opereto_client,
-                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
-                                            service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
+        test_helpers.zip_and_upload (opereto_client,
+                                     os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                     service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
 
         service = opereto_client.get_service (GENERIC_SERVICE_ID)
         assert service['id'] == GENERIC_SERVICE_ID
         opereto_client.delete_service (GENERIC_SERVICE_ID)
 
     def test_get_service_version(self, opereto_client):
-        test_helper_methods.zip_and_upload (opereto_client,
-                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
-                                            service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
+        test_helpers.zip_and_upload (opereto_client,
+                                     os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                     service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
 
         service = opereto_client.get_service_version (GENERIC_SERVICE_ID, version='111')
 
@@ -78,9 +75,9 @@ class TestPyOperetoClient ():
         assert opereto_client.verify_service ('hello_world', specification=spec)['errors'] == []
 
     def test_modify_service(self, opereto_client):
-        test_helper_methods.zip_and_upload (opereto_client,
-                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
-                                            service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
+        test_helpers.zip_and_upload (opereto_client,
+                                     os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                     service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
 
         service = opereto_client.modify_service (GENERIC_SERVICE_ID, 'container')
         assert service['type'] == 'container'
@@ -96,7 +93,7 @@ class TestPyOperetoClient ():
         opereto_client.delete_service (self.my_service)
 
     def test_upload_service_version(self, opereto_client):
-        zip_action_file = test_helper_methods.zip_folder (
+        zip_action_file = test_helpers.zip_folder (
             os.path.join (os.path.dirname (__file__), 'test_data/microservices/testing_hello_world'))
         opereto_client.upload_service_version (service_zip_file=zip_action_file + '.zip', mode='production',
                                                service_version='111', service_id='testing_hello_world')
@@ -106,26 +103,26 @@ class TestPyOperetoClient ():
         assert '111' not in opereto_client.get_service ('hello_world')['versions']
 
     def test_delete_service_version(self, opereto_client):
-        test_helper_methods.zip_and_upload (opereto_client,
-                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
-                                            service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
+        test_helpers.zip_and_upload (opereto_client,
+                                     os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                     service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
         assert '111' in opereto_client.get_service ('testing_hello_world')['versions']
         opereto_client.delete_service_version (service_id='testing_hello_world', mode='production',
                                                service_version='111')
         assert '111' not in opereto_client.get_service ('testing_hello_world')['versions']
 
     def test_list_sandbox_services(self, opereto_client):
-        test_helper_methods.zip_and_upload (opereto_client,
-                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
-                                            service_id='testing_hello_world', mode='development', service_version='111')
+        test_helpers.zip_and_upload (opereto_client,
+                                     os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                     service_id='testing_hello_world', mode='development', service_version='111')
         assert 'testing_hello_world' in opereto_client.list_development_sandbox ()
         opereto_client.delete_service ('testing_hello_world')
         assert 'testing_hello_world' not in opereto_client.list_development_sandbox ()
 
     def test_purge_develooment_sandbox(self, opereto_client):
-        test_helper_methods.zip_and_upload (opereto_client,
-                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
-                                            service_id='testing_hello_world', mode='development', service_version='111')
+        test_helpers.zip_and_upload (opereto_client,
+                                     os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                     service_id='testing_hello_world', mode='development', service_version='111')
         assert 'testing_hello_world' in opereto_client.list_development_sandbox ()
         opereto_client.purge_development_sandbox ()
         assert 'testing_hello_world' not in opereto_client.list_development_sandbox ()
@@ -206,10 +203,10 @@ class TestPyOperetoClient ():
         assert 'Entity type [agents] with id [' + GENERIC_AGENT_ID + '] not found' in operetoClientError.value.message
 
     def test_create_process(self, opereto_client):
-        test_helper_methods.zip_and_upload (opereto_client,
-                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
-                                            service_id='testing_hello_world', mode='production',
-                                            service_version='default')
+        test_helpers.zip_and_upload (opereto_client,
+                                     os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                     service_id='testing_hello_world', mode='production',
+                                     service_version='default')
 
         process_properties = {"my_input_param": "Hello World"}
 
@@ -220,10 +217,10 @@ class TestPyOperetoClient ():
         opereto_client.delete_service ('testing_hello_world')
 
     def test_rerun_process(self, opereto_client):
-        test_helper_methods.zip_and_upload (opereto_client,
-                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
-                                            service_id='testing_hello_world', mode='production',
-                                            service_version='default')
+        test_helpers.zip_and_upload (opereto_client,
+                                     os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                     service_id='testing_hello_world', mode='production',
+                                     service_version='default')
 
         process_properties = {"my_input_param": "Hello World"}
 
@@ -237,10 +234,10 @@ class TestPyOperetoClient ():
         assert pid is not None
 
     def test_modify_process_properties(self, opereto_client):
-        test_helper_methods.zip_and_upload (opereto_client,
-                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
-                                            service_id='testing_hello_world', mode='production',
-                                            service_version='default')
+        test_helpers.zip_and_upload (opereto_client,
+                                     os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                     service_id='testing_hello_world', mode='production',
+                                     service_version='default')
 
         process_properties = {"my_input_param": "Hello World"}
 
@@ -256,10 +253,10 @@ class TestPyOperetoClient ():
         opereto_client.delete_service ('testing_hello_world')
 
     def test_modify_process_property(self, opereto_client):
-        test_helper_methods.zip_and_upload (opereto_client,
-                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
-                                            service_id='testing_hello_world', mode='production',
-                                            service_version='default')
+        test_helpers.zip_and_upload (opereto_client,
+                                     os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                     service_id='testing_hello_world', mode='production',
+                                     service_version='default')
 
         process_properties = {"my_input_param": "Hello World"}
 
@@ -274,10 +271,10 @@ class TestPyOperetoClient ():
         opereto_client.delete_service ('testing_hello_world')
 
     def test_stop_process(self, opereto_client):
-        test_helper_methods.zip_and_upload (opereto_client,
-                                            os.path.abspath ('test_data/microservices/testing_hello_world'),
-                                            service_id='testing_hello_world', mode='production',
-                                            service_version='default')
+        test_helpers.zip_and_upload (opereto_client,
+                                     os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                     service_id='testing_hello_world', mode='production',
+                                     service_version='default')
 
         process_properties = {"my_input_param": "Hello World"}
 
@@ -287,6 +284,7 @@ class TestPyOperetoClient ():
         opereto_client.stop_process(pid, "warning")
         status = opereto_client.get_process_status(pid)
         assert status == "warning"
+
 
 def teardown(self):
     pass
