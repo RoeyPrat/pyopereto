@@ -8,7 +8,7 @@ pip install -U pytest
 pip install pyopereto
 ```
 
-Add a file named arguments.yaml (that will be loaded by the pyopereto client) to the root directory of this repo containing the following:
+Add a file named arguments.yaml (that will be loaded by the pyopereto client if executed via Opereto) to the root directory of this repo containing the following:
 ```
 opereto_host: OPERETO_HOST
 opereto_user: OPERETO_USERNAME
