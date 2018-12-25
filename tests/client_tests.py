@@ -285,7 +285,6 @@ class TestPyOperetoClient ():
         pid = opereto_client.create_process (service='testing_hello_world', title='Testing...',
                                              agent=opereto_client.input['opereto_agent'], **process_properties)
         assert pid is not None
-
         opereto_client.modify_process_property('my_output_param_2', 'out param value', pid)
         opereto_client.wait_for([pid])
         process_output_property_value = opereto_client.get_process_property(pid, 'my_output_param_2')
