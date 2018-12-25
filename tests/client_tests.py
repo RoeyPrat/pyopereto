@@ -6,6 +6,7 @@ import os
 GENERIC_SERVICE_ID = 'a1234321'
 GENERIC_AGENT_ID = 'xxxAgent'
 
+
 class TestPyOperetoClient ():
 
     def setup(self):
@@ -31,21 +32,21 @@ class TestPyOperetoClient ():
 
     def test_hello(self, opereto_client):
         self.opereto_client = opereto_client
-        result_data = opereto_client.hello();
+        result_data = opereto_client.hello ();
         assert 'Hello, welcome to Opereto' in result_data
 
     # Services
     def test_search_services(self, opereto_client):
         self.opereto_client = opereto_client
-        test_helpers.zip_and_upload(opereto_client,
+        test_helpers.zip_and_upload (opereto_client,
                                      os.path.abspath ('test_data/microservices/testing_hello_world'),
                                      service_id='testing_hello_world', mode='production', service_version='111')
 
         search_filter = {'generic': 'testing_hello_world'}
         search_result = opereto_client.search_services (filter=search_filter)
         assert search_result is not None
-        opereto_client.delete_service('testing_hello_world')
-        search_result = opereto_client.search_services(filter=search_filter)
+        opereto_client.delete_service ('testing_hello_world')
+        search_result = opereto_client.search_services (filter=search_filter)
         assert search_result is None
 
     def test_get_service(self, opereto_client):
@@ -53,8 +54,8 @@ class TestPyOperetoClient ():
         test_helpers.zip_and_upload (opereto_client,
                                      os.path.abspath ('test_data/microservices/testing_hello_world'),
                                      service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
-        self.installed_microservices.append(GENERIC_SERVICE_ID)
-        service = opereto_client.get_service(GENERIC_SERVICE_ID)
+        self.installed_microservices.append (GENERIC_SERVICE_ID)
+        service = opereto_client.get_service (GENERIC_SERVICE_ID)
         assert service['id'] == GENERIC_SERVICE_ID
 
     def test_get_service_version(self, opereto_client):
@@ -62,7 +63,7 @@ class TestPyOperetoClient ():
         test_helpers.zip_and_upload (opereto_client,
                                      os.path.abspath ('test_data/microservices/testing_hello_world'),
                                      service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
-        self.installed_microservices.append(GENERIC_SERVICE_ID)
+        self.installed_microservices.append (GENERIC_SERVICE_ID)
         service = opereto_client.get_service_version (GENERIC_SERVICE_ID, version='111')
         assert service['actual_version'] == '111'
 
@@ -84,7 +85,7 @@ class TestPyOperetoClient ():
         test_helpers.zip_and_upload (opereto_client,
                                      os.path.abspath ('test_data/microservices/testing_hello_world'),
                                      service_id=GENERIC_SERVICE_ID, mode='production', service_version='111')
-        self.installed_microservices.append(GENERIC_SERVICE_ID)
+        self.installed_microservices.append (GENERIC_SERVICE_ID)
         service = opereto_client.modify_service (GENERIC_SERVICE_ID, 'container')
         assert service['type'] == 'container'
 
@@ -309,11 +310,8 @@ class TestPyOperetoClient ():
         assert status == "warning"
 
     def teardown(self):
-        pass
         for service_name in set(self.installed_microservices):
             try:
                 self.opereto_client.delete_service (service_name)
             except OperetoClientError as opereto_client_error:
                 print(opereto_client_error)
-
-
