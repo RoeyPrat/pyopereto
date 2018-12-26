@@ -309,6 +309,24 @@ class TestPyOperetoClient ():
         status = opereto_client.get_process_status(pid)
         assert status == "warning"
 
+    def test_search_process_logs(self, opereto_client):
+        self.opereto_client = opereto_client
+        test_helpers.zip_and_upload (opereto_client,
+                                     os.path.abspath ('test_data/microservices/testing_hello_world'),
+                                     service_id='testing_hello_world', mode='production',
+                                     service_version='default')
+        self.installed_microservices.append ('testing_hello_world')
+        process_properties = {"my_input_param": "Hello World"}
+        pid = opereto_client.create_process (service='testing_hello_world', title='Testing test_search_process_logs',
+                                             agent=opereto_client.input['opereto_agent'], **process_properties)
+
+        opereto_client.wait_for ([pid])
+
+        search_filter = {'generic': 'The input parameters passed*'}
+        search_result = opereto_client.search_process_log (pid, filter=search_filter)
+        assert search_result['list'] is not None
+        assert search_result['total'] is 1
+
     def teardown(self):
         for service_name in set(self.installed_microservices):
             try:

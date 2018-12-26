@@ -1174,6 +1174,33 @@ class OperetoClient(object):
         data = self._call_rest_api('get', '/processes/'+pid+'/log?start={}&limit={}'.format(start,limit), error='Failed to fetch process log')
         return data['list']
 
+    @apicall
+    def search_process_log(self, pid, filter={}, start=0, limit=1000):
+        '''
+        search_process_log(self, pid, filter={}, start=0, limit=1000)
+
+        Search in process logs
+
+        :Parameters:
+        * *pid* (`string`) -- Identifier of an existing process
+        * *start* (`int`) -- start index to retrieve from. Default is 0
+        * *limit* (`int`) -- maximum number of entities to retrieve. Default is 100
+        * *filter* (`object`) -- free text search pattern (checks in process log data)
+
+        :return: Count of records found and list of search results or empty list
+
+        :Example:
+        .. code-block:: python
+
+           filter = {'generic': 'my product param'}
+           search_result = opereto_client.search_globals(filter=filter)
+           if search_result['total'] > 0
+              print(search_result['list'])
+        '''
+        pid = self._get_pid(pid)
+        request_data = {'start': start, 'limit': limit, 'filter': filter}
+        return self._call_rest_api('post', '/processes/' + pid + '/log/search', data=request_data,
+                                    error='Failed to search in process log')
 
     ## deprecated
     def get_process_property(self, pid=None, name=None):
