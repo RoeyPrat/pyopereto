@@ -8,10 +8,11 @@ from functools import wraps as _wraps
 
 try:
     from urllib.request import urlopen
-    from urllib.parse import urlparse
+    from urllib.parse import urlparse, urlencode
 except ImportError:
     from urlparse import urlparse
     from urllib import urlopen
+    from urllib import urlencode
 
 try:
     requests.packages.urllib3.disable_warnings()
@@ -378,7 +379,7 @@ class OperetoClient(object):
         if service_id:
             url_suffix+='/'+service_id
         if kwargs:
-            url_suffix=url_suffix+'?'+urlparse.urlencode(kwargs)
+            url_suffix=url_suffix+'?'+urlencode(kwargs)
         return self._call_rest_api('post', url_suffix, files=files, error='Failed to upload service version')
 
 
@@ -454,7 +455,7 @@ class OperetoClient(object):
         request_data = {'repository': repository_json, 'mode': mode, 'service_version': service_version, 'id': service_id}
         url_suffix = '/services'
         if kwargs:
-            url_suffix=url_suffix+'?'+urlparse.urlencode(kwargs)
+            url_suffix=url_suffix+'?'+urlencode(kwargs)
         return self._call_rest_api('post', url_suffix, data=request_data, error='Failed to import service')
 
     @apicall

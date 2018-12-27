@@ -25,7 +25,7 @@ def zip_folder( target_dir):
 def print_log_entries(client, pid):
     log_entries = client.get_process_log(pid)
     if log_entries:
-        print 'Process log:'
+        print ('Process log:')
         for entry in log_entries:
             print(entry['text'])
 

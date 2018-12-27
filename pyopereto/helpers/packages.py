@@ -46,7 +46,7 @@ class OperetoAwsS3PackagesManager():
         return json.loads(k.get_contents_as_string())
 
     def deploy_package(self, package_id):
-        print 'Deploying package {}'.format(package_id)
+        print('Deploying package {}'.format(package_id))
         source_dir = os.path.join(TEMP_DIR, package_id)
         zip_action_file = os.path.join(TEMP_DIR, str(uuid.uuid4())+'.action')
         self.zipfolder(zip_action_file, source_dir)
@@ -54,7 +54,7 @@ class OperetoAwsS3PackagesManager():
         os.remove(zip_action_file+'.zip')
 
     def deploy_service(self, package_temp_dir, id, attr):
-        print 'Adding service {}'.format(id)
+        print('Adding service {}'.format(id))
         source_dir = os.path.join(self.services_directory, attr['source_dir'])
         dest_dir = os.path.join(package_temp_dir,id)
         shutil.copytree(source_dir,dest_dir)
@@ -76,7 +76,7 @@ class OperetoAwsS3PackagesManager():
         self.save_json_data('packages.json', json.dumps(current_packages_json, indent=4, sort_keys=True))
 
     def deploy(self):
-        print 'Deploying packages to s3 (bucket={})..'.format(self.bucket_name)
+        print('Deploying packages to s3 (bucket={})..'.format(self.bucket_name))
         for p_dir in [d for d in os.listdir(self.packages_directory) if os.path.isdir(d)]:
             package_spec_file = os.path.join(self.packages_directory, p_dir, 'package.json')
             if os.path.exists(package_spec_file):
@@ -88,7 +88,7 @@ class OperetoAwsS3PackagesManager():
                         shutil.rmtree(package_temp_dir)
                     os.mkdir(package_temp_dir)
                     services_to_upload = package_spec['services']
-                    for id, attr in services_to_upload.items():
+                    for id, attr in list(services_to_upload.items()):
                         self.deploy_service(package_temp_dir, id, attr)
 
                         ## remove files/directories from deployment
@@ -96,10 +96,10 @@ class OperetoAwsS3PackagesManager():
                             for entry in attr['ignore']:
                                 entry_to_remove = os.path.join(package_temp_dir, id, entry)
                                 if os.path.isdir(entry_to_remove):
-                                    print 'Removing directory {}'.format(entry)
+                                    print('Removing directory {}'.format(entry))
                                     shutil.rmtree(entry_to_remove)
                                 else:
-                                    print 'Removing file {}'.format(entry)
+                                    print('Removing file {}'.format(entry))
                                     os.remove(entry_to_remove)
 
                         ## include files/directories in deployment
@@ -107,10 +107,10 @@ class OperetoAwsS3PackagesManager():
                             for entry in attr['include']:
                                 entry_to_include = os.path.join(current_directory, entry)
                                 if os.path.isdir(entry_to_include):
-                                    print 'Including directory {}'.format(entry)
+                                    print('Including directory {}'.format(entry))
                                     shutil.copytree(entry_to_include, os.path.join(package_temp_dir, id, entry))
                                 else:
-                                    print 'Including file {}'.format(entry)
+                                    print('Including file {}'.format(entry))
                                     if os.path.dirname(entry)!='':
                                         os.makedirs(os.path.join(package_temp_dir, id,  os.path.dirname(entry)))
                                     shutil.copy(entry_to_include, os.path.join(package_temp_dir, id, entry))
@@ -134,7 +134,7 @@ class OperetoAwsS3PackagesManager():
                 self.deploy_package(package_id)
                 self.packages_json.append(package_spec)
             else:
-                raise Exception, '[{}] is not a valid package directory.'.format(p_dir)
+                raise Exception('[{}] is not a valid package directory.'.format(p_dir))
 
         self.deploy_packages_json()
 
