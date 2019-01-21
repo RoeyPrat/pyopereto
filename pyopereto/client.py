@@ -35,6 +35,10 @@ process_statuses = process_result_statuses + process_running_statuses
 
 
 class OperetoClientError(Exception):
+    '''
+    Exceptions thrown by OperetoClient methods are wrapped by this class, /
+    taking from the inner exception the message and error code
+    '''
     def __init__(self, message, code=500):
         self.message = message
         self.code = code
@@ -70,6 +74,10 @@ def apicall(f):
 
 
 class OperetoClient(object):
+    '''
+    OperetoClient is the class exposing PyOpereto's client and CLI tool methods.
+    Exceptions raised by this class methods are wrapped in an OperetoClientError exception class
+    '''
 
     SUCCESS = 0
     ERROR = 1
@@ -812,9 +820,9 @@ class OperetoClient(object):
         '''
         create_agent(self, agent_id=None, **kwargs)
 
-        | Creates an agent based on the identifier provided.
-        | The agent will become online when a real agent will connect using this identifier.
-        | However, in most cases, the agent entity is created automatically when a new agent connects to opereto.
+        | Creates an agent based on the identifier provided. \
+        | The agent will become online when a real agent will connect using this identifier. \
+        | However, in most cases, the agent entity is created automatically when a new agent connects to opereto. \
 
         :Parameters:
         * *agent_id* (`string`) -- Identifier of an existing agent

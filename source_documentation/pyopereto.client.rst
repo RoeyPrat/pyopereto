@@ -7,5 +7,8 @@
 ===========================
 
 
+.. autoclass:: pyopereto.client.OperetoClientError
+   :members:
+
 .. autoclass:: pyopereto.client.OperetoClient
    :members:
