@@ -76,6 +76,7 @@ import time
 import signal
 import pkg_resources
 import tempfile
+import subprocess
 
 VERSION = pkg_resources.get_distribution("pyopereto").version
 
@@ -105,10 +106,8 @@ logging.config.dictConfig({
 })
 
 logger = logging.getLogger('OperetoCliTool')
-
 TEMP_DIR = tempfile.gettempdir()
 HOME_DIR = expanduser("~")
-
 work_dir = os.getcwd()
 opereto_host = None
 
@@ -130,6 +129,13 @@ def get_opereto_client():
     return client
 
 
+def local(cmd, working_directory=os.getcwd()):
+    print cmd
+    p = subprocess.Popen(cmd, cwd=working_directory)
+    retval = p.wait()
+    return int(retval)
+
+
 def get_process_rca(pid):
     client = get_opereto_client()
     print('Collecting RCA data..')
@@ -146,11 +152,42 @@ def get_process_rca(pid):
 
 
 def zipfolder(zipname, target_dir):
-    if target_dir.endswith('/'):
-        target_dir = target_dir[:-1]
-    base_dir =  os.path.basename(os.path.normpath(target_dir))
-    root_dir = os.path.dirname(target_dir)
-    shutil.make_archive(zipname, "zip", root_dir, base_dir)
+
+    try:
+        stripped_target_dir = target_dir.rstrip("/")
+        service_deploy_config_file = os.path.join(stripped_target_dir, 'service.deploy.json')
+        temp_service_directory = os.path.join(TEMP_DIR, str(uuid.uuid4()))
+        shutil.copytree(stripped_target_dir, temp_service_directory)
+        if os.path.exists(service_deploy_config_file):
+            with open(service_deploy_config_file, 'r') as deploy_config:
+                dc = json.loads(deploy_config.read())
+                if 'include' in dc:
+                    for path in dc['include']:
+                        if path['type']=='reletive':
+                            fullpath = os.path.join(stripped_target_dir, path['path'])
+                        elif path['type']=='absalute':
+                            fullpath = path['path']
+                        else:
+                            raise OperetoClientError('Unknown or invalid include path type. Must be "reletive" or "absalute"')
+                        if os.path.exists(fullpath):
+                            if fullpath.rstrip("/")!=stripped_target_dir:
+                                if os.path.isdir(fullpath):
+                                    shutil.copytree(fullpath,temp_service_directory)
+                                else:
+                                    shutil.copy(fullpath, temp_service_directory)
+                        else:
+                            raise OperetoClientError('The include file or directory {} does not exist.'.format(fullpath))
+                if 'build' in dc:
+                    exit_code = local(dc['build']['command'], working_directory=temp_service_directory)
+                    if exit_code!=dc['build']['expected_exit_code']:
+                        raise OperetoClientError('The build command failed (expected exit code={} actual exit code={}). Abort deployment..'.format(int(dc['build']['expected_exit_code']), exit_code))
+
+        base_dir = os.path.basename(os.path.normpath(temp_service_directory))
+        root_dir = os.path.dirname(temp_service_directory)
+        shutil.make_archive(zipname, "zip", root_dir, base_dir)
+    finally:
+        if os.path.exists(temp_service_directory):
+            shutil.rmtree(temp_service_directory)
 
 
 def deploy(params):
@@ -175,7 +212,9 @@ def deploy(params):
             raise OperetoClientError('Service [%s]: %s'%(service_name, str(e)))
         except Exception as e:
             raise OperetoClientError('Service [%s] failed to deploy: %s'%(service_name, str(e)))
-
+        finally:
+            if os.path.exists(zip_action_file):
+                os.remove(zip_action_file)
 
     def is_service_dir(dirpath):
         if not os.path.isdir(dirpath):
@@ -471,6 +510,7 @@ def get_process(arguments):
 
 def main():
 
+
     arguments = docopt(__doc__, version='Opereto CLI Tool v%s'%VERSION)
     def ctrlc_signal_handler(s, f):
         if arguments['run'] and RUNNING_PROCESS:
@@ -482,6 +522,7 @@ def main():
         os.kill(os.getpid(), signal.SIGTERM)
 
     try:
+
         signal.signal(signal.SIGINT, ctrlc_signal_handler)
         if arguments['sandbox'] and arguments['list']:
             list_development_sandbox()
@@ -517,8 +558,6 @@ def main():
     except Exception as e:
         logger.error(str(e))
         sys.exit(1)
-
-
 
 if __name__ == "__main__":
     main()
