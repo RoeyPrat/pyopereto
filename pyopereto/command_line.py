@@ -172,7 +172,7 @@ def zipfolder(zipname, target_dir):
                         if os.path.exists(fullpath):
                             if fullpath.rstrip("/")!=stripped_target_dir:
                                 if os.path.isdir(fullpath):
-                                    shutil.copytree(fullpath,temp_service_directory)
+                                    shutil.copytree(fullpath,os.path.join(temp_service_directory, os.path.basename(os.path.normpath(fullpath))))
                                 else:
                                     shutil.copy(fullpath, temp_service_directory)
                         else:
