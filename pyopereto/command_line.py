@@ -163,16 +163,16 @@ def zipfolder(zipname, target_dir):
                 dc = json.loads(deploy_config.read())
                 if 'include' in dc:
                     for path in dc['include']:
-                        if path['type']=='reletive':
+                        if path['type']=='relative':
                             fullpath = os.path.join(stripped_target_dir, path['path'])
-                        elif path['type']=='absalute':
+                        elif path['type']=='absolute':
                             fullpath = path['path']
                         else:
-                            raise OperetoClientError('Unknown or invalid include path type. Must be "reletive" or "absalute"')
+                            raise OperetoClientError('Unknown or invalid include path type. Must be "relative" or "absolute"')
                         if os.path.exists(fullpath):
                             if fullpath.rstrip("/")!=stripped_target_dir:
                                 if os.path.isdir(fullpath):
-                                    shutil.copytree(fullpath,temp_service_directory)
+                                    shutil.copytree(fullpath,os.path.join(temp_service_directory, os.path.basename(os.path.normpath(fullpath))))
                                 else:
                                     shutil.copy(fullpath, temp_service_directory)
                         else:

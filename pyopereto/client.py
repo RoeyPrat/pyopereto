@@ -1317,11 +1317,11 @@ class OperetoClient(object):
         return self.wait_for(pids=actual_pids, status_list=process_result_statuses)
 
 
-    def wait_to_end(self, pids=[]):
+    def is_success(self, pids=[]):
         '''
-        wait_to_end(self, pids=[])
+        is_success(self, pids)
 
-        Wait for processes to end successfully
+        Waits for a process to end and check if it status is 'success'
 
         :Parameters:
         * *pids* (`list`) -- list of processes to wait to finish
