@@ -1060,7 +1060,7 @@ class OperetoClient(object):
         .. code-block:: python
 
            pid = opereto_client.create_process(service='simple_shell_command', title='Test simple shell command service')
-           opereto_client.modify_process_properties("my_output_param", "1" , pid)
+           opereto_client.modify_process_property("my_output_param", "1" , pid)
 
         '''
         pid = self._get_pid(pid)
