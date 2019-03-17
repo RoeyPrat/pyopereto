@@ -10,9 +10,15 @@ PyOpereto is Opereto's official Python client and CLI tool.
 
 For more information:
 
+`Source Code <https://github.com/opereto/pyopereto>`__
+
 `Opereto REST API <https://operetoapi.docs.apiary.io/#>`__
 
 `Opereto Documentation <http://docs.opereto.com>`__
+
+
+
+
 
 .. toctree::
    :maxdepth: 2
