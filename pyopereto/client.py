@@ -133,7 +133,10 @@ class OperetoClient(object):
 
 
     def __del__(self):
-        self._disconnect()
+        try:
+            self._disconnect()
+        except:
+            pass
 
 
     def _get_pids(self, pids=[]):
@@ -1068,7 +1071,7 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/processes/'+pid+'/output', data=request_data, error='Failed to modify output property [%s]'%key)
 
     @apicall
-    def modify_process_summary(self, pid=None, text=''):
+    def modify_process_summary(self, pid=None, text='', append=False):
         '''
         modify_process_summary(self, pid=None, text='')
 
@@ -1077,10 +1080,17 @@ class OperetoClient(object):
         :Parameters:
         * *key* (`pid`) -- Identifier of an existing process
         * *key* (`text`) -- summary text
+        * *append* (`boolean`) -- True to append to summary. False to override it.
 
         '''
         pid = self._get_pid(pid)
-        request_data={"id" : pid, "data": str(text)}
+
+        if append:
+            current_summary =  self.get_process_info(pid).get('summary') or ''
+            modified_text = current_summary + '\n' + text
+            text = modified_text
+
+        request_data = {"id": pid, "data": str(text)}
         return self._call_rest_api('post', '/processes/'+pid+'/summary', data=request_data, error='Failed to update process summary')
 
 

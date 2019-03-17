@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = u'pyopereto'
-copyright = u'2018, Opereto'
+copyright = u'2019, Opereto'
 author = u'Opereto'
 
 # The short X.Y version
