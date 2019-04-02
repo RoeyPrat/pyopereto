@@ -939,7 +939,7 @@ class OperetoClient(object):
 
         :Parameters:
         * *service* (`string`) -- Service which process will be started
-        * *agent* (`string`) -- The service identifier (e.g shell_command)
+        * *agent* (`string`) -- a valid value may be one of the following: agent identifier, agent identifiers (list) : ["agent_1", "agent_2"..], "all", "any"
         * *title* (`string`) -- Title for the process
         * *mode* (`string`) -- production/development
         * *service_version* (`string`) -- Version of the service to execute
