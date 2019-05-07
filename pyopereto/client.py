@@ -1213,8 +1213,8 @@ class OperetoClient(object):
 
            filter = {'generic': 'my product param'}
            search_result = opereto_client.search_globals(filter=filter)
-           if search_result['total'] > 0
-              print(search_result['list'])
+           if len(search_result) > 0:
+              print(search_result)
         '''
         pid = self._get_pid(pid)
         request_data = {'start': start, 'limit': limit, 'filter': filter}
