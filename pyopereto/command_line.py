@@ -7,7 +7,8 @@ Usage:
   opereto sandbox deploy <service-directory> [--service-name=NAME | --recursive] [--comment=COMMENT]
   opereto sandbox run <service-name> [--agent=AGENT] [--title=TITLE] [--params=JSON_PARAMS] [--async]
   opereto sandbox delete <service-name>
-  opereto configure <service-directory>
+  opereto local create <service-directory> [--agent=AGENT] [--title=TITLE]
+  opereto local remove <service-directory>
   opereto services list [<search_pattern>]
   opereto services deploy <service-directory> [--service-version=VERSION] [--service-name=NAME | --recursive] [--comment=COMMENT]
   opereto services run <service-name> [--agent=AGENT] [--title=TITLE]  [--params=JSON_PARAMS] [--service-version=VERSION] [--async]
@@ -109,7 +110,7 @@ logger = logging.getLogger('OperetoCliTool')
 TEMP_DIR = tempfile.gettempdir()
 HOME_DIR = expanduser("~")
 work_dir = os.getcwd()
-opereto_host = None
+
 
 RUNNING_PROCESS = None
 
@@ -119,13 +120,18 @@ if not os.path.exists(opereto_config_file):
 if not os.path.exists(opereto_config_file):
     raise Exception('Could not find opereto credentials file')
 
+opereto_credentials_json = {}
 with open(opereto_config_file, 'r') as f:
-    input = yaml.load(f.read())
-    opereto_host = input['opereto_host']
+    opereto_credentials_json = yaml.load(f.read())
+
+opereto_host = opereto_credentials_json['opereto_host']
+opereto_user = opereto_credentials_json['opereto_user']
+opereto_email = opereto_credentials_json.get('opereto_email')
+opereto_mobile = opereto_credentials_json.get('opereto_mobile')
 
 
 def get_opereto_client():
-    client = OperetoClient(opereto_host=input['opereto_host'], opereto_user=input['opereto_user'], opereto_password=input['opereto_password'])
+    client = OperetoClient(opereto_host=opereto_credentials_json['opereto_host'], opereto_user=opereto_credentials_json['opereto_user'], opereto_password=opereto_credentials_json['opereto_password'])
     return client
 
 
@@ -134,6 +140,16 @@ def local(cmd, working_directory=os.getcwd()):
     p = subprocess.Popen(cmd, cwd=working_directory)
     retval = p.wait()
     return int(retval)
+
+
+def get_service_directory(service_directory):
+    if not os.path.exists(service_directory):
+        raise Exception('Service directory [{}] does not exist.'.format(service_directory))
+    if service_directory=='.':
+        service_directory = os.getcwd()
+    return service_directory
+
+
 
 
 def get_process_rca(pid):
@@ -236,9 +252,7 @@ def deploy(params):
                 service_dir = os.path.join(rootdir, directory)
                 deploy_root_service_dir(service_dir)
 
-    service_directory = params['<service-directory>']
-    if service_directory=='.':
-        service_directory = os.getcwd()
+    service_directory = get_service_directory(params['<service-directory>'])
     if params['--recursive']:
         deploy_root_service_dir(service_directory)
     else:
@@ -302,24 +316,74 @@ def run(params):
     print('View process flow at: {}/ui#dashboard/flow/{}'.format(opereto_host, pid))
 
 
-def prepare(params):
+def local_dev(params):
+
+    service_dir = get_service_directory(params['<service-directory>'])
     with open(os.path.join(params['<service-directory>'], 'service.yaml'), 'r') as f:
         spec = yaml.load(f.read())
-    if spec['type'] in ['cycle', 'container']:
+    if spec['type'] in ['cycle', 'container', 'builtin', 'record', 'testplan']:
         raise Exception('Execution of service type [%s] in local mode is not supported.'%spec['type'])
-    service_cmd = spec['cmd']
-    with open(opereto_config_file, 'r') as arguments_file:
-        arguments_json = yaml.load(arguments_file.read())
-    if spec.get('item_properties'):
-        for item in spec['item_properties']:
-            arguments_json[item['key']]=item['value']
-    with open(os.path.join(params['<service-directory>'], 'arguments.json'), 'w') as json_arguments_outfile:
-        json.dump(arguments_json, json_arguments_outfile, indent=4, sort_keys=True)
-    with open(os.path.join(params['<service-directory>'], 'arguments.yaml'), 'w') as yaml_arguments_outfile:
-        yaml.dump(yaml.load(json.dumps(arguments_json)), yaml_arguments_outfile, indent=4, default_flow_style=False)
-    logger.info('Local argument files updated successfully.')
-    print('To run the service locally, please go to service directory and run: %s\n'%service_cmd)
-    return service_cmd
+
+    json_arguments_file = os.path.join(params['<service-directory>'], 'arguments.json')
+    yaml_arguments_file = os.path.join(params['<service-directory>'], 'arguments.yaml')
+
+    client = get_opereto_client()
+
+
+    def delete_local_dev_config():
+        if os.path.exists(json_arguments_file):
+            with open(json_arguments_file, 'r') as infile:
+                arguments = json.loads(infile.read())
+                if arguments.get('pid'):
+                    if client.get_process_status(arguments.get('pid')) == 'in_process':
+                        logger.info('Stopping remote parent flow process [{}]..'.format(arguments['pid']))
+                        client.stop_process([arguments.get('pid')])
+            os.remove(json_arguments_file)
+
+        if os.path.exists(yaml_arguments_file):
+            os.remove(yaml_arguments_file)
+
+        logger.info('Argument files in service directory [{}] have been removed.'.format(service_dir))
+
+
+    ## Remove environment vars if exists (TBD)
+    if params['remove']:
+        delete_local_dev_config()
+        print('Please remove any development default values from your servic.yaml before deploying it to production.')
+
+    elif params['create']:
+
+        delete_local_dev_config()
+
+        parent_process_title = params['--title'] or 'Developer parent flow for user: {}'.format(opereto_user)
+        ppid = client.create_process('local_dev_parent_flow', title=parent_process_title, agent='any')
+        client.wait_to_start(ppid)
+        logger.info('A new parent process {} have been created.'.format(ppid))
+        builtin_params = dict(pid=ppid, opereto_workspace=params['<service-directory>'], opereto_agent=params['--agent'],
+                              opereto_source_flow_id=ppid, opereto_parent_flow_id=None, opereto_product_id=None,
+                              opereto_service_version=opereto_user, opereto_originator_username=opereto_user,
+                              opereto_originator_email=opereto_email, opereto_originator_mobile=opereto_mobile,
+                              opereto_execution_mode="development")
+        builtin_params['timeout']=spec['timeout']
+
+        # prepare arguments json
+        arguments_json = builtin_params
+        with open(opereto_config_file, 'r') as arguments_file:
+            arguments_json.update(yaml.load(arguments_file.read()))
+        if spec.get('item_properties'):
+            for item in spec['item_properties']:
+                arguments_json[item['key']]=item['value']
+
+        # modify local argument files (json and yaml)
+        with open(os.path.join(params['<service-directory>'], 'arguments.json'), 'w') as json_arguments_outfile:
+            json.dump(arguments_json, json_arguments_outfile, indent=4, sort_keys=True)
+        with open(os.path.join(params['<service-directory>'], 'arguments.yaml'), 'w') as yaml_arguments_outfile:
+            yaml.dump(yaml.load(json.dumps(arguments_json)), yaml_arguments_outfile, indent=4, default_flow_style=False)
+
+        ## Add environment vars if exists (TBD)
+
+        logger.info('Argument files in service directory [{}] have been created.'.format(service_dir))
+        print('\nIn case you are developing a flow, you can view the created sub processes at:\n{}/ui#dashboard/flow/{}'.format(opereto_host, ppid))
 
 
 def delete(params):
@@ -552,8 +616,8 @@ def main():
             run(arguments)
         elif arguments['delete']:
             delete(arguments)
-        elif arguments['configure']:
-            prepare(arguments)
+        elif arguments['local']:
+            local_dev(arguments)
 
     except Exception as e:
         logger.error(str(e))
