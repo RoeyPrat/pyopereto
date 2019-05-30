@@ -1,6 +1,7 @@
 import os, json, shutil, uuid, sys, tempfile
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
+import subprocess
 
 TEMP_DIR = tempfile.gettempdir()
 
@@ -53,11 +54,47 @@ class OperetoAwsS3PackagesManager():
         self.save_file('{}.zip'.format(package_id), zip_action_file+'.zip')
         os.remove(zip_action_file+'.zip')
 
+    def local(self, cmd, working_directory=os.getcwd()):
+        print cmd
+        p = subprocess.Popen(cmd, cwd=working_directory)
+        retval = p.wait()
+        return int(retval)
+
     def deploy_service(self, package_temp_dir, id, attr):
         print('Adding service {}'.format(id))
         source_dir = os.path.join(self.services_directory, attr['source_dir'])
         dest_dir = os.path.join(package_temp_dir,id)
         shutil.copytree(source_dir,dest_dir)
+        service_deploy_config_file = os.path.join(source_dir, 'service.deploy.json')
+
+        if os.path.exists(service_deploy_config_file):
+            with open(service_deploy_config_file, 'r') as deploy_config:
+                dc = json.loads(deploy_config.read())
+                if 'include' in dc:
+                    for path in dc['include']:
+                        if path['type'] == 'relative':
+                            fullpath = os.path.join(source_dir, path['path'])
+                        elif path['type'] == 'absolute':
+                            fullpath = path['path']
+                        else:
+                            raise Exception(
+                                'Unknown or invalid include path type. Must be "relative" or "absolute"')
+                        if os.path.exists(fullpath):
+                            if fullpath.rstrip("/") != dest_dir:
+                                if os.path.isdir(fullpath):
+                                    shutil.copytree(fullpath, os.path.join(dest_dir, os.path.basename(
+                                        os.path.normpath(fullpath))))
+                                else:
+                                    shutil.copy(fullpath, dest_dir)
+                        else:
+                            raise Exception(
+                                'The include file or directory {} does not exist.'.format(fullpath))
+                if 'build' in dc:
+                    exit_code = self.local(dc['build']['command'], working_directory=dest_dir)
+                    if exit_code != dc['build']['expected_exit_code']:
+                        raise Exception(
+                            'The build command failed (expected exit code={} actual exit code={}). Abort deployment..'.format(
+                                int(dc['build']['expected_exit_code']), exit_code))
 
     def deploy_packages_json(self):
         self.save_json_data('packages.json', json.dumps(self.packages_json, indent=4, sort_keys=True))
@@ -90,32 +127,6 @@ class OperetoAwsS3PackagesManager():
                     services_to_upload = package_spec['services']
                     for id, attr in list(services_to_upload.items()):
                         self.deploy_service(package_temp_dir, id, attr)
-
-                        ## remove files/directories from deployment
-                        if attr.get('ignore'):
-                            for entry in attr['ignore']:
-                                entry_to_remove = os.path.join(package_temp_dir, id, entry)
-                                if os.path.isdir(entry_to_remove):
-                                    print('Removing directory {}'.format(entry))
-                                    shutil.rmtree(entry_to_remove)
-                                else:
-                                    print('Removing file {}'.format(entry))
-                                    os.remove(entry_to_remove)
-
-                        ## include files/directories in deployment
-                        if attr.get('include'):
-                            for entry in attr['include']:
-                                entry_to_include = os.path.join(current_directory, entry)
-                                if os.path.isdir(entry_to_include):
-                                    print('Including directory {}'.format(entry))
-                                    shutil.copytree(entry_to_include, os.path.join(package_temp_dir, id, entry))
-                                else:
-                                    print('Including file {}'.format(entry))
-                                    if os.path.dirname(entry)!='':
-                                        os.makedirs(os.path.join(package_temp_dir, id,  os.path.dirname(entry)))
-                                    shutil.copy(entry_to_include, os.path.join(package_temp_dir, id, entry))
-
-
                         package_spec['services'][id]= {
                             "repository": {
                                 "ot_dir": package_id + '/' + id

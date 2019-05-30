@@ -96,7 +96,7 @@ class OperetoClient(object):
                     if file.endswith('.json'):
                         self.input = json.loads(f.read())
                     else:
-                        self.input = yaml.load(f.read())
+                        self.input = yaml.load(f.read(), Loader=yaml.FullLoader)
             except Exception as e:
                 raise OperetoClientError('Failed to parse %s: %s'%(file, str(e)))
 
@@ -133,7 +133,10 @@ class OperetoClient(object):
 
 
     def __del__(self):
-        self._disconnect()
+        try:
+            self._disconnect()
+        except:
+            pass
 
 
     def _get_pids(self, pids=[]):
@@ -333,7 +336,7 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/services/verify', data=request_data, error='Service [%s] verification failed'%service_id)
 
 
-    @apicall
+    #@apicall
     def modify_service(self, service_id, type):
         '''
         modify_service(self, service_id, type)
@@ -358,7 +361,7 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/services', data=request_data, error='Failed to modify service [%s]'%service_id)
 
 
-    @apicall
+    #@apicall
     def upload_service_version(self, service_zip_file, mode='production', service_version='default', service_id=None, **kwargs):
         '''
         upload_service_version(self, service_zip_file, mode='production', service_version='default', service_id=None, **kwargs)
@@ -391,7 +394,7 @@ class OperetoClient(object):
         return self._call_rest_api('post', url_suffix, files=files, error='Failed to upload service version')
 
 
-    @apicall
+    #@apicall
     def import_service_version(self, repository_json, mode='production', service_version='default', service_id=None, **kwargs):
         '''
         import_service_version(self, repository_json, mode='production', service_version='default', service_id=None, **kwargs)
@@ -466,7 +469,7 @@ class OperetoClient(object):
             url_suffix=url_suffix+'?'+urlencode(kwargs)
         return self._call_rest_api('post', url_suffix, data=request_data, error='Failed to import service')
 
-    @apicall
+    #@apicall
     def delete_service(self, service_id):
         '''
         delete_service(self, service_id)
@@ -488,7 +491,7 @@ class OperetoClient(object):
         return self._call_rest_api('delete', '/services/'+service_id, error='Failed to delete service')
 
 
-    @apicall
+    #@apicall
     def delete_service_version(self, service_id , service_version='default', mode='production'):
         '''
         delete_service(self, service_id, service_version='default', mode='production')
@@ -524,7 +527,7 @@ class OperetoClient(object):
         return self._call_rest_api('get', '/services/sandbox', error='Failed to list sandbox services')
 
 
-    @apicall
+    #@apicall
     def purge_development_sandbox(self):
         '''
         purge_development_sandbox(self)
@@ -638,7 +641,7 @@ class OperetoClient(object):
         request_data = {'id': environment_id}
         return self._call_rest_api('post', '/environments/verify', data=request_data, error='Failed to verify environment.')
 
-    @apicall
+    #@apicall
     def create_environment(self, topology_name, topology={}, id=None, **kwargs):
         '''
         create_environment(self, topology_name, topology={}, id=None, **kwargs)
@@ -658,7 +661,7 @@ class OperetoClient(object):
         request_data.update(**kwargs)
         return self._call_rest_api('post', '/environments', data=request_data, error='Failed to create environment')
 
-    @apicall
+    #@apicall
     def modify_environment(self, environment_id, **kwargs):
         '''
         modify_environment(self, environment_id, **kwargs)
@@ -678,7 +681,7 @@ class OperetoClient(object):
         request_data.update(**kwargs)
         return self._call_rest_api('post', '/environments', data=request_data, error='Failed to modify environment')
 
-    @apicall
+    #@apicall
     def delete_environment(self, environment_id):
         '''
         delete_environment(self, environment_id)
@@ -774,7 +777,7 @@ class OperetoClient(object):
         return self._call_rest_api('get', '/agents/all', error='Failed to fetch agents')
 
 
-    @apicall
+    #@apicall
     def modify_agent_property(self, agent_id, key, value):
         '''
         modify_agent_property(self, agent_id, key, value)
@@ -795,7 +798,7 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data={key: value}, error='Failed to modify agent [%s] property [%s]'%(agent_id,key))
 
 
-    @apicall
+    #@apicall
     def modify_agent_properties(self, agent_id, key_value_map={}):
         '''
         modify_agent_properties(self, agent_id, key_value_map={})
@@ -816,7 +819,7 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/agents/'+agent_id+'/properties', data=key_value_map, error='Failed to modify agent [%s] properties'%agent_id)
 
 
-    @apicall
+    #@apicall
     def create_agent(self, agent_id=None, **kwargs):
         '''
         create_agent(self, agent_id=None, **kwargs)
@@ -849,7 +852,7 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/agents'+'', data=request_data, error='Failed to create agent')
 
 
-    @apicall
+    #@apicall
     def modify_agent(self, agent_id, **kwargs):
         '''
         modify_agent(self, agent_id, **kwargs)
@@ -911,7 +914,7 @@ class OperetoClient(object):
         '''
         return self.get_agent(agent_id)
 
-    @apicall
+    #@apicall
     def delete_agent(self, agent_id):
         '''
         delete_agent(self, agent_id)
@@ -927,7 +930,7 @@ class OperetoClient(object):
 
     #### PROCESSES ####
 
-    @apicall
+    #@apicall
     def create_process(self, service, agent=None, title=None, mode=None, service_version=None, **kwargs):
         '''
         create_process(self, service, agent=None, title=None, mode=None, service_version=None, **kwargs)
@@ -935,8 +938,8 @@ class OperetoClient(object):
         Registers a new process or processes
 
         :Parameters:
-        * *service* (`string`) -- Service which process will be started
-        * *agent* (`string`) -- The service identifier (e.g shell_command)
+        * *service* (`string`) -- The service identifier (e.g shell_command)
+        * *agent* (`string`) -- The agent to run the service on
         * *title* (`string`) -- Title for the process
         * *mode* (`string`) -- production/development
         * *service_version* (`string`) -- Version of the service to execute
@@ -984,7 +987,7 @@ class OperetoClient(object):
         return str(pid)
 
 
-    @apicall
+    #@apicall
     def rerun_process(self, pid, title=None, agent=None):
         '''
         rerun_process(self, pid, title=None, agent=None)
@@ -1019,7 +1022,7 @@ class OperetoClient(object):
         return str(new_pid)
 
 
-    @apicall
+    #@apicall
     def modify_process_properties(self, key_value_map={}, pid=None):
         '''
         modify_process_properties(self, key_value_map={}, pid=None)
@@ -1043,7 +1046,7 @@ class OperetoClient(object):
         request_data={"properties": key_value_map}
         return self._call_rest_api('post', '/processes/'+pid+'/output', data=request_data, error='Failed to output properties')
 
-    @apicall
+    #@apicall
     def modify_process_property(self, key, value, pid=None):
         '''
         modify_process_property(self, key, value, pid=None)
@@ -1060,15 +1063,15 @@ class OperetoClient(object):
         .. code-block:: python
 
            pid = opereto_client.create_process(service='simple_shell_command', title='Test simple shell command service')
-           opereto_client.modify_process_properties("my_output_param", "1" , pid)
+           opereto_client.modify_process_property("my_output_param", "1" , pid)
 
         '''
         pid = self._get_pid(pid)
         request_data={"key" : key, "value": value}
         return self._call_rest_api('post', '/processes/'+pid+'/output', data=request_data, error='Failed to modify output property [%s]'%key)
 
-    @apicall
-    def modify_process_summary(self, pid=None, text=''):
+    #@apicall
+    def modify_process_summary(self, pid=None, text='', append=False):
         '''
         modify_process_summary(self, pid=None, text='')
 
@@ -1077,15 +1080,22 @@ class OperetoClient(object):
         :Parameters:
         * *key* (`pid`) -- Identifier of an existing process
         * *key* (`text`) -- summary text
+        * *append* (`boolean`) -- True to append to summary. False to override it.
 
         '''
         pid = self._get_pid(pid)
-        request_data={"id" : pid, "data": str(text)}
+
+        if append:
+            current_summary =  self.get_process_info(pid).get('summary') or ''
+            modified_text = current_summary + '\n' + text
+            text = modified_text
+
+        request_data = {"id": pid, "data": str(text)}
         return self._call_rest_api('post', '/processes/'+pid+'/summary', data=request_data, error='Failed to update process summary')
 
 
-    @apicall
-    def stop_process(self, pids, status='success'):
+    #@apicall
+    def stop_process(self, pids=[], status='success'):
         '''
         stop_process(self, pids, status='success')
 
@@ -1317,11 +1327,11 @@ class OperetoClient(object):
         return self.wait_for(pids=actual_pids, status_list=process_result_statuses)
 
 
-    def wait_to_end(self, pids=[]):
+    def is_success(self, pids=[]):
         '''
-        wait_to_end(self, pids=[])
+        is_success(self, pids)
 
-        Wait for processes to end successfully
+        Waits for a process to end and check if it status is 'success'
 
         :Parameters:
         * *pids* (`list`) -- list of processes to wait to finish
@@ -1409,7 +1419,7 @@ class OperetoClient(object):
         return value
 
 
-    @apicall
+    #@apicall
     def set_process_runtime_cache(self, key, value, pid=None):
         '''
         set_process_runtime_cache(self, key, value, pid=None)
@@ -1478,7 +1488,7 @@ class OperetoClient(object):
         request_data.update(kwargs)
         return self._call_rest_api('post', '/search/products', data=request_data, error='Failed to search products')
 
-    @apicall
+    #@apicall
     def create_product(self, product, version, build, name=None, description=None, attributes={}):
         '''
         create_product(self, product, version, build, name=None, description=None, attributes={})
@@ -1505,7 +1515,7 @@ class OperetoClient(object):
         return str(pid)
 
 
-    @apicall
+    #@apicall
     def modify_product(self, product_id, name=None, description=None, attributes={}):
         '''
         modify_product(self, product_id, name=None, description=None, attributes={})
@@ -1526,7 +1536,7 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/products', data=request_data, error='Failed to modify a new product')
 
 
-    @apicall
+    #@apicall
     def delete_product(self, product_id):
         '''
         delete_product(self, product_id)
@@ -1581,7 +1591,7 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/search/kpi', data=request_data, error='Failed to search kpi entries')
 
 
-    @apicall
+    #@apicall
     def modify_kpi(self, kpi_id, product_id, measures=[], append=False, **kwargs):
         '''
         modify_kpi(self, kpi_id, product_id, measures=[], append=False, **kwargs)
@@ -1602,7 +1612,7 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/kpi', data=request_data, error='Failed to modify a kpi entry')
 
 
-    @apicall
+    #@apicall
     def delete_kpi(self, kpi_id, product_id):
         '''
         delete_kpi(self, kpi_id, product_id)
@@ -1727,7 +1737,7 @@ class OperetoClient(object):
         request_data.update(**kwargs)
         return self._call_rest_api('post', '/qc', data=request_data, error='Failed to create criteria')
 
-    @apicall
+    #@apicall
     def modify_qc(self, qc_id=None, **kwargs):
         '''
         modify_qc(self, qc_id=None, **kwargs)
@@ -1746,7 +1756,7 @@ class OperetoClient(object):
             return self.create_qc(**kwargs)
 
 
-    @apicall
+    #@apicall
     def delete_qc(self, qc_id):
         '''
         delete_qc(self, qc_id)
