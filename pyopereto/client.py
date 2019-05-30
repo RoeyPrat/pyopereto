@@ -96,7 +96,7 @@ class OperetoClient(object):
                     if file.endswith('.json'):
                         self.input = json.loads(f.read())
                     else:
-                        self.input = yaml.load(f.read())
+                        self.input = yaml.load(f.read(), Loader=yaml.FullLoader)
             except Exception as e:
                 raise OperetoClientError('Failed to parse %s: %s'%(file, str(e)))
 

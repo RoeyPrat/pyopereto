@@ -122,7 +122,7 @@ if not os.path.exists(opereto_config_file):
 
 opereto_credentials_json = {}
 with open(opereto_config_file, 'r') as f:
-    opereto_credentials_json = yaml.load(f.read())
+    opereto_credentials_json = yaml.load(f.read(), Loader=yaml.FullLoader)
 
 opereto_host = opereto_credentials_json['opereto_host']
 opereto_user = opereto_credentials_json['opereto_user']
@@ -136,7 +136,7 @@ def get_opereto_client():
 
 
 def local(cmd, working_directory=os.getcwd()):
-    print cmd
+    print(cmd)
     p = subprocess.Popen(cmd, cwd=working_directory)
     retval = p.wait()
     return int(retval)
@@ -320,7 +320,7 @@ def local_dev(params):
 
     service_dir = get_service_directory(params['<service-directory>'])
     with open(os.path.join(params['<service-directory>'], 'service.yaml'), 'r') as f:
-        spec = yaml.load(f.read())
+        spec = yaml.load(f.read(), Loader=yaml.FullLoader)
     if spec['type'] in ['cycle', 'container', 'builtin', 'record', 'testplan']:
         raise Exception('Execution of service type [%s] in local mode is not supported.'%spec['type'])
 
@@ -364,12 +364,12 @@ def local_dev(params):
                               opereto_service_version=opereto_user, opereto_originator_username=opereto_user,
                               opereto_originator_email=opereto_email, opereto_originator_mobile=opereto_mobile,
                               opereto_execution_mode="development")
-        builtin_params['timeout']=spec['timeout']
+        builtin_params['opereto_timeout']=spec['timeout']
 
         # prepare arguments json
         arguments_json = builtin_params
         with open(opereto_config_file, 'r') as arguments_file:
-            arguments_json.update(yaml.load(arguments_file.read()))
+            arguments_json.update(yaml.load(arguments_file.read(), Loader=yaml.FullLoader))
         if spec.get('item_properties'):
             for item in spec['item_properties']:
                 arguments_json[item['key']]=item['value']
@@ -378,7 +378,7 @@ def local_dev(params):
         with open(os.path.join(params['<service-directory>'], 'arguments.json'), 'w') as json_arguments_outfile:
             json.dump(arguments_json, json_arguments_outfile, indent=4, sort_keys=True)
         with open(os.path.join(params['<service-directory>'], 'arguments.yaml'), 'w') as yaml_arguments_outfile:
-            yaml.dump(yaml.load(json.dumps(arguments_json)), yaml_arguments_outfile, indent=4, default_flow_style=False)
+            yaml.dump(yaml.load(json.dumps(arguments_json), Loader=yaml.FullLoader), yaml_arguments_outfile, indent=4, default_flow_style=False)
 
         ## Add environment vars if exists (TBD)
 
@@ -404,10 +404,8 @@ def delete(params):
         else:
             client.delete_service_version(service_id=service_name, service_version=version, mode=operations_mode)
             logger.info('Service [%s] development version deleted successfully.'%service_name)
-    except OperetoClientError as e:
-        raise e
-    except:
-        raise OperetoClientError('Service [%s] failed to delete.'%service_name)
+    except Exception,e:
+        raise OperetoClientError('Service [{}] deletion failed: {}'.format(service_name, str(e)))
 
 
 def purge_development_sandbox():
@@ -497,7 +495,7 @@ def get_service_info(arguments):
     logger.info('---------------------')
 
     try:
-        print(yaml.dump(yaml.load(json.dumps(service['spec'])), indent=4, default_flow_style=False))
+        print(yaml.dump(yaml.load(json.dumps(service['spec']), Loader=yaml.FullLoader), indent=4, default_flow_style=False))
     except:
         print(json.dumps(service['spec'], indent=4, sort_keys=True))
 
