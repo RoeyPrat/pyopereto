@@ -938,8 +938,8 @@ class OperetoClient(object):
         Registers a new process or processes
 
         :Parameters:
-        * *service* (`string`) -- The service identifier (e.g shell_command)
-        * *agent* (`string`) -- The agent to run the service on
+        * *service* (`string`) -- Service which process will be started
+        * *agent* (`string`) -- a valid value may be one of the following: agent identifier, agent identifiers (list) : ["agent_1", "agent_2"..], "all", "any"
         * *title* (`string`) -- Title for the process
         * *mode* (`string`) -- production/development
         * *service_version* (`string`) -- Version of the service to execute
@@ -1213,8 +1213,8 @@ class OperetoClient(object):
 
            filter = {'generic': 'my product param'}
            search_result = opereto_client.search_globals(filter=filter)
-           if search_result['total'] > 0
-              print(search_result['list'])
+           if len(search_result) > 0:
+              print(search_result)
         '''
         pid = self._get_pid(pid)
         request_data = {'start': start, 'limit': limit, 'filter': filter}
