@@ -35,6 +35,17 @@ from pyopereto.client import OperetoClient
 my_client = OperetoClient(opereto_host='https://OPERETO_SERVER_URL', opereto_user='OPERETO_USERNAME', opereto_password='OPERETO_PASSWORD')
 ```
 
+#### Run the client in debug mode
+
+```
+...
+...
+
+# add this after invoking the client
+import logging
+logging.getLogger("pyopereto").setLevel(logging.DEBUG)
+```
+
 
 #### Learn more
 * [PyOpereto Documentation](pyopereto.s3-website-us-east-1.amazonaws.com)

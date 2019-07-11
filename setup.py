@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = '1.0.65'
+VERSION = '1.0.66'
 
 setup(
     name='pyopereto',
@@ -19,8 +19,8 @@ setup(
     },
     install_requires=[
         "requests > 2.7.0",
-        "pyyaml > 3.13",
-        "docopt",
-        "colorlog"
+        "pyyaml >= 5.1",
+        "docopt == 0.6.2",
+        "colorlog == 4.0.2"
     ]
 )
