@@ -48,7 +48,7 @@ logging.getLogger("pyopereto").setLevel(logging.DEBUG)
 
 
 #### Learn more
-* [PyOpereto Documentation](pyopereto.s3-website-us-east-1.amazonaws.com)
+* [PyOpereto Documentation](http://pyopereto.s3-website-us-east-1.amazonaws.com/)
 * [Opereto REST API](https://operetoapi.docs.apiary.io/#)
 * [Opereto Documentation](http://docs.opereto.com)
 
