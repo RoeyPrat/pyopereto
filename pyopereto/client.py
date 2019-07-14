@@ -60,7 +60,7 @@ def apicall(f):
                     rv = f(*args, **kwargs)
                     return rv
                 except OperetoClientError as e:
-                    self.logger.debug('API Call failed: {}'.format(str(e)))
+                    logger.debug('API Call failed: {}'.format(str(e)))
                     try:
                         if e.code>=500:
                             time.sleep(delay)
@@ -1650,7 +1650,7 @@ class OperetoClient(object):
 
     def modify_dimension(self, dimension_id, name=None, description=None, dimention_tree={}, **kwargs):
         """
-        modify_dimension(self, dimension_id=None, name=None, description=None, dimention_tree={}, **kwargs)
+        modify_dimension(self, dimension_id, name=None, description=None, dimention_tree={}, **kwargs)
 
         Create a new dimension
 

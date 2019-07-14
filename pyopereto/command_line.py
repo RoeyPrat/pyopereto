@@ -404,7 +404,7 @@ def delete(params):
         else:
             client.delete_service_version(service_id=service_name, service_version=version, mode=operations_mode)
             logger.info('Service [%s] development version deleted successfully.'%service_name)
-    except Exception,e:
+    except Exception as e:
         raise OperetoClientError('Service [{}] deletion failed: {}'.format(service_name, str(e)))
 
 
