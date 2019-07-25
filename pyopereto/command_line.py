@@ -7,7 +7,7 @@ Usage:
   opereto sandbox deploy <service-directory> [--service-name=NAME | --recursive] [--comment=COMMENT]
   opereto sandbox run <service-name> [--agent=AGENT] [--title=TITLE] [--params=JSON_PARAMS] [--async]
   opereto sandbox delete <service-name>
-  opereto local create <service-directory> [--agent=AGENT] [--title=TITLE]
+  opereto local create <service-directory> [--agent=AGENT] [--title=TITLE] [--fetch-globals]
   opereto local remove <service-directory>
   opereto services list [<search_pattern>]
   opereto services deploy <service-directory> [--service-version=VERSION] [--service-name=NAME | --recursive] [--comment=COMMENT]
@@ -38,11 +38,13 @@ Options:
 
     title                : The process headline enclosed with double quotes
 
-    agent                : The service identifier (e.g. my_test_agent)
+    agent                : The agent identifier (e.g. my_test_agent)
 
     environment-name     : The environment identifier
 
     pid                  : The process identifier (e.g. 8XSVFdViKum)
+
+    --fetch-globals      : Fetch the actual value of global parameters. In case of hidden globals, "********" will be returned for non-admin users
 
     --recursive          : Recursively deploy all micro services found in a given directory
 
@@ -78,6 +80,7 @@ import signal
 import pkg_resources
 import tempfile
 import subprocess
+import re
 
 VERSION = pkg_resources.get_distribution("pyopereto").version
 
@@ -372,7 +375,17 @@ def local_dev(params):
             arguments_json.update(yaml.load(arguments_file.read(), Loader=yaml.FullLoader))
         if spec.get('item_properties'):
             for item in spec['item_properties']:
-                arguments_json[item['key']]=item['value']
+                value = item['value']
+                if params['--fetch-globals']:
+                    try:
+                        global_rx = re.compile('GLOBALS\.([\w+|_|-]+)')
+                        m = global_rx.match(value)
+                        if m:
+                            global_name = m.groups()[0]
+                            value = client._call_rest_api('get', '/globals/{}'.format(global_name), error='Failed to get global')['value']
+                    except Exception,e:
+                        value = item['value']
+                arguments_json[item['key']]=value
 
         # modify local argument files (json and yaml)
         with open(os.path.join(params['<service-directory>'], 'arguments.json'), 'w') as json_arguments_outfile:
