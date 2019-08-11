@@ -1227,7 +1227,7 @@ class OperetoClient(object):
 
 
     @apicall
-    def get_process_properties(self, pid=None, name=None):
+    def get_process_properties(self, pid=None, name=None, verbose=False):
         """
         get_process_properties(self, pid=None, name=None)
 
@@ -1239,7 +1239,10 @@ class OperetoClient(object):
 
         """
         pid = self._get_pid(pid)
-        res = self._call_rest_api('get', '/processes/'+pid+'/properties', error='Failed to fetch process properties')
+        url = '/processes/'+pid+'/properties'
+        if verbose:
+            url+='?verbose=true'
+        res = self._call_rest_api('get', url, error='Failed to fetch process properties')
         if name:
             try:
                 return res[name]
@@ -1594,30 +1597,6 @@ class OperetoClient(object):
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
         return self._call_rest_api('post', '/search/features', data=request_data, error='Failed to search features')
-
-
-    def log_feature(self, feature_id, product_id, name=None, summary=None, exec_status='success', feature_data={}, **kwargs):
-        """
-        log_feature(self, feature_id, product_id, name=None, summary=None, exec_status=None, feature_data={}, **kwargs)
-
-        Create a new feature log entry
-
-        :Parameters:
-
-        * *product_id* (`string`) -- The product identifier (the output property testplan_product_id of a testplan process)
-        * *feature_id* (`string`) -- The feature unique identifier
-        * *name* (`string`) -- feature name (optional)
-        * *summary* (`string`) -- feature summary (optional)
-        * *exec_status* (`string`) -- The execution status. Possible values are: warning, success, failure, error, timeout and terminated (default is success)
-        * *feature_data* (`object`) -- A json representing the feature data (optional)
-
-        :return: id of the created feature
-
-        """
-
-        request_data = {'feature_id': feature_id, 'product_id': product_id, 'name': name, 'summary': summary, 'exec_status': exec_status, 'feature_data': feature_data}
-        request_data.update(**kwargs)
-        return self._call_rest_api('post', '/features', data=request_data, error='Failed to create a new feature')
 
 
     #### Dimensions ####

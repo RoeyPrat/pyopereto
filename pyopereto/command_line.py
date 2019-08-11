@@ -359,12 +359,12 @@ def local_dev(params):
         delete_local_dev_config()
 
         parent_process_title = params['--title'] or 'Developer parent flow for user: {}'.format(opereto_user)
-        ppid = client.create_process('local_dev_parent_flow', title=parent_process_title, agent='any')
+        ppid = client.create_process('local_dev_parent_flow', title=parent_process_title, agent='any', mode='development')
         client.wait_to_start(ppid)
         logger.info('A new parent process {} have been created.'.format(ppid))
         builtin_params = dict(pid=ppid, opereto_workspace=params['<service-directory>'], opereto_agent=params['--agent'],
                               opereto_source_flow_id=ppid, opereto_parent_flow_id=None, opereto_product_id=None,
-                              opereto_service_version=opereto_user, opereto_originator_username=opereto_user,
+                              opereto_service_version='', opereto_originator_username=opereto_user,
                               opereto_originator_email=opereto_email, opereto_originator_mobile=opereto_mobile,
                               opereto_execution_mode="development")
         builtin_params['opereto_timeout']=spec['timeout']
@@ -383,7 +383,7 @@ def local_dev(params):
                         if m:
                             global_name = m.groups()[0]
                             value = client._call_rest_api('get', '/globals/{}'.format(global_name), error='Failed to get global')['value']
-                    except Exception,e:
+                    except Exception as e:
                         value = item['value']
                 arguments_json[item['key']]=value
 
