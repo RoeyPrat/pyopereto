@@ -1021,7 +1021,6 @@ class OperetoClient(object):
         return str(new_pid)
 
 
-    
     def modify_process_properties(self, key_value_map={}, pid=None):
         """
         modify_process_properties(self, key_value_map={}, pid=None)
@@ -1274,13 +1273,16 @@ class OperetoClient(object):
         results={}
         pids = self._get_pids(pids)
         for pid in pids:
+            interval=1
             while(True):
                 try:
                     stat = self._call_rest_api('get', '/processes/'+pid+'/status', error='Failed to fetch process [%s] status'%pid)
                     if stat in status_list:
                         results[pid]=stat
                         break
-                    time.sleep(5)
+                    time.sleep(interval)
+                    if interval<5:
+                        interval+=1
                 except requests.exceptions.RequestException as e:
                     # reinitialize session using api call decorator
                     self.session=None
@@ -1597,6 +1599,27 @@ class OperetoClient(object):
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         request_data.update(kwargs)
         return self._call_rest_api('post', '/search/features', data=request_data, error='Failed to search features')
+
+
+    def create_feature(self, feature_id, product_id, exec_status, feature_data=None, feature_set=[], pid=None):
+        """
+        create_feature(self, 'my_feature', 'my_product', 'succeess', feature_data='', feature_set=['feature1', 'feature2'])
+
+        Creates a new feature entry. Return the new feature entry identifier in database (feature_uuid)
+
+      :Parameters:
+        * *feature_id* (`string`) -- The KPI identifier (unique per product)
+        * *product_id* (`string`) -- The product (release candidate) identifier
+        * *exec_status* (`list`) -- Execution status. Any of the following: 'success', 'failure', 'error', 'timeout', 'terminated', 'warning'
+        * *feature_data* (`string`) -- Any text value associated with this feature
+        * *feature_set* (`list`) -- list of features associated with above feature id (optional)
+        * *pid* (`string`) -- Identifier of an existing process (optional, if not provided, current process id will be used)
+        """
+
+        pid = self._get_pid(pid)
+        request_data = {'feature_id': feature_id, 'product_id': product_id, 'exec_status': exec_status, 'feature_data': feature_data, 'feature_set':feature_set, 'process_id': pid}
+        request_data.update(kwargs)
+        return self._call_rest_api('post', '/features', data=request_data, error='Failed to create a new feature entry')
 
 
     #### Dimensions ####
