@@ -233,7 +233,7 @@ class OperetoClient(object):
     @apicall
     def search_services(self, start=0, limit=100, filter={}, **kwargs):
         """
-        search_services(self, start=0, limit=100, filter={}, **kwargs)
+        search_services(start=0, limit=100, filter={}, **kwargs)
 
         | Search for Opereto services, in Services data and properties
 
@@ -259,7 +259,7 @@ class OperetoClient(object):
     @apicall
     def get_service(self, service_id):
         """
-        get_service(self, service_id)
+        get_service(service_id)
 
         | Get a service meta data (id, audit log, type, etc.) information.
 
@@ -278,7 +278,7 @@ class OperetoClient(object):
     @apicall
     def get_service_version(self, service_id, mode='production', version='default'):
         """
-        get_service_version(self, service_id, mode='production', version='default')
+        get_service_version(service_id, mode='production', version='default')
 
         | Get a specific version details of a given service. Opereto will try to fetch the requested service version. If not found, it will return the default production version. The "actual_version" field of the returned JSON indicates what version of the service is returned. If the actual version is null, it means that this service does not have any version at all. To make it operational, you will have to import or upload a default version.
 
@@ -299,7 +299,7 @@ class OperetoClient(object):
     @apicall
     def verify_service(self, service_id, specification=None, description=None, agent_mapping=None):
         """
-        verify_service(self, service_id, specification=None, description=None, agent_mapping=None)
+        verify_service(service_id, specification=None, description=None, agent_mapping=None)
 
         | Verifies validity of service yaml
 
@@ -340,7 +340,7 @@ class OperetoClient(object):
     
     def modify_service(self, service_id, type):
         """
-        modify_service(self, service_id, type)
+        modify_service(service_id, type)
 
         | Modifies a service type (action, container, etc.)
 
@@ -365,7 +365,7 @@ class OperetoClient(object):
     
     def upload_service_version(self, service_zip_file, mode='production', service_version='default', service_id=None, **kwargs):
         """
-        upload_service_version(self, service_zip_file, mode='production', service_version='default', service_id=None, **kwargs)
+        upload_service_version(service_zip_file, mode='production', service_version='default', service_id=None, **kwargs)
 
         Upload a service version to Opereto
 
@@ -398,7 +398,7 @@ class OperetoClient(object):
     
     def import_service_version(self, repository_json, mode='production', service_version='default', service_id=None, **kwargs):
         """
-        import_service_version(self, repository_json, mode='production', service_version='default', service_id=None, **kwargs)
+        import_service_version(repository_json, mode='production', service_version='default', service_id=None, **kwargs)
 
         Imports a service version into Opereto from a remote repository (GIT, SVN, AWS S3, any HTTPS repository)
 
@@ -473,7 +473,7 @@ class OperetoClient(object):
     
     def delete_service(self, service_id):
         """
-        delete_service(self, service_id)
+        delete_service(service_id)
 
         Deletes a Service from Opereto
 
@@ -495,7 +495,7 @@ class OperetoClient(object):
     
     def delete_service_version(self, service_id , service_version='default', mode='production'):
         """
-        delete_service(self, service_id, service_version='default', mode='production')
+        delete_service(service_id, service_version='default', mode='production')
 
         Deletes a Service version from Opereto
 
@@ -545,7 +545,7 @@ class OperetoClient(object):
     @apicall
     def search_environments(self):
         """
-        search_environments(self)
+        search_environments()
 
         Get list of all environments metadata
 
@@ -557,7 +557,7 @@ class OperetoClient(object):
     @apicall
     def get_environment(self, environment_id):
         """
-        get_environment(self, environment_id)
+        get_environment(environment_id)
 
         Get environment general info.
 
@@ -571,7 +571,7 @@ class OperetoClient(object):
     @apicall
     def verify_environment_scheme(self, environment_type, environment_topology):
         """
-        verify_environment_scheme(self, environment_type, environment_topology)
+        verify_environment_scheme(environment_type, environment_topology)
 
         Verifies json scheme of an environment
 
@@ -619,7 +619,7 @@ class OperetoClient(object):
     @apicall
     def verify_environment(self, environment_id):
         """
-        verify_environment(self, environment_id)
+        verify_environment(environment_id)
 
         Verifies validity of an existing environment
 
@@ -645,7 +645,7 @@ class OperetoClient(object):
     
     def create_environment(self, topology_name, topology={}, id=None, **kwargs):
         """
-        create_environment(self, topology_name, topology={}, id=None, **kwargs)
+        create_environment(topology_name, topology={}, id=None, **kwargs)
 
         Create a new environment
 
@@ -665,7 +665,7 @@ class OperetoClient(object):
     
     def modify_environment(self, environment_id, **kwargs):
         """
-        modify_environment(self, environment_id, **kwargs)
+        modify_environment(environment_id, **kwargs)
 
         Modifies an existing environment
 
@@ -685,7 +685,7 @@ class OperetoClient(object):
     
     def delete_environment(self, environment_id):
         """
-        delete_environment(self, environment_id)
+        delete_environment(environment_id)
 
         Delete an existing environment
 
@@ -701,7 +701,7 @@ class OperetoClient(object):
     @apicall
     def search_agents(self, start=0, limit=100, filter={}, **kwargs):
         """
-        search_agents(self, start=0, limit=100, filter={}, **kwargs)
+        search_agents(start=0, limit=100, filter={}, **kwargs)
 
         Search agents
 
@@ -726,7 +726,7 @@ class OperetoClient(object):
     @apicall
     def get_agents(self, agent_id):
         """
-        get_agents(self, agent_id)
+        get_agents(agent_id)
 
         Get agent general details
 
@@ -742,7 +742,7 @@ class OperetoClient(object):
     @apicall
     def get_agent_properties(self, agent_id):
         """
-        get_agent_properties(self, agent_id)
+        get_agent_properties(agent_id)
 
         Get agent properties separated to custom properties defined by the user and built-in properties provided by Opereto.
 
@@ -768,7 +768,7 @@ class OperetoClient(object):
     @apicall
     def get_all_agents(self):
         """
-        get_all_agents(self)
+        get_all_agents()
 
         Get all agents
 
@@ -781,7 +781,7 @@ class OperetoClient(object):
     
     def modify_agent_property(self, agent_id, key, value):
         """
-        modify_agent_property(self, agent_id, key, value)
+        modify_agent_property(agent_id, key, value)
 
         Modifies a single single property of an agent. If the property does not exists then it is created as a custom property.
 
@@ -802,7 +802,7 @@ class OperetoClient(object):
     
     def modify_agent_properties(self, agent_id, key_value_map={}):
         """
-        modify_agent_properties(self, agent_id, key_value_map={})
+        modify_agent_properties(agent_id, key_value_map={})
 
         Modify properties of an agent. If properties do not exists, they will be created
 
@@ -823,7 +823,7 @@ class OperetoClient(object):
     
     def create_agent(self, agent_id=None, **kwargs):
         """
-        create_agent(self, agent_id=None, **kwargs)
+        create_agent(agent_id=None, **kwargs)
 
         | Creates an agent based on the identifier provided. \
         | The agent will become online when a real agent will connect using this identifier. \
@@ -853,7 +853,7 @@ class OperetoClient(object):
     
     def modify_agent(self, agent_id, **kwargs):
         """
-        modify_agent(self, agent_id, **kwargs)
+        modify_agent(agent_id, **kwargs)
 
         | Modifies agent information (like name)
 
@@ -874,7 +874,7 @@ class OperetoClient(object):
     @apicall
     def get_agent(self, agent_id):
         """
-        get_agent(self, agent_id)
+        get_agent(agent_id)
 
         Get agent general details
 
@@ -896,7 +896,7 @@ class OperetoClient(object):
     @apicall
     def get_agent_status(self, agent_id):
         """
-        get_agent_status(self, agent_id)
+        get_agent_status(agent_id)
 
         Get agent status. Returns the agent information with the 'online' property (true or false)
 
@@ -914,7 +914,7 @@ class OperetoClient(object):
     
     def delete_agent(self, agent_id):
         """
-        delete_agent(self, agent_id)
+        delete_agent(agent_id)
 
         Deletes an agent
 
@@ -930,7 +930,7 @@ class OperetoClient(object):
     
     def create_process(self, service, agent=None, title=None, mode=None, service_version=None, **kwargs):
         """
-        create_process(self, service, agent=None, title=None, mode=None, service_version=None, **kwargs)
+        create_process(service, agent=None, title=None, mode=None, service_version=None, **kwargs)
 
         Registers a new process or processes
 
@@ -989,7 +989,7 @@ class OperetoClient(object):
     
     def rerun_process(self, pid, title=None, agent=None):
         """
-        rerun_process(self, pid, title=None, agent=None)
+        rerun_process(pid, title=None, agent=None)
 
         Reruns a process
 
@@ -1023,7 +1023,7 @@ class OperetoClient(object):
 
     def modify_process_properties(self, key_value_map={}, pid=None):
         """
-        modify_process_properties(self, key_value_map={}, pid=None)
+        modify_process_properties(key_value_map={}, pid=None)
 
         Modify process output properties.
         Please note that process property key provided must be declared as an output property in the relevant service specification.
@@ -1047,7 +1047,7 @@ class OperetoClient(object):
     
     def modify_process_property(self, key, value, pid=None):
         """
-        modify_process_property(self, key, value, pid=None)
+        modify_process_property(key, value, pid=None)
 
         Modify process output property.
         Please note that the process property key provided must be declared as an output property in the relevant service specification.
@@ -1071,7 +1071,7 @@ class OperetoClient(object):
     
     def modify_process_summary(self, pid=None, text='', append=False):
         """
-        modify_process_summary(self, pid=None, text='')
+        modify_process_summary(pid=None, text='')
 
         Modifies the summary text of the process execution
 
@@ -1095,7 +1095,7 @@ class OperetoClient(object):
     
     def stop_process(self, pids=[], status='success'):
         """
-        stop_process(self, pids, status='success')
+        stop_process(pids, status='success')
 
         Stops a running process
 
@@ -1114,7 +1114,7 @@ class OperetoClient(object):
     @apicall
     def get_process_status(self, pid=None):
         """
-        get_process_status(self, pid=None)
+        get_process_status(pid=None)
 
         Get current status of a process
 
@@ -1129,7 +1129,7 @@ class OperetoClient(object):
     @apicall
     def get_process_flow(self, pid=None):
         """
-        get_process_flow(self, pid=None)
+        get_process_flow(pid=None)
 
         Get process in flow context. The response returns a sub-tree of the whole flow containing the requested process, its direct children processes, and all ancestors.
         You can navigate within the flow backword and forward by running this call on the children or ancestors of a given process.
@@ -1145,7 +1145,7 @@ class OperetoClient(object):
     @apicall
     def get_process_rca(self, pid=None):
         """
-        get_process_rca(self, pid=None)
+        get_process_rca(pid=None)
 
         Get the RCA tree of a given failed process. The RCA tree contains all failed child processes that caused the failure of the given process.
 
@@ -1160,7 +1160,7 @@ class OperetoClient(object):
     @apicall
     def get_process_info(self, pid=None):
         """
-        get_process_info(self, pid=None)
+        get_process_info(pid=None)
 
         Get process general information.
 
@@ -1175,7 +1175,7 @@ class OperetoClient(object):
     @apicall
     def get_process_log(self, pid=None, start=0, limit=1000):
         """
-        get_process_log(self, pid=None, start=0, limit=1000
+        get_process_log(pid=None, start=0, limit=1000
 
         Get process logs
 
@@ -1194,7 +1194,7 @@ class OperetoClient(object):
     @apicall
     def search_process_log(self, pid, filter={}, start=0, limit=1000):
         """
-        search_process_log(self, pid, filter={}, start=0, limit=1000)
+        search_process_log(pid, filter={}, start=0, limit=1000)
 
         Search in process logs
 
@@ -1228,7 +1228,7 @@ class OperetoClient(object):
     @apicall
     def get_process_properties(self, pid=None, name=None, verbose=False):
         """
-        get_process_properties(self, pid=None, name=None)
+        get_process_properties(pid=None, name=None)
 
         Get process properties (both input and output properties)
 
@@ -1254,7 +1254,7 @@ class OperetoClient(object):
     @apicall
     def wait_for(self, pids=[], status_list=process_result_statuses):
         """
-        wait_for(self, pids=[], status_list=process_result_statuses)
+        wait_for(pids=[], status_list=process_result_statuses)
 
         Waits for a process to finish
 
@@ -1305,7 +1305,7 @@ class OperetoClient(object):
 
     def wait_to_start(self, pids=[]):
         """
-        wait_to_start(self, pids=[])
+        wait_to_start(pids=[])
 
         Wait for processes to start
 
@@ -1319,7 +1319,7 @@ class OperetoClient(object):
 
     def wait_to_end(self, pids=[]):
         """
-        wait_to_end(self, pids=[])
+        wait_to_end(pids=[])
 
         Wait for processes to finish
 
@@ -1333,7 +1333,7 @@ class OperetoClient(object):
 
     def is_success(self, pids=[]):
         """
-        is_success(self, pids)
+        is_success(pids)
 
         Waits for a process to end and check if it status is 'success'
 
@@ -1346,7 +1346,7 @@ class OperetoClient(object):
 
     def is_failure(self, pids):
         """
-        is_failure(self, pids)
+        is_failure(pids)
 
         Waits for a process to end and check if it status is 'failure'
 
@@ -1359,7 +1359,7 @@ class OperetoClient(object):
 
     def is_error(self, pids):
         """
-        is_error(self, pids)
+        is_error(pids)
 
         Waits for a process to end and check if it status is 'error'
 
@@ -1371,7 +1371,7 @@ class OperetoClient(object):
 
     def is_timeout(self, pids):
         """
-        is_timeout(self, pids)
+        is_timeout(pids)
 
         Waits for a process to end and check if it status is 'timeout'
 
@@ -1383,7 +1383,7 @@ class OperetoClient(object):
 
     def is_warning(self, pids):
         """
-        is_warning(self, pids)
+        is_warning(pids)
 
         Waits for a process to end and check if it status is 'warning'
 
@@ -1395,7 +1395,7 @@ class OperetoClient(object):
 
     def is_terminated(self, pids):
         """
-        is_terminated(self, pids)
+        is_terminated(pids)
 
         Waits for a process to end and check if it status is 'terminated'
 
@@ -1408,7 +1408,7 @@ class OperetoClient(object):
     @apicall
     def get_process_runtime_cache(self, key, pid=None):
         """
-        get_process_runtime_cache(self, key, pid=None)
+        get_process_runtime_cache(key, pid=None)
 
         Get a pre-defined run time parameter value
 
@@ -1426,7 +1426,7 @@ class OperetoClient(object):
     
     def set_process_runtime_cache(self, key, value, pid=None):
         """
-        set_process_runtime_cache(self, key, value, pid=None)
+        set_process_runtime_cache(key, value, pid=None)
 
         Set a process run time parameter
 
@@ -1444,7 +1444,7 @@ class OperetoClient(object):
     @apicall
     def search_globals(self, start=0, limit=100, filter={}, **kwargs):
         """
-        search_globals(self, start=0, limit=100, filter={}, **kwargs)
+        search_globals(start=0, limit=100, filter={}, **kwargs)
 
         Search for global parameters
 
@@ -1472,7 +1472,7 @@ class OperetoClient(object):
     @apicall
     def search_kpi(self, start=0, limit=100, filter={}, **kwargs):
         """
-        search_kpi(self, start=0, limit=100, filter={}, **kwargs)
+        search_kpi(start=0, limit=100, filter={}, **kwargs)
 
         Search KPI
 
@@ -1496,22 +1496,23 @@ class OperetoClient(object):
 
 
     
-    def modify_kpi(self, kpi_id, product_id, measures=[], append=False, **kwargs):
+    def modify_kpi(self, kpi_id, product_id, measures=[], append=False, feature_id=None, **kwargs):
         """
-        modify_kpi(self, kpi_id, product_id, measures=[], append=False, **kwargs)
+        modify_kpi(kpi_id, product_id, measures=[], append=False, **kwargs)
 
         Creates a new kpi or modifies existing one.
 
       :Parameters:
         * *kpi_id* (`string`) -- The KPI identifier (unique per product)
-        * *product_id* (`string`) -- The product (release candidate) identifier
+        * *product_id* (`string`) -- The product (release candidate) identifierier
         * *measures* (`list`) -- List of numeric (integers or floats) measures
         * *append* (`boolean`) -- True to append new measures to existing ones for this API. False to override previous measures
+        * *feature_id* (`string`) -- Feature identifier to attach this KPI to a given feature (optional)
 
         """
         if not isinstance(measures, list):
             measures = [measures]
-        request_data = {'kpi_id': kpi_id, 'product_id': product_id, 'measures': measures, 'append': append}
+        request_data = {'kpi_id': kpi_id, 'product_id': product_id, 'measures': measures, 'append': append, 'feature_id': feature_id}
         request_data.update(kwargs)
         return self._call_rest_api('post', '/kpi', data=request_data, error='Failed to modify a kpi entry')
 
@@ -1519,7 +1520,7 @@ class OperetoClient(object):
     
     def delete_kpi(self, kpi_id, product_id):
         """
-        delete_kpi(self, kpi_id, product_id)
+        delete_kpi(kpi_id, product_id)
 
         Delete a key performance indicator (KPI)
 
@@ -1533,7 +1534,7 @@ class OperetoClient(object):
     @apicall
     def get_kpi(self, kpi_id, product_id):
         """
-        get_kpi(self, kpi_id, product_id)
+        get_kpi(kpi_id, product_id)
 
         Get KPI information
 
@@ -1549,7 +1550,7 @@ class OperetoClient(object):
     @apicall
     def search_tests(self, start=0, limit=100, filter={}):
         """
-        search_tests(self, start=0, limit=100, filter={})
+        search_tests(start=0, limit=100, filter={})
 
         Search tests
 
@@ -1578,7 +1579,7 @@ class OperetoClient(object):
     @apicall
     def search_features(self, start=0, limit=100, filter={}, **kwargs):
         """
-        search_features(self, start=0, limit=100, filter={}, **kwargs)
+        search_features(start=0, limit=100, filter={}, **kwargs)
 
         Search Features
 
@@ -1601,9 +1602,9 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/search/features', data=request_data, error='Failed to search features')
 
 
-    def create_feature(self, feature_id, product_id, exec_status, feature_data=None, feature_set=[], pid=None):
+    def create_feature(self, feature_id, product_id, exec_status, feature_data=None, feature_set=[], pid=None, **kwargs):
         """
-        create_feature(self, 'my_feature', 'my_product', 'succeess', feature_data='', feature_set=['feature1', 'feature2'])
+        create_feature('my_feature', 'my_product', 'succeess', feature_data='', feature_set=['feature1', 'feature2'])
 
         Creates a new feature entry. Return the new feature entry identifier in database (feature_uuid)
 
@@ -1627,7 +1628,7 @@ class OperetoClient(object):
     @apicall
     def search_dimensions(self, start=0, limit=100, filter={}, **kwargs):
         """
-        search_dimensions(self, start=0, limit=100, filter={}, **kwargs)
+        search_dimensions(start=0, limit=100, filter={}, **kwargs)
 
         Search Dimensions
 
@@ -1652,7 +1653,7 @@ class OperetoClient(object):
 
     def modify_dimension(self, dimension_id, name=None, description=None, dimention_tree={}, **kwargs):
         """
-        modify_dimension(self, dimension_id, name=None, description=None, dimention_tree={}, **kwargs)
+        modify_dimension(dimension_id, name=None, description=None, dimention_tree={}, **kwargs)
 
         Create a new dimension
 
@@ -1674,7 +1675,7 @@ class OperetoClient(object):
 
     def delete_dimension(self, dimension_id):
         """
-        delete_dimension(self, dimension_id)
+        delete_dimension(dimension_id)
 
         Delete a dimension
 
@@ -1687,7 +1688,7 @@ class OperetoClient(object):
     @apicall
     def get_dimension(self, dimension_id):
         """
-        get_dimension(self, dimension_id)
+        get_dimension(dimension_id)
 
         Get a given dimension information
 
@@ -1703,7 +1704,7 @@ class OperetoClient(object):
     @apicall
     def search_tests(self, start=0, limit=100, filter={}):
         """
-        search_tests(self, start=0, limit=100, filter={})
+        search_tests(start=0, limit=100, filter={})
 
         Search tests
 
@@ -1729,7 +1730,7 @@ class OperetoClient(object):
     @apicall
     def get_test(self, test_id):
         """
-        get_test(self, test_id)
+        get_test(test_id)
 
         Get test information.
 
@@ -1744,7 +1745,7 @@ class OperetoClient(object):
     @apicall
     def search_qc(self, start=0, limit=100, filter={}):
         """
-        search_qc(self, start=0, limit=100, filter={})
+        search_qc(start=0, limit=100, filter={})
 
         Search Quality criteria
 
@@ -1767,7 +1768,7 @@ class OperetoClient(object):
     @apicall
     def get_qc(self, qc_id):
         """
-        get_qc(self, qc_id)
+        get_qc(qc_id)
 
         Get criteria information.
 
@@ -1780,7 +1781,7 @@ class OperetoClient(object):
     @apicall
     def create_qc(self, product_id=None, expected_result='', actual_result='', weight=100, status='success', **kwargs):
         """
-        create_qc(self, product_id=None, expected_result='', actual_result='', weight=100, status='success', **kwargs)
+        create_qc(product_id=None, expected_result='', actual_result='', weight=100, status='success', **kwargs)
 
         Create Quality Criteria
 
@@ -1799,7 +1800,7 @@ class OperetoClient(object):
     
     def modify_qc(self, qc_id=None, **kwargs):
         """
-        modify_qc(self, qc_id=None, **kwargs)
+        modify_qc(qc_id=None, **kwargs)
 
         Modify a Quality Criteria
 
@@ -1818,7 +1819,7 @@ class OperetoClient(object):
     
     def delete_qc(self, qc_id):
         """
-        delete_qc(self, qc_id)
+        delete_qc(qc_id)
 
         Delete a quality criteria.
 
@@ -1834,7 +1835,7 @@ class OperetoClient(object):
     @apicall
     def search_users(self, start=0, limit=100, filter={}):
         """
-        search_users(self, start=0, limit=100, filter={})
+        search_users(start=0, limit=100, filter={})
 
         Search users
 
