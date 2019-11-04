@@ -51,27 +51,21 @@ def apicall(f):
 
     @_wraps (f)
     def f_call(*args, **kwargs):
-        tries=3
-        delay=3
-        try:
-            while tries > 0:
-                tries -= 1
-                try:
-                    rv = f(*args, **kwargs)
-                    return rv
-                except OperetoClientError as e:
-                    logger.debug('API Call failed: {}'.format(str(e)))
-                    try:
-                        if e.code>=500:
-                            time.sleep(delay)
-                        else:
-                            raise e
-                    except:
-                        raise e
-                except requests.exceptions.RequestException:
-                    time.sleep(delay)
-        except Exception as e:
-            raise OperetoClientError(str(e))
+        for i in range(3):
+            try:
+                rv = f(*args, **kwargs)
+                return rv
+            except OperetoClientError as e:
+                logger.debug('API Call failed: {}'.format(str(e)))
+                if e.code>=500 and i<2:
+                    time.sleep(1)
+                else:
+                    raise e
+            except requests.exceptions.RequestException as e:
+                if i<2:
+                    time.sleep(1)
+                else:
+                    raise e
     return f_call
 
 
@@ -127,14 +121,12 @@ class OperetoClient(object):
 
         ## connect to opereto center
         self.session = None
-        self._connect()
 
 
-    def __del__(self):
-        try:
-            self._disconnect()
-        except:
-            pass
+    def _get_client_releases(self):
+        response = requests.get('https://pypi.org/pypi/pyopereto/json')
+        if response.status_code<299:
+            return response.json()['releases'].keys()
 
 
     def _get_pids(self, pids=[]):
@@ -158,22 +150,27 @@ class OperetoClient(object):
             self.logger.debug('Login to Opereto server with {}:{}..'.format(self.input['opereto_user'], password[0]+sub(r'.', '*', password[1:-1])+password[-1]))
             self.session = requests.Session()
             self.session.auth = (self.input['opereto_user'], password)
-            response = self.session.post('%s/login'%self.input['opereto_host'], verify=False)
-            self.logger.debug(response)
-            if response.status_code>201:
-                try:
-                    error_message = response.json()['message']
-                except:
-                    error_message=response.reason
-                raise OperetoClientError('Failed to login to opereto server [%s]: %s'%(self.input['opereto_host'], error_message))
+            try:
+                response = self.session.post('%s/login'%self.input['opereto_host'], verify=False)
+                self.logger.debug(response)
+                if response.status_code>201:
+                    try:
+                        error_message = response.json()['message']
+                    except:
+                        error_message=response.reason
+                    raise OperetoClientError('Failed to login to opereto server [%s]: %s'%(self.input['opereto_host'], error_message))
+            except Exception as e:
+                self.session=None
+                raise e
 
 
-    def _disconnect(self):
+    def logout(self):
         if self.session:
             self.session.get(self.input['opereto_host']+'/logout', verify=False)
 
 
     def _call_rest_api(self, method, url, data={}, error=None, **kwargs):
+
         self.logger.debug('Request: [{}]: {}'.format(method, url))
         if data:
             self.logger.debug('Request Data: {}'.format(data))

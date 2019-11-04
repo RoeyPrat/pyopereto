@@ -67,6 +67,7 @@ Options:
 
 
 from docopt import docopt
+from distutils.version import LooseVersion
 from pyopereto.client import OperetoClient, OperetoClientError, process_running_statuses
 import os, sys
 import uuid
@@ -117,6 +118,7 @@ work_dir = os.getcwd()
 
 RUNNING_PROCESS = None
 
+pyopereto_latest_version_file = os.path.join(HOME_DIR,'.pyopereto.latest')
 opereto_config_file = os.path.join(HOME_DIR,'opereto.yaml')
 if not os.path.exists(opereto_config_file):
     opereto_config_file = 'arguments.yaml'
@@ -338,9 +340,13 @@ def local_dev(params):
             with open(json_arguments_file, 'r') as infile:
                 arguments = json.loads(infile.read())
                 if arguments.get('pid'):
-                    if client.get_process_status(arguments.get('pid')) == 'in_process':
-                        logger.info('Stopping remote parent flow process [{}]..'.format(arguments['pid']))
-                        client.stop_process([arguments.get('pid')])
+                    try:
+                        if client.get_process_status(arguments.get('pid')) == 'in_process':
+                            logger.info('Stopping remote parent flow process [{}]..'.format(arguments['pid']))
+                            client.stop_process([arguments.get('pid')])
+                    except Exception as e:
+                        logger.error(sre(e))
+
             os.remove(json_arguments_file)
 
         if os.path.exists(yaml_arguments_file):
@@ -583,8 +589,38 @@ def get_process(arguments):
         raise OperetoClientError('Please specify one if more process data items to retrieve (e.g. --info, --log).')
 
 
+def _check_for_upgrade():
+
+    try:
+
+        def _check_latest_version():
+            with open(pyopereto_latest_version_file, 'r') as latest_version:
+                latest = latest_version.read()
+                if LooseVersion(latest)>LooseVersion(VERSION):
+                    logger.warning('A newer version of pyopereto exists (v{}). Please upgrade using pip.'.format(latest))
+
+        def _update_latest_version():
+            with open(pyopereto_latest_version_file, 'w') as latest_version_file:
+                client = get_opereto_client()
+                all_releases = client._get_client_releases()
+                latest_version = max(LooseVersion(s) for s in all_releases)
+                latest_version_file.write(str(latest_version))
+
+        if not os.path.exists(pyopereto_latest_version_file):
+            _update_latest_version()
+
+        elif time.time()>os.path.getmtime(pyopereto_latest_version_file)+12*3600:
+            _update_latest_version()
+
+        _check_latest_version()
+
+    except Exception as e:
+        logger.error('Failed to check for latest pyopereto version: {}'.format(str(e)))
+
+
 def main():
 
+    _check_for_upgrade()
 
     arguments = docopt(__doc__, version='Opereto CLI Tool v%s'%VERSION)
     def ctrlc_signal_handler(s, f):
