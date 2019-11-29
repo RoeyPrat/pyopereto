@@ -1,6 +1,6 @@
 from setuptools import setup
 
-VERSION = '1.0.75'
+VERSION = '1.0.77'
 
 setup(
     name='pyopereto',

@@ -1,4 +1,5 @@
 import os,sys
+from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
 import requests
 import json
 import yaml
@@ -29,6 +30,8 @@ FORMAT = '%(asctime)s: [%(name)s] [%(levelname)s] %(message)s'
 logging.basicConfig(stream=sys.stdout, format=FORMAT, level=logging.ERROR)
 logger = logging.getLogger('pyopereto')
 logging.getLogger("pyopereto").setLevel(logging.INFO)
+if os.environ.get('opereto_debug_mode'):
+    logging.getLogger("pyopereto").setLevel(logging.DEBUG)
 
 process_result_statuses = ['success', 'failure', 'error', 'timeout', 'terminated', 'warning']
 process_running_statuses = ['in_process', 'registered']
@@ -146,10 +149,8 @@ class OperetoClient(object):
 
     def _connect(self):
         if not self.session:
-            password = self.input['opereto_password']
-            self.logger.debug('Login to Opereto server with {}:{}..'.format(self.input['opereto_user'], password[0]+sub(r'.', '*', password[1:-1])+password[-1]))
             self.session = requests.Session()
-            self.session.auth = (self.input['opereto_user'], password)
+            self.session.auth = (self.input['opereto_user'], self.input['opereto_password'])
             try:
                 response = self.session.post('%s/login'%self.input['opereto_host'], verify=False)
                 self.logger.debug(response)
@@ -167,6 +168,27 @@ class OperetoClient(object):
     def logout(self):
         if self.session:
             self.session.get(self.input['opereto_host']+'/logout', verify=False)
+
+
+    def _process_response(self, r, error=None):
+
+        try:
+            response_json = r.json()
+        except:
+            response_json={'status': 'failure', 'message': r.reason}
+
+        self.logger.debug('Response: [{}] {}'.format(r.status_code, response_json))
+
+        if response_json:
+            if response_json['status']!='success':
+                response_message = response_json.get('message') or ''
+                if error:
+                    response_message = error + ':\n' + response_message
+                if response_json.get('errors'):
+                    response_message += response_json['errors']
+                raise OperetoClientError(message=response_message, code=r.status_code)
+            elif response_json.get('data'):
+                return response_json['data']
 
 
     def _call_rest_api(self, method, url, data={}, error=None, **kwargs):
@@ -190,23 +212,7 @@ class OperetoClient(object):
         else:
             raise OperetoClientError(message='Invalid request method.', code=500)
 
-        try:
-            response_json = r.json()
-        except:
-            response_json={'status': 'failure', 'message': r.reason}
-
-        self.logger.debug('Response: [{}] {}'.format(r.status_code, response_json))
-
-        if response_json:
-            if response_json['status']!='success':
-                response_message = response_json.get('message') or ''
-                if error:
-                    response_message = error + ':\n' + response_message
-                if response_json.get('errors'):
-                    response_message += response_json['errors']
-                raise OperetoClientError(message=response_message, code=r.status_code)
-            elif response_json.get('data'):
-                return response_json['data']
+        return self._process_response(r, error=error)
 
 
     #### GENERAL ####
@@ -293,6 +299,46 @@ class OperetoClient(object):
         """
         return self._call_rest_api('get', '/services/'+service_id+'/'+mode+'/'+version, error='Failed to fetch service information')
 
+
+
+    def get_services_version(self, service_version):
+        """
+        ger_services_version(service_version)
+
+        | Get a list of all available services of a given version
+
+        :Parameters:
+        * *service_version* (`string`) -- Identifier of an existing service version (version cannot be default)
+
+        :return: json with status
+
+        :Example:
+        .. code-block:: python
+
+           opereto_client.ger_services_version('my_version')
+        """
+        return self._call_rest_api('get', '/version/services/'+service_version, error='Failed to get services version')
+
+
+    def delete_services_version(self, service_version):
+        """
+        delete_services_version(service_version)
+
+        | Deletes all service deployments of the given version
+
+        :Parameters:
+        * *service_version* (`string`) -- Identifier of an existing service version (version cannot be default)
+
+        :return: json with status
+
+        :Example:
+        .. code-block:: python
+
+           opereto_client.delete_services_version('my_version')
+        """
+        return self._call_rest_api('delete', '/version/services/'+service_version, error='Failed to delete services version')
+
+
     @apicall
     def verify_service(self, service_id, specification=None, description=None, agent_mapping=None):
         """
@@ -359,7 +405,6 @@ class OperetoClient(object):
         return self._call_rest_api('post', '/services', data=request_data, error='Failed to modify service [%s]'%service_id)
 
 
-    
     def upload_service_version(self, service_zip_file, mode='production', service_version='default', service_id=None, **kwargs):
         """
         upload_service_version(service_zip_file, mode='production', service_version='default', service_id=None, **kwargs)
@@ -381,6 +426,7 @@ class OperetoClient(object):
            opereto_client.upload_service_version(service_zip_file=zip_action_file+'.zip', mode='production', service_version='111')
 
         """
+        file_size = os.stat(service_zip_file).st_size
         files = {'service_file': open(service_zip_file,'rb')}
         url_suffix = '/services/upload/%s'%mode
         if mode=='production':
@@ -389,10 +435,27 @@ class OperetoClient(object):
             url_suffix+='/'+service_id
         if kwargs:
             url_suffix=url_suffix+'?'+urlencode(kwargs)
-        return self._call_rest_api('post', url_suffix, files=files, error='Failed to upload service version')
+
+        def my_callback(monitor):
+            read_bytes = monitor.bytes_read
+            percentage = int(float(read_bytes)/float(file_size)*100)
+            if percentage>95:
+                percentage=95
+
+            sys.stdout.write('\r{}% Uploaded out of {} Bytes'.format(percentage, file_size))
+            sys.stdout.flush()
+
+        e = MultipartEncoder(
+            fields=files
+        )
+        m = MultipartEncoderMonitor(e, my_callback)
+        self._connect()
+        r  = self.session.post(self.input['opereto_host']+url_suffix, verify=False, data=m)
+        sys.stdout.write('\r100% Uploaded out of {} Bytes\n'.format(file_size))
+        sys.stdout.flush()
+        return self._process_response(r)
 
 
-    
     def import_service_version(self, repository_json, mode='production', service_version='default', service_id=None, **kwargs):
         """
         import_service_version(repository_json, mode='production', service_version='default', service_id=None, **kwargs)

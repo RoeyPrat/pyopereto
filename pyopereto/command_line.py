@@ -14,7 +14,9 @@ Usage:
   opereto services run <service-name> [--agent=AGENT] [--title=TITLE]  [--params=JSON_PARAMS] [--service-version=VERSION] [--async]
   opereto services delete <service-name> [--service-version=VERSION]
   opereto services info <service-name> [--service-version=VERSION]
-  opereto versions <service-name>
+  opereto services versions <service-name>
+  opereto version list <service-version>
+  opereto version delete <service-version>
   opereto process <pid> [--info] [--properties] [--log] [--rca] [--flow] [--all]
   opereto process rerun <pid> [--title=TITLE] [--agent=AGENT] [--async]
   opereto agents list [<search_pattern>]
@@ -65,11 +67,9 @@ Options:
     --version            : Show this tool version
 """
 
-
-from docopt import docopt
-from distutils.version import LooseVersion
-from pyopereto.client import OperetoClient, OperetoClientError, process_running_statuses
 import os, sys
+sys.path.append('/Users/drorrusso/opereto/pyopereto')
+
 import uuid
 import shutil
 import yaml
@@ -82,8 +82,27 @@ import pkg_resources
 import tempfile
 import subprocess
 import re
+import traceback
+from docopt import docopt
+from distutils.version import LooseVersion
+from pyopereto.client import OperetoClient, OperetoClientError, process_running_statuses
 
-VERSION = pkg_resources.get_distribution("pyopereto").version
+try:
+    VERSION = pkg_resources.get_distribution("pyopereto").version
+except:
+    VERSION=''
+
+class OperetoCliError(Exception):
+
+    def __init__(self, message, code=500):
+        self.message = message
+        self.code = code
+        if os.environ.get('opereto_debug_mode'):
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_exception(exc_type, exc_value, exc_traceback,file=sys.stdout)
+
+    def __str__(self):
+        return self.message
 
 
 logging.config.dictConfig({
@@ -155,8 +174,6 @@ def get_service_directory(service_directory):
     return service_directory
 
 
-
-
 def get_process_rca(pid):
     client = get_opereto_client()
     print('Collecting RCA data..')
@@ -171,15 +188,16 @@ def get_process_rca(pid):
     if not rca_found:
         logger.error('No RCA data found for this process')
 
-
 def zipfolder(zipname, target_dir):
-
     try:
+        remove_service_dir=False
         stripped_target_dir = target_dir.rstrip("/")
         service_deploy_config_file = os.path.join(stripped_target_dir, 'service.deploy.json')
-        temp_service_directory = os.path.join(TEMP_DIR, str(uuid.uuid4()))
-        shutil.copytree(stripped_target_dir, temp_service_directory)
+        temp_service_directory = stripped_target_dir
         if os.path.exists(service_deploy_config_file):
+            temp_service_directory = os.path.join(TEMP_DIR, str(uuid.uuid4()))
+            remove_service_dir=True
+            shutil.copytree(stripped_target_dir, temp_service_directory)
             with open(service_deploy_config_file, 'r') as deploy_config:
                 dc = json.loads(deploy_config.read())
                 if 'include' in dc:
@@ -189,7 +207,7 @@ def zipfolder(zipname, target_dir):
                         elif path['type']=='absolute':
                             fullpath = path['path']
                         else:
-                            raise OperetoClientError('Unknown or invalid include path type. Must be "relative" or "absolute"')
+                            raise OperetoCliError('Unknown or invalid include path type. Must be "relative" or "absolute"')
                         if os.path.exists(fullpath):
                             if fullpath.rstrip("/")!=stripped_target_dir:
                                 if os.path.isdir(fullpath):
@@ -197,17 +215,26 @@ def zipfolder(zipname, target_dir):
                                 else:
                                     shutil.copy(fullpath, temp_service_directory)
                         else:
-                            raise OperetoClientError('The include file or directory {} does not exist.'.format(fullpath))
+                            raise OperetoCliError('The include file or directory {} does not exist.'.format(fullpath))
+                if 'exclude' in dc:
+                    for path in dc['exclude']:
+                        fullpath = os.path.join(temp_service_directory, path)
+                        if os.path.exists(fullpath):
+                            if fullpath.rstrip("/")!=temp_service_directory:
+                                if os.path.isdir(fullpath):
+                                    shutil.rmtree(fullpath)
+                                else:
+                                    os.remove(fullpath)
                 if 'build' in dc:
                     exit_code = local(dc['build']['command'], working_directory=temp_service_directory)
                     if exit_code!=dc['build']['expected_exit_code']:
-                        raise OperetoClientError('The build command failed (expected exit code={} actual exit code={}). Abort deployment..'.format(int(dc['build']['expected_exit_code']), exit_code))
+                        raise OperetoCliError('The build command failed (expected exit code={} actual exit code={}). Abort deployment..'.format(int(dc['build']['expected_exit_code']), exit_code))
 
         base_dir = os.path.basename(os.path.normpath(temp_service_directory))
         root_dir = os.path.dirname(temp_service_directory)
         shutil.make_archive(zipname, "zip", root_dir, base_dir)
     finally:
-        if os.path.exists(temp_service_directory):
+        if os.path.exists(temp_service_directory) and remove_service_dir:
             shutil.rmtree(temp_service_directory)
 
 
@@ -223,19 +250,23 @@ def deploy(params):
         service_name = service_name or os.path.basename(os.path.normpath(service_directory))
         try:
             zip_action_file = os.path.join(TEMP_DIR, str(uuid.uuid4())+'.action')
+            zip_action_file_with_ext = zip_action_file + '.zip'
             zipfolder(zip_action_file, service_directory)
-            client.upload_service_version(service_zip_file=zip_action_file+'.zip', mode=operations_mode, service_version=version, service_id=service_name, comment=comment)
+            file_size = os.stat(zip_action_file_with_ext).st_size
+            if file_size>10*1000*1000:
+                raise OperetoCliError('Service data size [{}] exceeds the maximum allowed [10MB]'.format(file_size))
+            client.upload_service_version(service_zip_file=zip_action_file_with_ext, mode=operations_mode, service_version=version, service_id=service_name, comment=comment)
             if operations_mode=='production':
                 logger.info('Service [%s] production version [%s] deployed successfuly.'%(service_name, version))
             else:
                 logger.info('Service [%s] development version deployed successfully.'%service_name)
-        except OperetoClientError as e:
-            raise OperetoClientError('Service [%s]: %s'%(service_name, str(e)))
+        except OperetoCliError as e:
+            raise OperetoCliError('Service [%s]: %s'%(service_name, str(e)))
         except Exception as e:
-            raise OperetoClientError('Service [%s] failed to deploy: %s'%(service_name, str(e)))
+            raise OperetoCliError('Service [%s] failed to deploy: %s'%(service_name, str(e)))
         finally:
-            if os.path.exists(zip_action_file):
-                os.remove(zip_action_file)
+            if os.path.exists(zip_action_file_with_ext):
+                os.remove(zip_action_file_with_ext)
 
     def is_service_dir(dirpath):
         if not os.path.isdir(dirpath):
@@ -281,7 +312,7 @@ def rerun(params):
         if status=='success':
             logger.info('Process ended with status: success')
         else:
-            raise OperetoClientError('Process ended with status: %s'%status)
+            raise OperetoCliError('Process ended with status: %s'%status)
             get_process_rca(pid)
     print('View process flow at: {}/ui#dashboard/flow/{}'.format(opereto_host, pid))
 
@@ -301,7 +332,7 @@ def run(params):
         if params['--params']:
             process_input_params = json.loads(params['--params'])
     except:
-        raise OperetoClientError('Invalid process input properties. Please check that your parameters are provided as a json string')
+        raise OperetoCliError('Invalid process input properties. Please check that your parameters are provided as a json string')
         sys.exit(1)
     pid = client.create_process(service=params['<service-name>'], service_version=version, title=title, agent=agent , mode=operations_mode, properties=process_input_params)
     if operations_mode=='production':
@@ -316,7 +347,7 @@ def run(params):
         if status=='success':
             logger.info('Process ended with status: success')
         else:
-            raise OperetoClientError('Process ended with status: %s'%status)
+            raise OperetoCliError('Process ended with status: %s'%status)
             get_process_rca(pid)
     print('View process flow at: {}/ui#dashboard/flow/{}'.format(opereto_host, pid))
 
@@ -424,7 +455,7 @@ def delete(params):
             client.delete_service_version(service_id=service_name, service_version=version, mode=operations_mode)
             logger.info('Service [%s] development version deleted successfully.'%service_name)
     except Exception as e:
-        raise OperetoClientError('Service [{}] deletion failed: {}'.format(service_name, str(e)))
+        raise OperetoCliError('Service [{}] deletion failed: {}'.format(service_name, str(e)))
 
 
 def purge_development_sandbox():
@@ -432,7 +463,7 @@ def purge_development_sandbox():
     try:
         client.purge_development_sandbox()
         logger.info('Purged development sandbox repository')
-    except OperetoClientError as e:
+    except OperetoCliError as e:
         if e.message.find('does not exist'):
             logger.error('Development sandbox directory is empty.')
 
@@ -477,7 +508,7 @@ def list_globals(arguments):
     if globals:
         print(json.dumps(globals, indent=4, sort_keys=True))
     else:
-        raise OperetoClientError('No globals found.')
+        raise OperetoCliError('No globals found.')
 
 def list_environments(arguments):
     client = get_opereto_client()
@@ -499,6 +530,25 @@ def get_service_versions(arguments):
     service = client.get_service(arguments['<service-name>'])
     print(json.dumps(service['versions'], indent=4, sort_keys=True))
 
+def delete_services_version(arguments):
+    client = get_opereto_client()
+    services = client.delete_services_version(arguments['<service-version>'])
+    if services:
+        logger.info('The following services deleted:')
+        for serv in services:
+            print(serv)
+    else:
+        logger.info('No services exist for version {}'.format(arguments['<service-version>']))
+
+def list_services_version(arguments):
+    logger.info('List all services of version {}'.format(arguments['<service-version>']))
+    client = get_opereto_client()
+    services = client.get_services_version(arguments['<service-version>'])
+    if services:
+        for serv in services:
+            print(serv)
+    else:
+        logger.error('No services found for version {}.'.format(arguments['<service-version>']))
 
 def get_service_info(arguments):
     logger.info('Details of service {}:'.format(arguments['<service-name>']))
@@ -586,7 +636,7 @@ def get_process(arguments):
             print(json.dumps(rca, indent=4, sort_keys=True))
 
     if not option_selected:
-        raise OperetoClientError('Please specify one if more process data items to retrieve (e.g. --info, --log).')
+        raise OperetoCliError('Please specify one if more process data items to retrieve (e.g. --info, --log).')
 
 
 def _check_for_upgrade():
@@ -594,10 +644,11 @@ def _check_for_upgrade():
     try:
 
         def _check_latest_version():
-            with open(pyopereto_latest_version_file, 'r') as latest_version:
-                latest = latest_version.read()
-                if LooseVersion(latest)>LooseVersion(VERSION):
-                    logger.warning('A newer version of pyopereto exists (v{}). Please upgrade using pip.'.format(latest))
+            if VERSION!='':
+                with open(pyopereto_latest_version_file, 'r') as latest_version:
+                    latest = latest_version.read()
+                    if LooseVersion(latest)>LooseVersion(VERSION):
+                        logger.warning('A newer version of pyopereto exists (v{}). Please upgrade using pip.'.format(latest))
 
         def _update_latest_version():
             with open(pyopereto_latest_version_file, 'w') as latest_version_file:
@@ -608,7 +659,6 @@ def _check_for_upgrade():
 
         if not os.path.exists(pyopereto_latest_version_file):
             _update_latest_version()
-
         elif time.time()>os.path.getmtime(pyopereto_latest_version_file)+12*3600:
             _update_latest_version()
 
@@ -633,7 +683,6 @@ def main():
         os.kill(os.getpid(), signal.SIGTERM)
 
     try:
-
         signal.signal(signal.SIGINT, ctrlc_signal_handler)
         if arguments['sandbox'] and arguments['list']:
             list_development_sandbox()
@@ -641,12 +690,17 @@ def main():
             list_services(arguments)
         elif arguments['services'] and arguments['info']:
             get_service_info(arguments)
+        elif arguments['services'] and arguments['versions']:
+            get_service_versions(arguments)
         elif arguments['process'] and arguments['rerun']:
             rerun(arguments)
         elif arguments['process']:
             get_process(arguments)
-        elif arguments['versions']:
-            get_service_versions(arguments)
+        elif arguments['version']:
+            if arguments['delete']:
+                delete_services_version(arguments)
+            elif arguments['list']:
+                list_services_version(arguments)
         elif arguments['agents'] and arguments['list']:
             list_agents(arguments)
         elif arguments['globals'] and arguments['list']:
