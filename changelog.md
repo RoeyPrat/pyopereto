@@ -1,7 +1,7 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [v1.0.78](https://github.com/opereto/pyopereto/releases/tag/1.0.77)
+## [v1.0.78](https://github.com/opereto/pyopereto/releases/tag/1.0.78)
 2019-11-30
 
 ### Added
