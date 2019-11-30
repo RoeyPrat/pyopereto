@@ -532,18 +532,24 @@ def get_service_versions(arguments):
 
 def delete_services_version(arguments):
     client = get_opereto_client()
-    services = client.delete_services_version(arguments['<service-version>'])
+    service_version = arguments['<service-version>']
+    logger.info('Searching for all services of version {} (may take a minute..)'.format(service_version))
+    services = client.list_services_version(service_version)
     if services:
-        logger.info('The following services deleted:')
-        for serv in services:
-            print(serv)
+        for service_name in services:
+            try:
+                client.delete_service_version(service_name, service_version=service_version)
+                logger.info('Version {} of service {} has been deleted.'.format(service_name, service_version))
+            except OperetoCliError as e:
+                logger.error('Failed to delete version {} of service {}: {}'.format(service_name, service_version, e.message))
+
     else:
-        logger.info('No services exist for version {}'.format(arguments['<service-version>']))
+        logger.error('No services found for version {}.'.format(service_version))
 
 def list_services_version(arguments):
-    logger.info('List all services of version {}'.format(arguments['<service-version>']))
+    logger.info('Listing all services of version {} (may take a minute..)'.format(arguments['<service-version>']))
     client = get_opereto_client()
-    services = client.get_services_version(arguments['<service-version>'])
+    services = client.list_services_version(arguments['<service-version>'])
     if services:
         for serv in services:
             print(serv)

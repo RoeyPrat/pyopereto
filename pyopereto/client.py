@@ -301,9 +301,9 @@ class OperetoClient(object):
 
 
 
-    def get_services_version(self, service_version):
+    def list_services_version(self, service_version):
         """
-        ger_services_version(service_version)
+        list_services_version(service_version)
 
         | Get a list of all available services of a given version
 
@@ -552,7 +552,7 @@ class OperetoClient(object):
         return self._call_rest_api('delete', '/services/'+service_id, error='Failed to delete service')
 
 
-    
+
     def delete_service_version(self, service_id , service_version='default', mode='production'):
         """
         delete_service(service_id, service_version='default', mode='production')
