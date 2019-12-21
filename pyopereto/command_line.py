@@ -533,26 +533,44 @@ def get_service_versions(arguments):
 def delete_services_version(arguments):
     client = get_opereto_client()
     service_version = arguments['<service-version>']
-    logger.info('Searching for all services of version {} (may take a minute..)'.format(service_version))
-    services = client.list_services_version(service_version)
-    if services:
-        for service_name in services:
-            try:
-                client.delete_service_version(service_name, service_version=service_version)
-                logger.info('Version {} of service {} has been deleted.'.format(service_name, service_version))
-            except OperetoCliError as e:
-                logger.error('Failed to delete version {} of service {}: {}'.format(service_name, service_version, e.message))
+    if service_version=='default':
+        raise OperetoCliError('Cannot delete default service version.')
 
+    logger.info('Searching for all services of version {} (may take some time..)'.format(service_version))
+    all_services = client.search_services(limit=50000)
+    count = 0
+    failed = 0
+    for service in all_services:
+        service_data = client.get_service(service['id'])
+        if arguments['<service-version>'] in service_data['versions']:
+            try:
+                client.delete_service_version(service_data['id'], service_version=service_version)
+                logger.info('Version {} of service {} has been deleted.'.format(service_data['id'], service_version))
+                count+=1
+            except OperetoCliError as e:
+                logger.error('Failed to delete version {} of service {}: {}'.format(service_data['id'], service_version, e.message))
+                failed+=1
+
+    if count>0:
+        logger.info('Version {} has been removed from {} services.'.format(arguments['<service-version>'], count))
+        if failed > 0:
+            logger.error('Failed to remove version {} from {} services.'.format(arguments['<service-version>'], count))
     else:
-        logger.error('No services found for version {}.'.format(service_version))
+        logger.error('No services found for version {}.'.format(arguments['<service-version>']))
+
 
 def list_services_version(arguments):
-    logger.info('Listing all services of version {} (may take a minute..)'.format(arguments['<service-version>']))
+    logger.info('Listing all services of version {} (may take some time..)'.format(arguments['<service-version>']))
     client = get_opereto_client()
-    services = client.list_services_version(arguments['<service-version>'])
-    if services:
-        for serv in services:
-            print(serv)
+    all_services = client.search_services(limit=50000)
+    count=0
+    for service in all_services:
+        service_data = client.get_service(service['id'])
+        if arguments['<service-version>'] in service_data['versions']:
+            count+=1
+            print(service_data['id'])
+    if count>0:
+        logger.info('{} services found for version {}.'.format(count, arguments['<service-version>']))
     else:
         logger.error('No services found for version {}.'.format(arguments['<service-version>']))
 
@@ -653,8 +671,9 @@ def _check_for_upgrade():
             if VERSION!='':
                 with open(pyopereto_latest_version_file, 'r') as latest_version:
                     latest = latest_version.read()
-                    if LooseVersion(latest)>LooseVersion(VERSION):
-                        logger.warning('A newer version of pyopereto exists (v{}). Please upgrade using pip.'.format(latest))
+                    if latest:
+                        if LooseVersion(latest)>LooseVersion(VERSION):
+                            logger.warning('A newer version of pyopereto exists (v{}). Please upgrade using pip.'.format(latest))
 
         def _update_latest_version():
             with open(pyopereto_latest_version_file, 'w') as latest_version_file:

@@ -187,7 +187,7 @@ class OperetoClient(object):
                 if response_json.get('errors'):
                     response_message += response_json['errors']
                 raise OperetoClientError(message=response_message, code=r.status_code)
-            elif response_json.get('data'):
+            elif 'data' in response_json:
                 return response_json['data']
 
 
@@ -298,45 +298,6 @@ class OperetoClient(object):
            service_version = opereto_client.get_service_version(serviceId, mode='development', version='111')
         """
         return self._call_rest_api('get', '/services/'+service_id+'/'+mode+'/'+version, error='Failed to fetch service information')
-
-
-
-    def list_services_version(self, service_version):
-        """
-        list_services_version(service_version)
-
-        | Get a list of all available services of a given version
-
-        :Parameters:
-        * *service_version* (`string`) -- Identifier of an existing service version (version cannot be default)
-
-        :return: json with status
-
-        :Example:
-        .. code-block:: python
-
-           opereto_client.ger_services_version('my_version')
-        """
-        return self._call_rest_api('get', '/version/services/'+service_version, error='Failed to get services version')
-
-
-    def delete_services_version(self, service_version):
-        """
-        delete_services_version(service_version)
-
-        | Deletes all service deployments of the given version
-
-        :Parameters:
-        * *service_version* (`string`) -- Identifier of an existing service version (version cannot be default)
-
-        :return: json with status
-
-        :Example:
-        .. code-block:: python
-
-           opereto_client.delete_services_version('my_version')
-        """
-        return self._call_rest_api('delete', '/version/services/'+service_version, error='Failed to delete services version')
 
 
     @apicall
@@ -987,7 +948,6 @@ class OperetoClient(object):
 
     #### PROCESSES ####
 
-    
     def create_process(self, service, agent=None, title=None, mode=None, service_version=None, **kwargs):
         """
         create_process(service, agent=None, title=None, mode=None, service_version=None, **kwargs)
@@ -1039,8 +999,6 @@ class OperetoClient(object):
         message = 'New process created for service [%s] [pid = %s] '%(service, pid)
         if agent:
             message += ' [agent = %s]'%agent
-        else:
-            message += ' [agent = any ]'
         self.logger.info(message)
 
         return str(pid)
@@ -1556,9 +1514,9 @@ class OperetoClient(object):
 
 
     
-    def modify_kpi(self, kpi_id, product_id, measures=[], append=False, feature_id=None, **kwargs):
+    def modify_kpi(self, kpi_id, product_id, measures=[], append=False, feature_id=None, validator={}, **kwargs):
         """
-        modify_kpi(kpi_id, product_id, measures=[], append=False, **kwargs)
+        modify_kpi(kpi_id, product_id, measures=[], append=False, feature_id=None, validator={}, **kwargs)
 
         Creates a new kpi or modifies existing one.
 
@@ -1568,6 +1526,15 @@ class OperetoClient(object):
         * *measures* (`list`) -- List of numeric (integers or floats) measures
         * *append* (`boolean`) -- True to append new measures to existing ones for this API. False to override previous measures
         * *feature_id* (`string`) -- Feature identifier to attach this KPI to a given feature (optional)
+        * *validator* (`object`) -- a map of treshhold constains for this measure. The following keys are allowed: gt, gte, lt, lte (optional)
+
+        :Example:
+        .. code-block:: python
+
+           # average meature value must be grater or equal to 0 and less or equal to 10.0
+           validator = {'gte': 0, 'lte': 10.0}
+
+           client.modify_kpi('general_latency', client.input['opereto_product_id'], measures=[2.2], append=False, feature_id=None, validator=validator)
 
         """
         if not isinstance(measures, list):
