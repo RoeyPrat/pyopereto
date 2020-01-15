@@ -253,8 +253,8 @@ def deploy(params):
             zip_action_file_with_ext = zip_action_file + '.zip'
             zipfolder(zip_action_file, service_directory)
             file_size = os.stat(zip_action_file_with_ext).st_size
-            if file_size>10*1000*1000:
-                raise OperetoCliError('Service data size [{}] exceeds the maximum allowed [10MB]'.format(file_size))
+            if file_size>20*1000*1000:
+                raise OperetoCliError('Service data size [{}] exceeds the maximum allowed [20MB]'.format(file_size))
             client.upload_service_version(service_zip_file=zip_action_file_with_ext, mode=operations_mode, service_version=version, service_id=service_name, comment=comment)
             if operations_mode=='production':
                 logger.info('Service [%s] production version [%s] deployed successfuly.'%(service_name, version))
