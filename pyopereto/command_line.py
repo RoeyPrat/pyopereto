@@ -20,7 +20,7 @@ Usage:
   opereto process <pid> [--info] [--properties] [--log] [--rca] [--flow] [--all]
   opereto process rerun <pid> [--title=TITLE] [--agent=AGENT] [--async]
   opereto agents list [<search_pattern>]
-  opereto environments list
+  opereto environments list [<search_pattern>]
   opereto environment <environment-name>
   opereto globals list [<search_pattern>]
   opereto (-h | --help)
@@ -376,7 +376,7 @@ def local_dev(params):
                             logger.info('Stopping remote parent flow process [{}]..'.format(arguments['pid']))
                             client.stop_process([arguments.get('pid')])
                     except Exception as e:
-                        logger.error(sre(e))
+                        logger.error(str(e))
 
             os.remove(json_arguments_file)
 
@@ -481,7 +481,7 @@ def list_services(arguments):
     filter=None
     if arguments['<search_pattern>']:
         filter={'generic': arguments['<search_pattern>']}
-    services = client.search_services(filter=filter, start=0, limit=1000, fset='clitool')
+    services = client.search_services(filter=filter, start=0, limit=50000, fset='clitool')
     if services:
         print(json.dumps(services, indent=4, sort_keys=True))
     else:
@@ -493,7 +493,7 @@ def list_agents(arguments):
     filter=None
     if arguments['<search_pattern>']:
         filter={'generic': arguments['<search_pattern>']}
-    agents = client.search_agents(filter=filter, start=0, limit=1000, fset='clitool')
+    agents = client.search_agents(filter=filter, start=0, limit=50000, fset='clitool')
     if agents:
         print(json.dumps(agents, indent=4, sort_keys=True))
     else:
@@ -504,7 +504,7 @@ def list_globals(arguments):
     filter=None
     if arguments['<search_pattern>']:
         filter={'generic': arguments['<search_pattern>']}
-    globals = client.search_globals(filter=filter, start=0, limit=1000)
+    globals = client.search_globals(filter=filter, start=0, limit=50000)
     if globals:
         print(json.dumps(globals, indent=4, sort_keys=True))
     else:
@@ -512,7 +512,10 @@ def list_globals(arguments):
 
 def list_environments(arguments):
     client = get_opereto_client()
-    envs = client.search_environments()
+    filter = None
+    if arguments['<search_pattern>']:
+        filter={'generic': arguments['<search_pattern>']}
+    envs = client.search_environments(filter=filter, start=0, limit=50000)
     if envs:
         print(json.dumps(envs, indent=4, sort_keys=True))
     else:

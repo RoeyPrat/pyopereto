@@ -562,18 +562,26 @@ class OperetoClient(object):
         return self._call_rest_api('delete', '/services/sandbox', error='Failed to delete sandbox services')
 
 
+
     #### ENVIRONMENTS ####
     @apicall
-    def search_environments(self):
+    def search_environments(self, start=0, limit=100, filter={}, **kwargs):
         """
-        search_environments()
+        search_environments(start=0, limit=100, filter={}, **kwargs)
 
-        Get list of all environments metadata
+        Search environments
 
-        :return: list of all environments metadata
+        :Parameters:
+        * *start* (`int`) -- start index to retrieve from. Default is 0
+        * *limit* (`int`) -- maximum number of entities to retrieve. Default is 100
+        * *filter* (`object`) -- free text search pattern (checks in environment data and properties)
 
+        :return: List of search results or empty list
         """
-        return self._call_rest_api('get', '/search/environments', error='Failed to search environments')
+        request_data = {'start': start, 'limit': limit, 'filter': filter}
+        request_data.update(kwargs)
+        return self._call_rest_api('post', '/search/environments', data=request_data, error='Failed to search environments')
+
 
     @apicall
     def get_environment(self, environment_id):
