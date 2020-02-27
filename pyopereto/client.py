@@ -1,5 +1,6 @@
 import os,sys
 from requests_toolbelt import MultipartEncoder, MultipartEncoderMonitor
+from datetime import datetime
 import requests
 import json
 import yaml
@@ -1207,8 +1208,8 @@ class OperetoClient(object):
 
         :Parameters:
         * *pid* (`string`) -- Identifier of an existing process
-        * *pid* (`string`) -- start index to retrieve logs from
-        * *pid* (`string`) -- maximum number of entities to retrieve
+        * *start* (`string`) -- start index to retrieve logs from
+        * *limit* (`string`) -- maximum number of entities to retrieve
 
         :return: Process log entries
 
@@ -1216,6 +1217,33 @@ class OperetoClient(object):
         pid = self._get_pid(pid)
         data = self._call_rest_api('get', '/processes/'+pid+'/log?start={}&limit={}'.format(start,limit), error='Failed to fetch process log')
         return data['list']
+
+    @apicall
+    def send_process_log(self, pid, log_entries=[]):
+        """
+        send_process_log(pid=None, log_entries=[{'text'='This is my log', level=''}])
+
+        Send process logs
+
+        :Parameters:
+        * *pid* (`string`) -- Identifier of an existing process
+        * *log_entries* (`list`) -- start index to retrieve logs from
+
+        :return: Process log entries
+
+        """
+        timestamp = long(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds()))* 1000
+        log_data = []
+        for entry in log_entries:
+            if not entry.get('level'):
+                entry['level']='INFO'
+            entry['timestamp']=timestamp
+            log_data.append(entry)
+
+        request_data = {'id': pid, 'data': log_data}
+        res = self._call_rest_api('post', '/processes/'+pid+'/log', data=request_data, error='Failed to send process log')
+        return res
+
 
     @apicall
     def search_process_log(self, pid, filter={}, start=0, limit=1000):
@@ -1890,3 +1918,29 @@ class OperetoClient(object):
         """
         request_data = {'start': start, 'limit': limit, 'filter': filter}
         return self._call_rest_api('post', '/search/users', data=request_data, error='Failed to search users')
+
+
+    def upload_datastore(self, pid, datastore_id, zip_file, **kwargs):
+
+        file_size = os.stat(zip_file).st_size
+        files = {'service_file': open(zip_file,'rb')}
+        url_suffix = '/processes/{}/datastore/{}'.format(pid,datastore_id)
+
+        def my_callback(monitor):
+            read_bytes = monitor.bytes_read
+            percentage = int(float(read_bytes)/float(file_size)*100)
+            if percentage>95:
+                percentage=95
+
+            sys.stdout.write('\r{}% Uploaded out of {} Bytes'.format(percentage, file_size))
+            sys.stdout.flush()
+
+        e = MultipartEncoder(
+            fields=files
+        )
+        m = MultipartEncoderMonitor(e, my_callback)
+        self._connect()
+        r  = self.session.post(self.input['opereto_host']+url_suffix, verify=False, data=m)
+        sys.stdout.write('\r100% Uploaded out of {} Bytes\n'.format(file_size))
+        sys.stdout.flush()
+        return self._process_response(r)
