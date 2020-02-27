@@ -1232,7 +1232,7 @@ class OperetoClient(object):
         :return: Process log entries
 
         """
-        timestamp = long(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds()))* 1000
+        timestamp = int(int((datetime.utcnow() - datetime(1970, 1, 1)).total_seconds()))* 1000
         log_data = []
         for entry in log_entries:
             if not entry.get('level'):
