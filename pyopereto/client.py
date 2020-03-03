@@ -235,7 +235,7 @@ class OperetoClient(object):
 
     #### MICROSERVICES & VERSIONS ####
     @apicall
-    def search_services(self, start=0, limit=100, filter={}, **kwargs):
+    def search_services(self, start=0, limit=100, filter={}):
         """
         search_services(start=0, limit=100, filter={}, **kwargs)
 
@@ -256,7 +256,6 @@ class OperetoClient(object):
 
         """
         request_data = {'start': start, 'limit': limit, 'filter': filter}
-        request_data.update(kwargs)
         return self._call_rest_api('post', '/search/services', data=request_data, error='Failed to search services')
 
 
@@ -566,7 +565,7 @@ class OperetoClient(object):
 
     #### ENVIRONMENTS ####
     @apicall
-    def search_environments(self, start=0, limit=100, filter={}, **kwargs):
+    def search_environments(self, start=0, limit=100, filter={}):
         """
         search_environments(start=0, limit=100, filter={}, **kwargs)
 
@@ -580,7 +579,6 @@ class OperetoClient(object):
         :return: List of search results or empty list
         """
         request_data = {'start': start, 'limit': limit, 'filter': filter}
-        request_data.update(kwargs)
         return self._call_rest_api('post', '/search/environments', data=request_data, error='Failed to search environments')
 
 
@@ -729,7 +727,7 @@ class OperetoClient(object):
     #### AGENTS ####
 
     @apicall
-    def search_agents(self, start=0, limit=100, filter={}, **kwargs):
+    def search_agents(self, start=0, limit=100, filter={}):
         """
         search_agents(start=0, limit=100, filter={}, **kwargs)
 
@@ -750,7 +748,6 @@ class OperetoClient(object):
 
         """
         request_data = {'start': start, 'limit': limit, 'filter': filter}
-        request_data.update(kwargs)
         return self._call_rest_api('post', '/search/agents', data=request_data, error='Failed to search agents')
 
     @apicall
@@ -1496,7 +1493,7 @@ class OperetoClient(object):
 
     #### GLOBAL PARAMETERS ####
     @apicall
-    def search_globals(self, start=0, limit=100, filter={}, **kwargs):
+    def search_globals(self, start=0, limit=100, filter={}):
         """
         search_globals(start=0, limit=100, filter={}, **kwargs)
 
@@ -1518,13 +1515,12 @@ class OperetoClient(object):
 
         """
         request_data = {'start': start, 'limit': limit, 'filter': filter}
-        request_data.update(kwargs)
         return self._call_rest_api('post', '/search/globals', data=request_data, error='Failed to search globals')
 
 
     #### KPI ####
     @apicall
-    def search_kpi(self, start=0, limit=100, filter={}, **kwargs):
+    def search_kpi(self, start=0, limit=100, filter={}):
         """
         search_kpi(start=0, limit=100, filter={}, **kwargs)
 
@@ -1545,12 +1541,11 @@ class OperetoClient(object):
 
         """
         request_data = {'start': start, 'limit': limit, 'filter': filter}
-        request_data.update(kwargs)
         return self._call_rest_api('post', '/search/kpi', data=request_data, error='Failed to search kpi entries')
 
 
     
-    def modify_kpi(self, kpi_id, product_id, measures=[], append=False, feature_id=None, validator={}, **kwargs):
+    def modify_kpi(self, kpi_id, product_id, measures=[], append=False, feature_id=None, validator={}):
         """
         modify_kpi(kpi_id, product_id, measures=[], append=False, feature_id=None, validator={}, **kwargs)
 
@@ -1576,7 +1571,6 @@ class OperetoClient(object):
         if not isinstance(measures, list):
             measures = [measures]
         request_data = {'kpi_id': kpi_id, 'product_id': product_id, 'measures': measures, 'append': append, 'feature_id': feature_id}
-        request_data.update(kwargs)
         return self._call_rest_api('post', '/kpi', data=request_data, error='Failed to modify a kpi entry')
 
 
@@ -1640,7 +1634,7 @@ class OperetoClient(object):
     #### Features ####
 
     @apicall
-    def search_features(self, start=0, limit=100, filter={}, **kwargs):
+    def search_features(self, start=0, limit=100, filter={}):
         """
         search_features(start=0, limit=100, filter={}, **kwargs)
 
@@ -1661,7 +1655,6 @@ class OperetoClient(object):
 
         """
         request_data = {'start': start, 'limit': limit, 'filter': filter}
-        request_data.update(kwargs)
         return self._call_rest_api('post', '/search/features', data=request_data, error='Failed to search features')
 
 
@@ -1682,14 +1675,13 @@ class OperetoClient(object):
 
         pid = self._get_pid(pid)
         request_data = {'feature_id': feature_id, 'product_id': product_id, 'exec_status': exec_status, 'feature_data': feature_data, 'feature_set':feature_set, 'process_id': pid}
-        request_data.update(kwargs)
         return self._call_rest_api('post', '/features', data=request_data, error='Failed to create a new feature entry')
 
 
     #### Dimensions ####
 
     @apicall
-    def search_dimensions(self, start=0, limit=100, filter={}, **kwargs):
+    def search_dimensions(self, start=0, limit=100, filter={}):
         """
         search_dimensions(start=0, limit=100, filter={}, **kwargs)
 
@@ -1710,7 +1702,6 @@ class OperetoClient(object):
 
         """
         request_data = {'start': start, 'limit': limit, 'filter': filter}
-        request_data.update(kwargs)
         return self._call_rest_api('post', '/search/dimensions', data=request_data, error='Failed to search dimensions')
 
 
