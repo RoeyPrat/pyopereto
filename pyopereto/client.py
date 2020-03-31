@@ -152,6 +152,8 @@ class OperetoClient(object):
         if not self.session:
             self.session = requests.Session()
             self.session.auth = (self.input['opereto_user'], self.input['opereto_password'])
+            self.session.headers.update({'Content-type': 'application/json'})
+
             try:
                 response = self.session.post('%s/login'%self.input['opereto_host'], verify=False)
                 self.logger.debug(response)
@@ -1117,7 +1119,7 @@ class OperetoClient(object):
 
 
     
-    def stop_process(self, pids=[], status='success'):
+    def stop_process(self, pids=[], status='success', message=''):
         """
         stop_process(pids, status='success')
 
@@ -1132,7 +1134,8 @@ class OperetoClient(object):
             raise OperetoClientError('Invalid process result [%s]'%status)
         pids = self._get_pids(pids)
         for pid in pids:
-            self._call_rest_api('post', '/processes/'+pid+'/terminate/'+status, error='Failed to stop process')
+            request_data = {"termination_message": str(message)}
+            self._call_rest_api('post', '/processes/'+pid+'/terminate/'+status, data=request_data, error='Failed to stop process')
 
 
     @apicall
@@ -1545,7 +1548,7 @@ class OperetoClient(object):
 
 
     
-    def modify_kpi(self, kpi_id, product_id, measures=[], append=False, feature_id=None, validator={}):
+    def modify_kpi(self, kpi_id, product_id, measures=[], append=False, feature_id=None, name=None, summary=None, validator={}):
         """
         modify_kpi(kpi_id, product_id, measures=[], append=False, feature_id=None, validator={}, **kwargs)
 
@@ -1557,6 +1560,8 @@ class OperetoClient(object):
         * *measures* (`list`) -- List of numeric (integers or floats) measures
         * *append* (`boolean`) -- True to append new measures to existing ones for this API. False to override previous measures
         * *feature_id* (`string`) -- Feature identifier to attach this KPI to a given feature (optional)
+        * *name* (`string`) -- headline for the KPI (optional)
+        * *summary* (`string`) -- A short text of html summary (optional)
         * *validator* (`object`) -- a map of treshhold constains for this measure. The following keys are allowed: gt, gte, lt, lte (optional)
 
         :Example:
@@ -1570,7 +1575,7 @@ class OperetoClient(object):
         """
         if not isinstance(measures, list):
             measures = [measures]
-        request_data = {'kpi_id': kpi_id, 'product_id': product_id, 'measures': measures, 'append': append, 'feature_id': feature_id}
+        request_data = {'kpi_id': kpi_id, 'product_id': product_id, 'measures': measures, 'append': append, 'feature_id': feature_id, 'name': name, 'summary': summary, 'validator': validator}
         return self._call_rest_api('post', '/kpi', data=request_data, error='Failed to modify a kpi entry')
 
 
