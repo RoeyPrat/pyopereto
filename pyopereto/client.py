@@ -6,13 +6,11 @@ import json
 import yaml
 import time
 from functools import wraps as _wraps
-from re import sub
 
 try:
     from urllib.request import urlopen
     from urllib.parse import urlparse, urlencode
 except ImportError:
-    from urlparse import urlparse
     from urllib import urlopen
     from urllib import urlencode
 
@@ -27,12 +25,16 @@ except:
     pass
 
 import logging
-FORMAT = '%(asctime)s: [%(name)s] [%(levelname)s] %(message)s'
-logging.basicConfig(stream=sys.stdout, format=FORMAT, level=logging.ERROR)
+
+import logging
 logger = logging.getLogger('pyopereto')
-logging.getLogger("pyopereto").setLevel(logging.INFO)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.INFO)
 if os.environ.get('opereto_debug_mode'):
-    logging.getLogger("pyopereto").setLevel(logging.DEBUG)
+    handler.setLevel(logging.DEBUG)
+handler.setFormatter(logging.Formatter('%(asctime)s: [%(name)s] [%(levelname)s] %(message)s'))
+logger.addHandler(handler)
 
 process_result_statuses = ['success', 'failure', 'error', 'timeout', 'terminated', 'warning']
 process_running_statuses = ['in_process', 'registered']

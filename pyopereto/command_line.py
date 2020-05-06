@@ -545,7 +545,7 @@ def delete_services_version(arguments):
     failed = 0
     for service in all_services:
         service_data = client.get_service(service['id'])
-        if arguments['<service-version>'] in service_data['versions']:
+        if service_version in service_data['versions']:
             try:
                 client.delete_service_version(service_data['id'], service_version=service_version)
                 logger.info('Version {} of service {} has been deleted.'.format(service_data['id'], service_version))
