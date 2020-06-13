@@ -23,6 +23,7 @@ Usage:
   opereto environments list [<search_pattern>]
   opereto environment <environment-name>
   opereto globals list [<search_pattern>]
+  opereto token
   opereto (-h | --help)
   opereto --version
 
@@ -63,6 +64,7 @@ Options:
                           (e.g all child processes that caused the failure)
     --all                : Print all process data entities
 
+    token                : Show the current token details
     -h,--help            : Show this help message
     --version            : Show this tool version
 """
@@ -148,16 +150,24 @@ opereto_credentials_json = {}
 with open(opereto_config_file, 'r') as f:
     opereto_credentials_json = yaml.load(f.read(), Loader=yaml.FullLoader)
 
-opereto_host = opereto_credentials_json['opereto_host']
-opereto_user = opereto_credentials_json['opereto_user']
-opereto_email = opereto_credentials_json.get('opereto_email')
-opereto_mobile = opereto_credentials_json.get('opereto_mobile')
+OPERETO_HOST = opereto_credentials_json['opereto_host']
 
 
+### TBD - Remove basic auth after migration to OAUTH2.0
 def get_opereto_client():
-    client = OperetoClient(opereto_host=opereto_credentials_json['opereto_host'], opereto_user=opereto_credentials_json['opereto_user'], opereto_password=opereto_credentials_json['opereto_password'])
+    try:
+        OPERETO_AUTH_TOKEN = opereto_credentials_json['opereto_auth_token']
+        client = OperetoClient(opereto_host=OPERETO_HOST, opereto_auth_token=OPERETO_AUTH_TOKEN)
+    except KeyError:
+        opereto_user = opereto_credentials_json['opereto_user']
+        opereto_password = opereto_credentials_json['opereto_password']
+        client = OperetoClient(opereto_host=OPERETO_HOST, opereto_user=opereto_user, opereto_password=opereto_password)
     return client
 
+
+def print_token(params):
+    client = get_opereto_client()
+    print(client.get_current_opereto_token)
 
 def local(cmd, working_directory=os.getcwd()):
     print(cmd)
@@ -177,16 +187,12 @@ def get_service_directory(service_directory):
 def get_process_rca(pid):
     client = get_opereto_client()
     print('Collecting RCA data..')
-    rca_found=False
-    for i in range(3):
-        rca_json = client.get_process_rca(pid)
-        if rca_json:
-            rca_found=True
-            logger.error(json.dumps(rca_json, indent=4))
-            break
-        time.sleep(5)
-    if not rca_found:
-        logger.error('No RCA data found for this process')
+    rca_json = client.get_process_rca(pid)
+    if rca_json:
+        logger.error(json.dumps(rca_json, indent=4))
+    else:
+        logger.info('No RCA data found for this process')
+
 
 def zipfolder(zipname, target_dir):
     try:
@@ -314,7 +320,7 @@ def rerun(params):
         else:
             raise OperetoCliError('Process ended with status: %s'%status)
             get_process_rca(pid)
-    print('View process flow at: {}/ui#dashboard/flow/{}'.format(opereto_host, pid))
+    print('View process flow at: {}/ui#dashboard/flow/{}'.format(OPERETO_HOST, pid))
 
 
 def run(params):
@@ -349,7 +355,7 @@ def run(params):
         else:
             raise OperetoCliError('Process ended with status: %s'%status)
             get_process_rca(pid)
-    print('View process flow at: {}/ui#dashboard/flow/{}'.format(opereto_host, pid))
+    print('View process flow at: {}/ui#dashboard/flow/{}'.format(OPERETO_HOST, pid))
 
 
 def local_dev(params):
@@ -394,15 +400,15 @@ def local_dev(params):
     elif params['create']:
 
         delete_local_dev_config()
-
-        parent_process_title = params['--title'] or 'Developer parent flow for user: {}'.format(opereto_user)
+        _user = client.get_current_opereto_token
+        parent_process_title = params['--title'] or 'Developer parent flow for user: {}'.format(_user['username'])
         ppid = client.create_process('local_dev_parent_flow', title=parent_process_title, agent='any', mode='development')
         client.wait_to_start(ppid)
         logger.info('A new parent process {} have been created.'.format(ppid))
         builtin_params = dict(pid=ppid, opereto_workspace=params['<service-directory>'], opereto_agent=params['--agent'],
                               opereto_source_flow_id=ppid, opereto_parent_flow_id=None, opereto_product_id=None,
-                              opereto_service_version='', opereto_originator_username=opereto_user,
-                              opereto_originator_email=opereto_email, opereto_originator_mobile=opereto_mobile,
+                              opereto_service_version='', opereto_originator_username=_user['username'],
+                              opereto_originator_email=_user['email'],
                               opereto_execution_mode="development")
         builtin_params['opereto_timeout']=spec['timeout']
 
@@ -433,7 +439,7 @@ def local_dev(params):
         ## Add environment vars if exists (TBD)
 
         logger.info('Argument files in service directory [{}] have been created.'.format(service_dir))
-        print('\nIn case you are developing a flow, you can view the created sub processes at:\n{}/ui#dashboard/flow/{}'.format(opereto_host, ppid))
+        print('\nIn case you are developing a flow, you can view the created sub processes at:\n{}/ui#dashboard/flow/{}'.format(OPERETO_HOST, ppid))
 
 
 def delete(params):
@@ -747,6 +753,8 @@ def main():
             delete(arguments)
         elif arguments['local']:
             local_dev(arguments)
+        elif arguments['token']:
+            print_token(arguments)
 
     except Exception as e:
         logger.error(str(e))
