@@ -16,18 +16,31 @@ class ProcessLogScheduler():
 
     """
     def __init__(self, interval=2):
-        self.buffer = {}
+        self.buffer = {
+            0: {},
+            1: {}
+        }
+        self.active_buffer = 0
         self._timer = None
         self.client = OperetoClient()
         self.is_running = False
         self.interval = interval
         self.start()
 
+    def _switch_buffer(self):
+        active_buffer_sn = self.active_buffer
+        self.active_buffer = abs(int(self.active_buffer) - 1)
+        logs = self.buffer[active_buffer_sn]
+        self.buffer[active_buffer_sn]={}
+        return logs
+
     def __del__(self):
         self.stop()
 
     def flush_logs(self, *args):
-        for pid, entries in self.buffer.items():
+        self.is_running = False
+        self.start()
+        for pid, entries in self._switch_buffer().items():
             self.client.send_process_log(pid, entries)
 
     def start(self):
@@ -40,9 +53,7 @@ class ProcessLogScheduler():
         self._timer.cancel()
         self.is_running = False
 
-
     def write(self, pid, log_entries=[]):
-        if not pid in self.buffer:
-            self.buffer[pid]=[]
-        self.buffer[pid]+=log_entries
-
+        if not pid in self.buffer[self.active_buffer]:
+            self.buffer[self.active_buffer][pid]=[]
+        self.buffer[self.active_buffer][pid]+=log_entries
