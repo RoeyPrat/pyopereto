@@ -17,8 +17,7 @@ Create a file named opereto.yaml in your home directory containing Opereto acces
 ~/opereto.yaml
 ```
 opereto_host: https://your_opereto_service_url
-opereto_user: your_opereto_username
-opereto_password: your_opereto_password
+opereto_auth: your_opereto_authentication_token
 ```
 
 From the command line console, please type:
